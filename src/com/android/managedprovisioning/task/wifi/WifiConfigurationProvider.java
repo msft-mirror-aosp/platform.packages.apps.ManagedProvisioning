@@ -17,8 +17,10 @@
 package com.android.managedprovisioning.task.wifi;
 
 import android.annotation.Nullable;
+import android.net.IpConfiguration;
 import android.net.IpConfiguration.ProxySettings;
 import android.net.ProxyInfo;
+import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiEnterpriseConfig;
 import android.text.TextUtils;
@@ -320,13 +322,15 @@ public class WifiConfigurationProvider {
         if (TextUtils.isEmpty(proxyHost) && TextUtils.isEmpty(pacUrl)) {
             return;
         }
+        IpConfiguration ipConfig = wifiConf.getIpConfiguration();
         if (!TextUtils.isEmpty(proxyHost)) {
-            ProxyInfo proxy = new ProxyInfo(proxyHost, proxyPort, proxyBypassHosts);
-            wifiConf.setProxy(ProxySettings.STATIC, proxy);
+            ipConfig.setProxySettings(ProxySettings.STATIC);
+            ipConfig.setHttpProxy(new ProxyInfo(proxyHost, proxyPort, proxyBypassHosts));
         } else {
-            ProxyInfo proxy = new ProxyInfo(pacUrl);
-            wifiConf.setProxy(ProxySettings.PAC, proxy);
+            ipConfig.setProxySettings(ProxySettings.PAC);
+            ipConfig.setHttpProxy(new ProxyInfo(Uri.parse(pacUrl)));
         }
+        wifiConf.setIpConfiguration(ipConfig);
     }
 
     private int getEAPMethodFromString(String eapMethod) {
