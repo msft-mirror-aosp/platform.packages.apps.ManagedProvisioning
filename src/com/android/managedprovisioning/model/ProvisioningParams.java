@@ -103,6 +103,9 @@ public final class ProvisioningParams extends PersistableBundlable {
     public static final ArrayList<Integer> DEFAULT_EXTRA_PROVISIONING_ALLOWED_PROVISIONING_MODES =
             new ArrayList<>();
     public static final int DEFAULT_EXTRA_PROVISIONING_SUPPORTED_MODES = 0;
+    public static final boolean DEFAULT_EXTRA_PROVISIONING_SKIP_OWNERSHIP_DISCLAIMER = false;
+    public static final boolean DEFAULT_EXTRA_PROVISIONING_RETURN_BEFORE_POLICY_COMPLIANCE = false;
+
     // Intent extra used internally for passing data between activities and service.
     public static final String EXTRA_PROVISIONING_PARAMS = "provisioningParams";
 
@@ -145,6 +148,9 @@ public final class ProvisioningParams extends PersistableBundlable {
     private static final String TAG_IS_TRANSITIONING_FROM_REGULAR_TO_CHILD =
             "is-transitioning-from-regular-to-child";
     private static final String TAG_PROVISIONING_TRIGGER = "provisioning-trigger";
+    private static final String TAG_SKIP_OWNERSHIP_DISCLAIMER = "skip-ownership-disclaimer";
+    private static final String TAG_PROVISIONING_RETURN_BEFORE_POLICY_COMPLIANCE =
+            "provisioning-return-before-policy-compliance";
 
     public static final Parcelable.Creator<ProvisioningParams> CREATOR
             = new Parcelable.Creator<ProvisioningParams>() {
@@ -305,6 +311,17 @@ public final class ProvisioningParams extends PersistableBundlable {
      */
     public final @ProvisioningTrigger int provisioningTrigger;
 
+    /**
+     * Whether to skip the ownership disclaimer.
+     */
+    public final boolean skipOwnershipDisclaimer;
+
+    /**
+     * True if the provisioning flow should return before starting the admin app's {@link
+     * DevicePolicyManager#ACTION_ADMIN_POLICY_COMPLIANCE} handler. Default value is {@code true}.
+     */
+    public final boolean returnBeforePolicyCompliance;
+
     public static String inferStaticDeviceAdminPackageName(ComponentName deviceAdminComponentName,
             String deviceAdminPackageName) {
         if (deviceAdminComponentName != null) {
@@ -373,6 +390,8 @@ public final class ProvisioningParams extends PersistableBundlable {
         flowType = builder.mFlowType;
         isTransitioningFromRegularToChild = builder.mIsTransitioningFromRegularToChild;
         provisioningTrigger = builder.mProvisioningTrigger;
+        skipOwnershipDisclaimer = builder.mSkipOwnershipDisclaimer;
+        returnBeforePolicyCompliance = builder.mReturnBeforePolicyCompliance;
 
         validateFields();
     }
@@ -429,6 +448,9 @@ public final class ProvisioningParams extends PersistableBundlable {
         bundle.putBoolean(TAG_IS_TRANSITIONING_FROM_REGULAR_TO_CHILD,
                  isTransitioningFromRegularToChild);
         bundle.putInt(TAG_PROVISIONING_TRIGGER, provisioningTrigger);
+        bundle.putBoolean(TAG_SKIP_OWNERSHIP_DISCLAIMER, skipOwnershipDisclaimer);
+        bundle.putBoolean(TAG_PROVISIONING_RETURN_BEFORE_POLICY_COMPLIANCE,
+                returnBeforePolicyCompliance);
         return bundle;
     }
 
@@ -486,6 +508,9 @@ public final class ProvisioningParams extends PersistableBundlable {
         builder.setIsTransitioningFromRegularToChild(bundle.getBoolean(
                 TAG_IS_TRANSITIONING_FROM_REGULAR_TO_CHILD));
         builder.setProvisioningTrigger(bundle.getInt(TAG_PROVISIONING_TRIGGER));
+        builder.setSkipOwnershipDisclaimer(bundle.getBoolean(TAG_SKIP_OWNERSHIP_DISCLAIMER));
+        builder.setReturnBeforePolicyCompliance(bundle.getBoolean(
+                TAG_PROVISIONING_RETURN_BEFORE_POLICY_COMPLIANCE));
         return builder;
     }
 
@@ -616,6 +641,10 @@ public final class ProvisioningParams extends PersistableBundlable {
         private @FlowType int mFlowType = FLOW_TYPE_UNSPECIFIED;
         private boolean mIsTransitioningFromRegularToChild = false;
         private @ProvisioningTrigger int mProvisioningTrigger = PROVISIONING_TRIGGER_UNSPECIFIED;
+        private boolean mSkipOwnershipDisclaimer =
+                DEFAULT_EXTRA_PROVISIONING_SKIP_OWNERSHIP_DISCLAIMER;
+        private boolean mReturnBeforePolicyCompliance =
+                DEFAULT_EXTRA_PROVISIONING_RETURN_BEFORE_POLICY_COMPLIANCE;
 
         public Builder setProvisioningId(long provisioningId) {
             mProvisioningId = provisioningId;
@@ -772,6 +801,22 @@ public final class ProvisioningParams extends PersistableBundlable {
         public Builder setInitiatorRequestedProvisioningModes(
                 int initiatorRequestedProvisioningModes) {
             mInitiatorRequestedProvisioningModes = initiatorRequestedProvisioningModes;
+            return this;
+        }
+
+        /**
+         * See {@link ProvisioningParams#skipOwnershipDisclaimer}.
+         */
+        public Builder setSkipOwnershipDisclaimer(boolean skipOwnershipDisclaimer) {
+            mSkipOwnershipDisclaimer = skipOwnershipDisclaimer;
+            return this;
+        }
+
+        /**
+         * Setter for {@link #returnBeforePolicyCompliance}.
+         */
+        public Builder setReturnBeforePolicyCompliance(boolean returnBeforePolicyCompliance) {
+            mReturnBeforePolicyCompliance = returnBeforePolicyCompliance;
             return this;
         }
 

@@ -465,7 +465,7 @@ public class Utils {
      *     DevicePolicyManager#ACTION_ADMIN_POLICY_COMPLIANCE}</li>
      * </ul>
      */
-    public boolean shouldPerformAdminIntegratedFlow(Context context, ProvisioningParams params,
+    public boolean canPerformAdminIntegratedFlow(Context context, ProvisioningParams params,
             PolicyComplianceUtils policyComplianceUtils,
             GetProvisioningModeUtils provisioningModeUtils) {
         if (!checkAdminIntegratedFlowPreconditions(params)) {
@@ -492,7 +492,7 @@ public class Utils {
      *
      * <p>This method can be called before the admin app has been installed. Returning {@code true}
      * does not mean the admin-integrated flow should be performed (for that, use {@link
-     * #shouldPerformAdminIntegratedFlow(Context, ProvisioningParams, PolicyComplianceUtils,
+     * #canPerformAdminIntegratedFlow(Context, ProvisioningParams, PolicyComplianceUtils,
      * GetProvisioningModeUtils)}), but returning {@code false} can be used as an early indication
      * that it should <i>not</i> be performed.
      *
@@ -815,8 +815,13 @@ public class Utils {
     public static boolean isSilentProvisioningForTestingDeviceOwner(
                 Context context, ProvisioningParams params) {
         final DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
-        final ComponentName currentDeviceOwner =
-                dpm.getDeviceOwnerComponentOnCallingUser();
+
+        // TODO(b/177502490): need to instantiate a new Utils() because
+        // getCurrentDeviceOwnerComponentName() on SetDevicePolicyTaskTest. If this method doesn't
+        // go away, we should change the latter to use ExtendedMockito so it can mock static
+        // methods.
+        final ComponentName currentDeviceOwner = new Utils()
+                .getCurrentDeviceOwnerComponentName(dpm);
         final ComponentName targetDeviceAdmin = params.deviceAdminComponentName;
 
         switch (params.provisioningAction) {
@@ -828,6 +833,17 @@ public class Utils {
             default:
                 return false;
         }
+    }
+
+    /**
+     * Gets the device's current device owner admin component.
+     */
+    @Nullable
+    public ComponentName getCurrentDeviceOwnerComponentName(DevicePolicyManager dpm) {
+        // TODO(b/177502490): might go away once silent provisioning is refactored
+        return isHeadlessSystemUserMode()
+                ? dpm.getDeviceOwnerComponentOnAnyUser()
+                : dpm.getDeviceOwnerComponentOnCallingUser();
     }
 
     private static boolean isSilentProvisioningForTestingManagedProfile(
@@ -884,10 +900,8 @@ public class Utils {
         return getBaseDialogBuilder(positiveResId, negativeResId, dialogMsgResId);
     }
 
-    // TODO(b/175017533): determine whether to show the ownership disclaimer screen for
-    // managed account provisioning in an upcoming CL
     public boolean shouldShowOwnershipDisclaimerScreen(ProvisioningParams params) {
-        return true;
+        return !params.skipOwnershipDisclaimer;
     }
 
     public boolean isOrganizationOwnedAllowed(ProvisioningParams params) {
@@ -908,6 +922,20 @@ public class Utils {
             return false;
         }
         return settingsFacade.isUserSetupCompleted(context);
+    }
+
+    /**
+     * Returns {@code true} if {@code packageName} is installed on the primary user.
+     */
+    public boolean isPackageInstalled(String packageName, PackageManager packageManager) {
+        try {
+            final ApplicationInfo ai = packageManager.getApplicationInfo(packageName,
+                    PackageManager.MATCH_DIRECT_BOOT_AWARE
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE);
+            return ai != null;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 
     private SimpleDialog.Builder getBaseDialogBuilder(
