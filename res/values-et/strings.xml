@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Tööprofiili teave"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Hallatava seadme teave"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Tööprofiil"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Peamine kasutaja"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Kas kustutada olemasolev profiil?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"Teil on juba tööprofiil. Seda hallatakse järgmise rakendusega:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"Enne jätkamist "<a href="#read_this_link">"lugege seda"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Administraatorirakenduse seadistamine"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"See seade kuulub teie organisatsioonile"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Selle telefoni haldamiseks ja jälgimiseks kasutatakse järgmist rakendust"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Teie kontot hallatakse"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Teie IT-administraator kasutab turvaeeskirjade jõustamiseks mobiilseadmete haldamist"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Tööks seadistamise ettevalmistamine …"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Seadistame teie tööprofiili"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Töörakendusi hoitakse teie tööprofiilil"</string>

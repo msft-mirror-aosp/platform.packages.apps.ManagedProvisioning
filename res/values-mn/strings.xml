@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Ажлын профайлын мэдээлэл"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Удирдсан төхөөрөмжийн мэдээлэл"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Ажлын профайл"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Үндсэн хэрэглэгч"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Одоогийн профайлыг устгах уу?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"Та ажлын профайлтай байна. Үүнийг дараах аппаар удирддаг:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"Эхлүүлэхийн өмнө, "<a href="#read_this_link">"үүнийг уншаарай"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Админ аппыг тохируулж байна"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"Энэ төхөөрөмжийг танай байгууллага эзэмшдэг"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Энэ утсыг удирдаж, хянахын тулд дараах аппыг ашиглана"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Таны бүртгэлийг удирдаж байна"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Таны IT админ аюулгүй байдлын бодлогыг хэрэгжүүлэхийн тулд мобайл төхөөрөмжийн менежментийг ашигладаг"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Ажлын тохируулгад бэлтгэж байна…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Таны ажлын профайлыг тохируулцгаая"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Ажлын аппуудыг таны ажлын профайлд хадгалдаг"</string>

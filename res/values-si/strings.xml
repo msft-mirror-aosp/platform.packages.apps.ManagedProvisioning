@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"කාර්යාල පැතිකඩ තොරතුරු"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"කළමනාකරණය කළ උපාංග තොරතුරු"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"කාර්යාල පැතිකඩ"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"මූලික පරිශීලක"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"තිබන පැතිකඩ මකන්නද?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"ඔබට දැනටමත් කාර්යාල පැතිකඩක් තිබේ. එය පහත යෙදුම මඟින් කළමනාකරණය කෙරේ:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"ඉදිරියට යාමට පෙර, "<a href="#read_this_link">"මෙය කියවන්න"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"පරිපාලක යෙදුම සැකසීම"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"මෙම උපාංගය ඔබේ සංවිධානයට අයත් වේ"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"මෙම දුරකථනය කළමනා කිරීමටත් නිරීක්‍ෂණ කිරීමටත් පහත සඳහන් යෙදුම භාවිත කෙරේ"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"ඔබගේ ගිණුම කළමනාකරණය කෙරේ"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"ආරක්ෂක ප්‍රතිපත්ති බලාත්මක කිරීම සඳහා ඔබගේ තොරතුරු තාක්ෂණ පරිපාලක ජංගම උපාංග කළමනාකරණය භාවිත කරයි"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"කාර්යාල සැකසීම සඳහා සූදානම් වේ…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"අපි ඔබේ වැඩ පැතිකඩ පිහිටුවමු"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"කාර්යාල යෙදුම් ඔබේ කාර්යාල පැතිකඩේ තබනු ලැබේ"</string>

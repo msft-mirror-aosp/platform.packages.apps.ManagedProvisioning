@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Inligting oor werkprofiel"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Inligting oor bestuurde toestel"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Werkprofiel"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Primêre gebruiker"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Vee bestaande profiel uit?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"Jy het reeds \'n werkprofiel. Dit word met die volgende program bestuur:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343"><a href="#read_this_link">"Lees hier"</a>" voordat jy voortgaan."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Stel tans administrasieprogram op"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"Hierdie toestel behoort aan jou organisasie"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Die volgende program sal gebruik word om hierdie foon te bestuur en te monitor"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Jou rekening word bestuur"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Jou IT-admin gebruik mobieletoestelbestuur om sekuriteitbeleide toe te pas"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Maak tans gereed vir werkopstelling …"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Kom ons stel eers jou werkprofiel op"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Werkprogramme word in jou werkprofiel gehou"</string>

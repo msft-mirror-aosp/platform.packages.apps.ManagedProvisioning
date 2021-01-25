@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Informació del perfil de treball"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Informació dels dispositius gestionat"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Perfil de treball"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Usuari principal"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Vols suprimir el perfil existent?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"Ja tens un perfil de treball gestionat mitjançant l\'aplicació següent:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"Abans de continuar, "<a href="#read_this_link">"llegeix aquesta informació"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"S\'està configurant l\'aplicació d\'administració"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"Aquest dispositiu pertany a la teva organització"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"S\'utilitzarà l\'aplicació següent per gestionar i supervisar aquest telèfon"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"El teu compte està gestionat"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"El teu administrador de TI utilitza la gestió de dispositius mòbils per aplicar les polítiques de seguretat"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"S\'està preparant per a la configuració professional…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Configurem el teu perfil de treball"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Les aplicacions de treball es desaran al teu perfil de treball"</string>

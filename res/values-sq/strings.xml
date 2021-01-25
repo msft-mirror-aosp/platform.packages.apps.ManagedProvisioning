@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Informacioni i profilit të punës"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Informacioni i pajisjes së menaxhuar"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Profili i punës"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Përdoruesi parësor"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Të fshihet profili ekzistues?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"E ke tashmë një profil pune. Ai menaxhohet duke përdorur aplikacionin e mëposhtëm:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"para se të vazhdosh, "<a href="#read_this_link">"lexo këtë"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Konfigurimi i aplikacionit të administratorit"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"Kjo pajisje i përket organizatës sate"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Aplikacioni i mëposhtëm do të përdoret për të menaxhuar dhe monitoruar këtë telefon"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Llogaria jote po menaxhohet"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Administratori i teknologjisë së informacionit përdor menaxhimin e pajisjes celulare për të zbatuar politikat e sigurisë"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Po përgatitet për konfigurimin e punës…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Le të konfigurojmë profilin tënd të punës"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Aplikacionet e punës mbahen në profilin tënd të punës"</string>

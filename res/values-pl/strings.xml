@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Informacje o profilu służbowym"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Informacje o urządzeniu zarządzanym"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Profil służbowy"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Główny użytkownik"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Usunąć istniejący profil?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"Masz już profil służbowy, którym zarządza ta aplikacja:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"Zanim przejdziesz dalej, "<a href="#read_this_link">"przeczytaj to"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Konfiguracja aplikacji administratora"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"To urządzenie należy do Twojej organizacji"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Do zarządzania tym telefonem i monitorowania go posłuży poniższa aplikacja"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Konto jest zarządzane"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Administrator IT wykorzystuje zarządzanie urządzeniami mobilnymi do egzekwowania zasad bezpieczeństwa"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Przygotowuję się do konfiguracji profilu służbowego…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Skonfiguruj profil służbowy"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Aplikacje służbowe znajdują się w profilu służbowym"</string>

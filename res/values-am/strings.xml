@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"የሥራ መገለጫ መረጃ"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"የሚተዳደር መሣሪያ መረጃ"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"የስራ መገለጫ"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"ዋና ተጠቃሚ"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"ነባር መገለጫ ይሰረዝ?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"የሥራ መገለጫ ቀደም ብሎ አለዎት። የሚከተለውን መተግበሪያ በመጠቀም የሚተዳደር ነው፦"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"ከመቀጠልዎ በፊት "<a href="#read_this_link">"ይህን ያንብቡት"</a>"።"</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"የአስተዳዳሪ መተግበሪያን በማቀናበር ላይ"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"ይህ መሣሪያ የድርጅትዎ ነው"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"የሚከተለው መተግበሪያ ይህን ስልክ ለማቀናበር እና ለመከታተል ስራ ላይ ይውላል"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"የእርስዎ መለያ የሚተዳደር ነው"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"የእርስዎ የአይቲ አስተዳዳሪ የደህንነት መመሪያዎችን ለማስፈፀም የሞባይል መሳሪያ አስተዳደርን ይጠቀማል"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"ለሥራ ቅንብር በመዘጋጀት ላይ…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"መጀመሪያ የስራ መገለጫዎን እናቀናብረው"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"የሥራ መተግበሪያዎች በእርስዎ የሥራ መገለጫ ውስጥ ይቀመጣሉ"</string>

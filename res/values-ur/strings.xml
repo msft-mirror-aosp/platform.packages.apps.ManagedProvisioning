@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"دفتری پروفائل کی معلومات"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"نظم کردہ آلے کی معلومات"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"دفتر کا پروفائل"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"بنیادی صارف"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"موجودہ پروفائل حذف کریں؟"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"آپ کے پاس پہلے سے ہی ایک دفتری پروفائل ہے۔ مندرجہ ذیل ایپ استعمال کر کے اس کا نظم کیا جاتا ہے:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"آگے بڑھنے سے پہلے، "<a href="#read_this_link">"یہ پڑھیں"</a>"۔"</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"ڈومین ایپ ترتیب دی جا رہی ہے"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"یہ آلہ آپ کی تنظیم کا ہے"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"اس فون کا نظم اور نگرانی کرنے کیلئے مندرجہ ذیل ایپ کا استعمال کیا جائے گا"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"آپ کا اکاؤنٹ نظم کردہ ہے"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"‏آپ کا IT منتظم سیکیورٹی پالیسیوں کو نافذ کرنے کیلئے موبائل آلے کے نظم و نسق کا استعمال کرتا ہے"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"آلہ برائے دفتر کے سیٹ اپ کے لیے تیاری ہو رہی ہے…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"آئیے آپ کا دفتری پروفائل ترتیب دیں"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"دفتری ایپس کو آپ کے دفتری پروفائل میں رکھا جاتا ہے"</string>

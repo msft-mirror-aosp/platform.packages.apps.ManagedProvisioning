@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Maklumat profil kerja"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Maklumat peranti terurus"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Profil kerja"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Pengguna utama"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Padamkan profil semasa?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"Anda sudah pun mempunyai profil kerja. Profil itu diurus menggunakan apl berikut:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"Sebelum meneruskan, "<a href="#read_this_link">"baca ini"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Menyediakan apl pentadbir"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"Peranti ini milik organisasi anda"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Apl berikut akan digunakan untuk mengurus dan memantau telefon ini"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Akaun anda telah diuruskan"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Pentadbir IT anda menggunakan pengurusan peranti mudah alih untuk menguatkuasakan dasar keselamatan"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Bersedia untuk persediaan kerja…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Mari sediakan profil kerja anda"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Apl kerja disimpan dalam profil kerja anda"</string>

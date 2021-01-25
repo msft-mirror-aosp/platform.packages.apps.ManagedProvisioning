@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"वर्क प्रोफ़ाइल की जानकारी"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"प्रबंधित डिवाइस की जानकारी"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"वर्क प्रोफ़ाइल"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"प्राथमिक उपयोगकर्ता"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"मौजूदा प्रोफ़ाइल हटाना चाहते हैं?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"आपकी एक वर्क प्रोफ़ाइल पहले से है. उसका प्रबंधन इस ऐप्लिकेशन के उपयोग से किया जाता है:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"आगे बढ़ने से पहले, "<a href="#read_this_link">"यह पढ़ें"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"एडमिन ऐप्लिकेशन सेट अप किया जा रहा है"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"यह डिवाइस आपके संगठन का है"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"आगे बताए गए ऐप्लिकेशन का इस्तेमाल इस फ़ोन को प्रबंधित करने और इसकी निगरानी करने के लिए किया जाएगा"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"आपका खाता अब नए डिवाइस पर प्रबंधित किया जाएगा"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"आपका आईटी एडमिन, सुरक्षा नीतियों को लागू करने के लिए मोबाइल डिवाइस प्रबंधन का इस्तेमाल करता है"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"काम के लिए सेटअप किया जा रहा है…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"चलिए, आपकी वर्क प्रोफ़ाइल सेट अप करते हैं"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"काम से जुड़े ऐप्लिकेशन, आपके काम से जुड़ी प्रोफ़ाइल में रखे जाते हैं"</string>

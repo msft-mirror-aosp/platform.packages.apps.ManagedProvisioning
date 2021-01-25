@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Ulwazi lwephrofayela yomsebenzi"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Ulwazi lwedivayisi oluphethwe"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Iphrofayela yomsebenzi"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Umsebenzisi oyinhloko"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Susa iphrofayela ekhona?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"Usuvele unephrofayela yomsebenzi. Iphethwe kusetshenziswa uhlelo lokusebenza olulandelayo:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"Ngaphambi kokuqhubeka, "<a href="#read_this_link">"funda lokhu"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Isetha uhlelo lokusebenza lokulawula"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"Le divayisi eyenhlangano yakho"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Uhlelo lokusebenza olulandelayo luzosetshenziselwa ukuphatha nokuqaphela le foni"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"I-akhawunti yakho iphethwe"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Umphathi wakho we-IT usebenzisa ukuphathwa kwedivayisi yeselula ukuphoqelela izinqubomgomo zokuphepha"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Ukusethwa kokulungela umsebenzi…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Asisethe iphrofayela yakho yomsebenzi"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Izinhlelo zakho zokusebenza zigcinwa kuphrofayela yakho yohlelo lokusebenza"</string>

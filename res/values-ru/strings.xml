@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Информация о рабочем профиле"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Информация об управляемом устройстве"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Рабочий профиль"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Основной пользователь"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Удалить существующий профиль?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"У вас уже есть рабочий профиль. Им управляют с помощью этого приложения:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"Прежде чем продолжить, "<a href="#read_this_link">"ознакомьтесь с этой информацией"</a>"."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Идет настройка приложения для администрирования."</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"Это устройство принадлежит вашей организации"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Для управления телефоном и отслеживания действий на нем будет использоваться следующее приложение:"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Управляемый аккаунт"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Администратор использует систему управления мобильными устройствами, чтобы обеспечить соблюдение правил безопасности."</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Подготовка к настройке рабочего профиля…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Настройте рабочий профиль"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Приложения для работы хранятся в рабочем профиле"</string>

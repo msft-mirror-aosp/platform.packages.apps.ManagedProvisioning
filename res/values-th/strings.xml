@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"ข้อมูลโปรไฟล์งาน"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"ข้อมูลอุปกรณ์ที่มีการจัดการ"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"โปรไฟล์งาน"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"ผู้ใช้หลัก"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"ลบโปรไฟล์ที่มีอยู่ใช่ไหม"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"คุณมีโปรไฟล์งานอยู่แล้ว ซึ่งมีการจัดการโดยใช้แอปต่อไปนี้"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343">"ก่อนดำเนินการต่อ โปรด"<a href="#read_this_link">"อ่านข้อมูลนี้"</a></string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"กำลังตั้งค่าแอปผู้ดูแลระบบ"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"องค์กรของคุณเป็นเจ้าของอุปกรณ์นี้"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"แอปต่อไปนี้จะใช้เพื่อจัดการและตรวจสอบโทรศัพท์เครื่องนี้"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"บัญชีของคุณได้รับการจัดการแล้ว"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"ผู้ดูแลระบบไอทีจะใช้การจัดการอุปกรณ์เคลื่อนที่เพื่อบังคับใช้นโยบายความปลอดภัย"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"กำลังเตรียมอุปกรณ์เพื่อตั้งค่าสำหรับการทำงาน…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"ก่อนอื่นมาตั้งค่าโปรไฟล์งานกัน"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"แอปการทำงานเก็บอยู่ในโปรไฟล์งาน"</string>

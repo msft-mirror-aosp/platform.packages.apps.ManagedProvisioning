@@ -41,7 +41,6 @@
     <string name="work_profile_info" msgid="5433388376309583996">"Työprofiilin tiedot"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Hallinnoidun laitteen tiedot"</string>
     <string name="default_managed_profile_name" msgid="5370257687074907055">"Työprofiili"</string>
-    <string name="default_first_meat_user_name" msgid="7540515892748490540">"Ensisijainen käyttäjä"</string>
     <string name="delete_profile_title" msgid="2841349358380849525">"Poistetaanko nykyinen profiili?"</string>
     <string name="opening_paragraph_delete_profile" msgid="4913885310795775967">"Sinulla on jo työprofiili, jota hallinnoi seuraava sovellus:"</string>
     <string name="read_more_delete_profile" msgid="7789171620401666343"><a href="#read_this_link">"Lue tämä"</a>" ennen kuin jatkat."</string>
@@ -164,6 +163,8 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Hallintasovellusta määritetään"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"Tämä on organisaatiosi laite"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Tätä puhelinta ylläpidetään ja valvotaan seuraavalla sovelluksella"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Tiliäsi hallinnoidaan"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Järjestelmänvalvoja käyttää mobiililaitteiden hallintaa suojauskäytäntöjen täytäntöönpanossa"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Valmistellaan työprofiilin määritystä…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Määritetään työprofiilisi"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Työsovelluksia säilytetään työprofiilissa"</string>
