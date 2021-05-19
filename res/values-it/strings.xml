@@ -36,7 +36,7 @@
 </xliff:g>Contatta l\'amministratore IT per ulteriori informazioni, comprese le norme sulla privacy della tua organizzazione."</string>
     <string name="theft_protection_disabled_warning" msgid="3708092473574738478">"Per poter utilizzare le funzioni antifurto, è necessario impostare sul dispositivo un blocco schermo protetto tramite password."</string>
     <string name="contact_your_admin_for_more_info" msgid="9209568156969966347">"Contatta l\'amministratore IT per ulteriori informazioni, comprese le norme sulla privacy della tua organizzazione."</string>
-    <string name="learn_more_link" msgid="3012495805919550043">"Ulteriori informazioni"</string>
+    <string name="learn_more_link" msgid="3012495805919550043">"Scopri di più"</string>
     <string name="cancel_setup" msgid="2949928239276274745">"Annulla"</string>
     <string name="ok_setup" msgid="4593707675416137504">"OK"</string>
     <string name="user_consent_msg" msgid="8820951802130353584">"Accetto"</string>
@@ -173,7 +173,7 @@
     <string name="fully_managed_device_provisioning_step_2_subheader" msgid="2848998570491578119">"Il tuo amministratore IT potrebbe visualizzare i tuoi dati e la tua attività su questo dispositivo."</string>
     <string name="fully_managed_device_provisioning_permissions_header" msgid="2852101532084770993">"Le tue attività e i tuoi dati"</string>
     <string name="fully_managed_device_provisioning_permissions_secondary_header" msgid="4419374850927705136">"Autorizzazioni app"</string>
-    <string name="fully_managed_device_provisioning_permissions_secondary_subheader" msgid="8328298923037335068">"L\'amministratore IT può impostare autorizzazioni per le app installate su questo dispositivo, ad esempio autorizzazioni di accesso a microfono, videocamera e posizione."</string>
+    <string name="fully_managed_device_provisioning_permissions_secondary_subheader" msgid="8328298923037335068">"L\'amministratore IT può impostare autorizzazioni per le app installate su questo dispositivo, ad esempio autorizzazioni di accesso a microfono, fotocamera e posizione."</string>
     <string name="fully_managed_device_provisioning_progress_label" msgid="3925516135130021966">"Configurazione del dispositivo…"</string>
     <string name="fully_managed_device_provisioning_summary" msgid="1090645190066781456">"Usa questo dispositivo per accedere facilmente alle tue app di lavoro. Questo dispositivo non è privato, pertanto l\'amministratore IT potrebbe visualizzare i tuoi dati e le tue attività."</string>
     <string name="fully_managed_device_with_permission_control_provisioning_summary" msgid="6634797147105465856">"Usa questo dispositivo per accedere facilmente alle tue app di lavoro. Questo dispositivo non è privato, pertanto l\'amministratore IT potrebbe visualizzare i tuoi dati e le tue attività. L\'amministratore IT può anche impostare autorizzazioni per le app installate su questo dispositivo, ad esempio autorizzazioni di accesso a microfono, videocamera e posizione."</string>
