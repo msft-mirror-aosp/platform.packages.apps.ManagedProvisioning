@@ -43,6 +43,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import com.android.managedprovisioning.TestUtils;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.model.ProvisioningParams;
+import com.android.managedprovisioning.provisioning.Constants;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -54,7 +55,6 @@ public class StartDpcInsideSuwServiceConnectionTest extends AndroidTestCase {
     private static final ComponentName TEST_MDM_ADMIN = new ComponentName(TEST_MDM_PACKAGE_NAME,
             TEST_MDM_ADMIN_RECEIVER);
     private static final PersistableBundle TEST_MDM_EXTRA_BUNDLE = createTestAdminExtras();
-    private static final String TEST_DPC_INTENT_CATEGORY = "test_category";
     private static final int TEST_REQUEST_CODE = 3;
     private static final String TEST_SUW_PACKAGE_NAME = "suw.package.name";
     private static final String TEST_SUW_SERVICE_CLASS = TEST_SUW_PACKAGE_NAME + ".TestService";
@@ -65,6 +65,7 @@ public class StartDpcInsideSuwServiceConnectionTest extends AndroidTestCase {
     @Mock private Activity mRestoredActivity;
     @Mock private Utils mUtils;
     @Mock private ProvisioningAnalyticsTracker mProvisioningAnalyticsTracker;
+    @Mock private TransitionHelper mTransitionHelper;
 
     private StartDpcInsideSuwServiceConnection mStartDpcInsideSuwServiceConnection;
     private Runnable mDpcIntentSender;
@@ -85,10 +86,11 @@ public class StartDpcInsideSuwServiceConnectionTest extends AndroidTestCase {
                 .build();
 
         mStartDpcInsideSuwServiceConnection = new StartDpcInsideSuwServiceConnection();
+        Constants.ENABLE_CUSTOM_TRANSITIONS = true;
         mDpcIntentSender = () ->
                 policyComplianceUtils.startPolicyComplianceActivityForResultIfResolved(
-                        mActivity, mParams, TEST_DPC_INTENT_CATEGORY, TEST_REQUEST_CODE, mUtils,
-                        mProvisioningAnalyticsTracker);
+                        mActivity, mParams, TEST_REQUEST_CODE, mUtils,
+                        mProvisioningAnalyticsTracker, mTransitionHelper);
     }
 
     @SmallTest
@@ -553,8 +555,8 @@ public class StartDpcInsideSuwServiceConnectionTest extends AndroidTestCase {
 
     private void verifyDpcLaunched(Activity activity) {
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
-        verify(activity).startActivityForResultAsUser(intentCaptor.capture(), anyInt(),
-                any(UserHandle.class));
+        verify(mTransitionHelper).startActivityForResultAsUserWithTransition(
+                eq(activity), intentCaptor.capture(), anyInt(), any(UserHandle.class));
         final String intentAction = intentCaptor.getValue().getAction();
         // THEN the intent should be ACTION_PROVISIONING_SUCCESSFUL
         assertEquals(ACTION_ADMIN_POLICY_COMPLIANCE, intentAction);
@@ -562,8 +564,6 @@ public class StartDpcInsideSuwServiceConnectionTest extends AndroidTestCase {
         assertEquals(TEST_MDM_PACKAGE_NAME, intentCaptor.getValue().getPackage());
         // THEN the admin extras bundle should contain mdm extras
         assertExtras(intentCaptor.getValue());
-        // THEN the intent should have the category that was passed into the parent activity
-        assertTrue(intentCaptor.getValue().hasCategory(TEST_DPC_INTENT_CATEGORY));
         // THEN a metric should be logged
         verify(mProvisioningAnalyticsTracker).logDpcSetupStarted(eq(activity), eq(intentAction));
     }
@@ -590,8 +590,8 @@ public class StartDpcInsideSuwServiceConnectionTest extends AndroidTestCase {
         final PolicyComplianceUtils policyComplianceUtils = new PolicyComplianceUtils();
         final Runnable dpcIntentSenderForRestoredActivity = () ->
                 policyComplianceUtils.startPolicyComplianceActivityForResultIfResolved(
-                        mRestoredActivity, mParams, TEST_DPC_INTENT_CATEGORY, TEST_REQUEST_CODE,
-                        mUtils, mProvisioningAnalyticsTracker);
+                        mRestoredActivity, mParams, TEST_REQUEST_CODE,
+                        mUtils, mProvisioningAnalyticsTracker, mTransitionHelper);
 
         return new StartDpcInsideSuwServiceConnection(mRestoredActivity, savedInstanceState,
                 dpcIntentSenderForRestoredActivity);
