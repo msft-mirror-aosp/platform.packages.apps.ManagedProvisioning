@@ -17,10 +17,8 @@
 package com.android.managedprovisioning.common;
 
 import android.annotation.Nullable;
-import android.content.res.ColorStateList;
-import android.content.res.Resources.Theme;
+import android.content.res.Resources;
 import android.os.Bundle;
-import android.sysprop.SetupWizardProperties;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.TextView;
@@ -29,8 +27,8 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.model.CustomizationParams;
+
 import com.google.android.setupdesign.GlifLayout;
-import com.google.android.setupdesign.util.ThemeResolver;
 
 
 /**
@@ -47,19 +45,19 @@ public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
         super();
     }
 
+    @VisibleForTesting
+    protected SetupGlifLayoutActivity(
+            Utils utils, SettingsFacade settingsFacade, ThemeHelper themeHelper) {
+        super(utils, settingsFacade, themeHelper);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setDefaultTheme();
-    }
-
-    @VisibleForTesting
-    protected SetupGlifLayoutActivity(Utils utils) {
-        super(utils);
     }
 
     @Override
-    protected void onApplyThemeResource(Theme theme, int resid, boolean first) {
+    protected void onApplyThemeResource(Resources.Theme theme, int resid, boolean first) {
         theme.applyStyle(R.style.SetupWizardPartnerResource, true);
         super.onApplyThemeResource(theme, resid, first);
     }
@@ -69,18 +67,8 @@ public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
         setContentView(layoutResourceId);
         GlifLayout layout = findViewById(R.id.setup_wizard_layout);
 
-        // ManagedProvisioning's customization has prioritization than stencil theme currently. If
-        // there is no status bar color customized by ManagedProvisioning, it can apply status bar
-        // color from stencil theme.
-        if (!params.useSetupStatusBarColor) {
-            setStatusBarColor(params.statusBarColor);
-        }
-        layout.setPrimaryColor(ColorStateList.valueOf(params.mainColor));
-
         if (headerResourceId != null) {
             layout.setHeaderText(headerResourceId);
-            layout.setHeaderColor(
-                    getResources().getColorStateList(R.color.header_text_color, getTheme()));
         }
 
         TextView header = findViewById(R.id.suc_layout_title);
@@ -103,7 +91,7 @@ public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
             adjustHeaderMaxLines();
         }
 
-        layout.setIcon(LogoUtils.getOrganisationLogo(this, params.mainColor));
+        layout.setIcon(LogoUtils.getOrganisationLogo(this, params.logoColor));
     }
 
     private void adjustHeaderMaxLines() {
@@ -116,13 +104,4 @@ public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
             header.setMaxLines(maxLines);
         }
     }
-
-    private void setDefaultTheme() {
-        setTheme(new ThemeResolver.Builder(ThemeResolver.getDefault())
-            .setDefaultTheme(R.style.SudThemeGlifV3_Light)
-            .setUseDayNight(false)
-            .build()
-            .resolve(SetupWizardProperties.theme().orElse("")));
-    }
-
 }

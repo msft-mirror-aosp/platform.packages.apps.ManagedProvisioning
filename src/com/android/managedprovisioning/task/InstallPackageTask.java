@@ -15,11 +15,12 @@
  */
 package com.android.managedprovisioning.task;
 
-import static android.content.pm.PackageManager.INSTALL_ALL_WHITELIST_RESTRICTED_PERMISSIONS;
+import static android.app.PendingIntent.FLAG_MUTABLE;
+import static android.app.PendingIntent.FLAG_ONE_SHOT;
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.content.pm.PackageManager.INSTALL_REPLACE_EXISTING;
 
-import static com.android.internal.logging.nano.MetricsProto.MetricsEvent
-        .PROVISIONING_INSTALL_PACKAGE_TASK_MS;
+import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.PROVISIONING_INSTALL_PACKAGE_TASK_MS;
 import static com.android.internal.util.Preconditions.checkNotNull;
 
 import android.annotation.NonNull;
@@ -34,7 +35,6 @@ import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
@@ -94,11 +94,6 @@ public class InstallPackageTask extends AbstractProvisioningTask {
         mDownloadPackageTask = checkNotNull(downloadPackageTask);
     }
 
-    @Override
-    public int getStatusMsgId() {
-        return R.string.progress_install;
-    }
-
     private static void copyStream(@NonNull InputStream in, @NonNull OutputStream out)
             throws IOException {
         byte[] buffer = new byte[16 * 1024];
@@ -122,14 +117,15 @@ public class InstallPackageTask extends AbstractProvisioningTask {
         String packageLocation = mDownloadPackageTask.getDownloadedPackageLocation();
         String packageName = mProvisioningParams.inferDeviceAdminPackageName();
 
-        ProvisionLogger.logi("Installing package " + packageName);
+        ProvisionLogger.logi("Installing package " + packageName + " on user " + userId + " from "
+                + packageLocation);
         if (TextUtils.isEmpty(packageLocation)) {
             // Do not log time if not installing any package, as that isn't useful.
             success();
             return;
         }
 
-        int installFlags = INSTALL_REPLACE_EXISTING | INSTALL_ALL_WHITELIST_RESTRICTED_PERMISSIONS;
+        int installFlags = INSTALL_REPLACE_EXISTING;
         // Current device owner (if exists) must be test-only, so it is fine to replace it with a
         // test-only package of same package name. No need to further verify signature as
         // installation will fail if signatures don't match.
@@ -139,7 +135,7 @@ public class InstallPackageTask extends AbstractProvisioningTask {
 
         PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
                 PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-        params.installFlags = installFlags;
+        params.installFlags |= installFlags;
 
         File source = new File(packageLocation);
         PackageInstaller pi = mPm.getPackageInstaller();
@@ -158,9 +154,11 @@ public class InstallPackageTask extends AbstractProvisioningTask {
                 mContext.registerReceiver(new PackageInstallReceiver(packageName),
                         new IntentFilter(action));
 
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, sessionId,
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                        mContext,
+                        sessionId,
                         new Intent(action),
-                        PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
+                        FLAG_ONE_SHOT | FLAG_UPDATE_CURRENT | FLAG_MUTABLE);
                 session.commit(pendingIntent.getIntentSender());
             }
         } catch (IOException e) {
