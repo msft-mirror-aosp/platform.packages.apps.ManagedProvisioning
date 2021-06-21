@@ -19,25 +19,73 @@ package com.android.managedprovisioning.finalization;
 import static android.app.admin.DeviceAdminReceiver.ACTION_PROFILE_PROVISIONING_COMPLETE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISIONING_SUCCESSFUL;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE;
+import static android.app.admin.DevicePolicyManager.PROVISIONING_TRIGGER_UNSPECIFIED;
+
+import static com.android.managedprovisioning.model.ProvisioningParams.FLOW_TYPE_ADMIN_INTEGRATED;
 
 import android.annotation.NonNull;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.UserHandle;
 
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.IllegalProvisioningArgumentException;
+import com.android.managedprovisioning.common.PolicyComplianceUtils;
 import com.android.managedprovisioning.common.ProvisionLogger;
+import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.ProvisioningParams;
-import com.google.android.setupcompat.util.WizardManagerHelper;
 
 /**
  * Helper class for creating intents in finalization controller.
  */
 class ProvisioningIntentProvider {
     void maybeLaunchDpc(ProvisioningParams params, int userId, Utils utils, Context context,
+            ProvisioningAnalyticsTracker provisioningAnalyticsTracker,
+            PolicyComplianceUtils policyComplianceUtils,
+            SettingsFacade settingsFacade) {
+        if (shouldLaunchPolicyCompliance(
+                context, settingsFacade, params, policyComplianceUtils, utils, userId)) {
+            launchPolicyComplianceDpcHandler(
+                    context, params, utils, provisioningAnalyticsTracker, policyComplianceUtils);
+        } else {
+            launchProvisioningSuccessfulDpcHandler(
+                    params, userId, utils, context, provisioningAnalyticsTracker);
+        }
+    }
+
+    // TODO(b/184855881): Make manually-installed-and-started-DPC provisioning use the
+    // policy compliance screen. Then here we will only check if we're doing the admin-integrated
+    // flow.
+    private boolean shouldLaunchPolicyCompliance(
+            Context context, SettingsFacade settingsFacade, ProvisioningParams params,
+            PolicyComplianceUtils policyComplianceUtils, Utils utils, int userId) {
+        // If we're performing the admin-integrated flow, we've already validated that
+        // the policy compliance handler exists.
+        if (params.flowType == FLOW_TYPE_ADMIN_INTEGRATED) {
+            return true;
+        }
+        if (!policyComplianceUtils.isPolicyComplianceActivityResolvableForUser(
+                context, params, utils, UserHandle.of(userId))) {
+            return false;
+        }
+        // TODO(b/184933215): Remove logic specific to legacy managed account provisioning
+        if (params.provisioningTrigger != PROVISIONING_TRIGGER_UNSPECIFIED) {
+            return false;
+        }
+        return settingsFacade.isDuringSetupWizard(context);
+    }
+
+    private void launchPolicyComplianceDpcHandler(
+            Context context, ProvisioningParams params, Utils utils,
+            ProvisioningAnalyticsTracker provisioningAnalyticsTracker,
+            PolicyComplianceUtils policyComplianceUtils) {
+        policyComplianceUtils.startPolicyComplianceActivityIfResolved(
+                context, params, utils, provisioningAnalyticsTracker);
+    }
+
+    private void launchProvisioningSuccessfulDpcHandler(ProvisioningParams params, int userId,
+            Utils utils, Context context,
             ProvisioningAnalyticsTracker provisioningAnalyticsTracker) {
         final Intent dpcLaunchIntent = createDpcLaunchIntent(params);
         if (utils.canResolveIntentAsUser(context, dpcLaunchIntent, userId)) {
@@ -81,18 +129,5 @@ class ProvisioningIntentProvider {
 
     private void addExtrasToIntent(Intent intent, ProvisioningParams params) {
         intent.putExtra(EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE, params.adminExtrasBundle);
-    }
-
-    void launchFinalizationScreenForResult(Activity parentActivity, ProvisioningParams params,
-            int requestCode) {
-        final Intent finalizationScreen = new Intent(parentActivity, FinalScreenActivity.class);
-
-        final Intent intent = parentActivity.getIntent();
-        if (intent != null) {
-            WizardManagerHelper.copyWizardManagerExtras(intent, finalizationScreen);
-        }
-
-        finalizationScreen.putExtra(FinalScreenActivity.EXTRA_PROVISIONING_PARAMS, params);
-        parentActivity.startActivityForResult(finalizationScreen, requestCode);
     }
 }
