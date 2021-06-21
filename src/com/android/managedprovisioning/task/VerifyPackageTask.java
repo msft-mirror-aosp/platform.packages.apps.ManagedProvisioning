@@ -29,7 +29,6 @@ import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.ProvisionLogger;
-import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.StoreUtils;
 import com.android.managedprovisioning.common.Utils;
@@ -95,6 +94,8 @@ public class VerifyPackageTask extends AbstractProvisioningTask {
             success();
             return;
         }
+        ProvisionLogger.logi("Verifying package from location " + downloadLocation + " for user "
+                + userId);
 
         PackageInfo packageInfo = mPackageManager.getPackageArchiveInfo(downloadLocation,
                 PackageManager.GET_SIGNATURES | PackageManager.GET_RECEIVERS);
@@ -125,11 +126,6 @@ public class VerifyPackageTask extends AbstractProvisioningTask {
         }
 
         success();
-    }
-
-    @Override
-    public int getStatusMsgId() {
-        return R.string.progress_install;
     }
 
     private List<byte[]> computeHashesOfAllSignatures(Signature[] signatures) {
