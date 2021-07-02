@@ -18,13 +18,18 @@ package com.android.managedprovisioning.preprovisioning;
 
 import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
+import static android.nfc.NfcAdapter.ACTION_NDEF_DISCOVERED;
 
 import static com.android.managedprovisioning.model.ProvisioningParams.FLOW_TYPE_LEGACY;
 import static com.android.managedprovisioning.preprovisioning.PreProvisioningViewModel.STATE_PREPROVISIONING_INITIALIZING;
 import static com.android.managedprovisioning.preprovisioning.PreProvisioningViewModel.STATE_SHOWING_USER_CONSENT;
+import static com.android.managedprovisioning.provisioning.Constants.PROVISIONING_SERVICE_INTENT;
+
+import static com.google.android.setupcompat.util.WizardManagerHelper.EXTRA_IS_SETUP_FLOW;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -41,6 +46,7 @@ import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.AccessibilityContextMenuMaker;
 import com.android.managedprovisioning.common.GetProvisioningModeUtils;
+import com.android.managedprovisioning.common.Globals;
 import com.android.managedprovisioning.common.LogoUtils;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.ProvisionLogger;
@@ -55,6 +61,7 @@ import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.preprovisioning.PreProvisioningActivityController.UiParams;
 import com.android.managedprovisioning.provisioning.AdminIntegratedFlowPrepareActivity;
 import com.android.managedprovisioning.provisioning.ProvisioningActivity;
+import com.android.managedprovisioning.provisioning.ProvisioningService;
 
 import com.google.android.setupcompat.util.WizardManagerHelper;
 
@@ -113,11 +120,27 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (savedInstanceState == null) {
+            getApplicationContext().startService(PROVISIONING_SERVICE_INTENT);
+        }
+        // TODO(b/192074477): Remove deferred setup-specific logic after the managed account flow
+        //  starts ManagedProvisioning with the isSetupFlow extra
+        // TODO(b/178822333): Remove NFC-specific logic after adding support for the
+        //  admin-integrated flow
+        // This temporary fix only works when called before super.onCreate
+        if (mSettingsFacade.isDeferredSetup(getApplicationContext()) || isNfcSetup()) {
+            getIntent().putExtra(EXTRA_IS_SETUP_FLOW, true);
+        }
+
         super.onCreate(savedInstanceState);
         mController = mControllerProvider.getInstance(this);
         mBridge = createBridge();
         mController.getState().observe(this, this::onStateChanged);
         logMetrics();
+    }
+
+    private boolean isNfcSetup() {
+        return ACTION_NDEF_DISCOVERED.equals(getIntent().getAction());
     }
 
     @Override
@@ -174,6 +197,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
             params.cleanUp();
         }
         getEncryptionController().cancelEncryptionReminder();
+        getApplicationContext().stopService(PROVISIONING_SERVICE_INTENT);
         super.finish();
     }
 
@@ -210,7 +234,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                 if (resultCode == RESULT_OK) {
                     // TODO(b/177849035): Remove NFC-specific logic
                     if (mController.getParams().isNfc) {
-                        mController.startNfcFlow(getIntent());
+                        mController.startNfcFlow();
                     } else {
                         handleAdminIntegratedFlowPreparerResult();
                     }
