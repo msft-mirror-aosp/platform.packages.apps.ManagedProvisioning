@@ -20,9 +20,12 @@ import static android.content.Intent.ACTION_USER_UNLOCKED;
 
 import static com.android.managedprovisioning.finalization.FinalizationController.PROVISIONING_FINALIZED_RESULT_CHILD_ACTIVITY_LAUNCHED;
 import static com.android.managedprovisioning.finalization.FinalizationController.PROVISIONING_FINALIZED_RESULT_WAIT_FOR_WORK_PROFILE_AVAILABLE;
+import static com.android.managedprovisioning.provisioning.Constants.PROVISIONING_SERVICE_INTENT;
 
 import android.app.Activity;
+import android.app.BackgroundServiceStartNotAllowedException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -31,7 +34,10 @@ import android.os.StrictMode;
 import android.os.UserHandle;
 import android.os.UserManager;
 
+import com.android.managedprovisioning.common.Globals;
+import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.TransitionHelper;
+import com.android.managedprovisioning.provisioning.ProvisioningService;
 
 /**
  * Instances of this base class manage interactions with a Device Policy Controller app after it has
@@ -96,6 +102,16 @@ public abstract class FinalizationActivityBase extends Activity {
         tryFinalizeProvisioning();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            getApplicationContext().startService(PROVISIONING_SERVICE_INTENT);
+        } catch (BackgroundServiceStartNotAllowedException e) {
+            ProvisionLogger.loge(e);
+        }
+    }
+
     protected TransitionHelper getTransitionHelper() {
         return mTransitionHelper;
     }
@@ -155,6 +171,7 @@ public abstract class FinalizationActivityBase extends Activity {
     public final void onDestroy() {
         mFinalizationController.activityDestroyed(isFinishing());
         unregisterUserUnlockedReceiver();
+        getApplicationContext().stopService(PROVISIONING_SERVICE_INTENT);
         super.onDestroy();
     }
 
