@@ -16,9 +16,28 @@
 
 package com.android.managedprovisioning.finalization;
 
+import static android.content.Intent.ACTION_USER_UNLOCKED;
+
+import static com.android.managedprovisioning.finalization.FinalizationController.PROVISIONING_FINALIZED_RESULT_CHILD_ACTIVITY_LAUNCHED;
+import static com.android.managedprovisioning.finalization.FinalizationController.PROVISIONING_FINALIZED_RESULT_WAIT_FOR_WORK_PROFILE_AVAILABLE;
+import static com.android.managedprovisioning.provisioning.Constants.PROVISIONING_SERVICE_INTENT;
+
 import android.app.Activity;
+import android.app.BackgroundServiceStartNotAllowedException;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.os.UserHandle;
+import android.os.UserManager;
+
+import com.android.managedprovisioning.common.Globals;
+import com.android.managedprovisioning.common.ProvisionLogger;
+import com.android.managedprovisioning.common.TransitionHelper;
+import com.android.managedprovisioning.provisioning.ProvisioningService;
 
 /**
  * Instances of this base class manage interactions with a Device Policy Controller app after it has
@@ -34,7 +53,29 @@ public abstract class FinalizationActivityBase extends Activity {
 
     private static final String CONTROLLER_STATE_KEY = "controller_state";
 
+    private final TransitionHelper mTransitionHelper;
     private FinalizationController mFinalizationController;
+    private boolean mIsReceiverRegistered;
+
+    private final BroadcastReceiver mUserUnlockedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (!ACTION_USER_UNLOCKED.equals(intent.getAction())) {
+                return;
+            }
+            int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, /* defaultValue= */ -1);
+            UserManager userManager = getSystemService(UserManager.class);
+            if (!userManager.isManagedProfile(userId)) {
+                return;
+            }
+            tryFinalizeProvisioning();
+            unregisterUserUnlockedReceiver();
+        }
+    };
+
+    FinalizationActivityBase(TransitionHelper transitionHelper) {
+        mTransitionHelper = transitionHelper;
+    }
 
     @Override
     public final void onCreate(Bundle savedInstanceState) {
@@ -42,9 +83,8 @@ public abstract class FinalizationActivityBase extends Activity {
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 .permitUnbufferedIo()
                 .build());
-
+        mTransitionHelper.applyContentScreenTransitions(this);
         super.onCreate(savedInstanceState);
-
         mFinalizationController = createFinalizationController();
 
         if (savedInstanceState != null) {
@@ -59,18 +99,63 @@ public abstract class FinalizationActivityBase extends Activity {
             return;
         }
 
+        tryFinalizeProvisioning();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            getApplicationContext().startService(PROVISIONING_SERVICE_INTENT);
+        } catch (BackgroundServiceStartNotAllowedException e) {
+            ProvisionLogger.loge(e);
+        }
+    }
+
+    protected TransitionHelper getTransitionHelper() {
+        return mTransitionHelper;
+    }
+
+    private void tryFinalizeProvisioning() {
+        // Register receiver first to avoid race condition when user becomes unlocked after
+        // the user unlocked check. This will be unregistered if we don't need it
+        mIsReceiverRegistered = false;
+        registerUserUnlockedReceiver();
         mFinalizationController.provisioningFinalized();
         final int result = mFinalizationController.getProvisioningFinalizedResult();
-        if (FinalizationController.PROVISIONING_FINALIZED_RESULT_CHILD_ACTIVITY_LAUNCHED ==
-                result) {
+        if (PROVISIONING_FINALIZED_RESULT_CHILD_ACTIVITY_LAUNCHED == result) {
             onFinalizationCompletedWithChildActivityLaunched();
-        } else {
+        } else if (PROVISIONING_FINALIZED_RESULT_WAIT_FOR_WORK_PROFILE_AVAILABLE != result) {
             if (FinalizationController.PROVISIONING_FINALIZED_RESULT_SKIPPED != result) {
                 mFinalizationController.commitFinalizedState();
             }
             setResult(RESULT_OK);
-            finish();
+            getTransitionHelper().finishActivity(this);
         }
+
+        if (PROVISIONING_FINALIZED_RESULT_WAIT_FOR_WORK_PROFILE_AVAILABLE != result) {
+            unregisterUserUnlockedReceiver();
+        }
+    }
+
+    private void registerUserUnlockedReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_USER_UNLOCKED);
+        registerReceiverAsUser(
+                mUserUnlockedReceiver,
+                UserHandle.ALL,
+                filter,
+                /* broadcastPermission= */ null,
+                /* scheduler= */ null);
+        mIsReceiverRegistered = true;
+    }
+
+    private void unregisterUserUnlockedReceiver() {
+        if (!mIsReceiverRegistered) {
+            return;
+        }
+        unregisterReceiver(mUserUnlockedReceiver);
+        mIsReceiverRegistered = false;
     }
 
     @Override
@@ -85,6 +170,8 @@ public abstract class FinalizationActivityBase extends Activity {
     @Override
     public final void onDestroy() {
         mFinalizationController.activityDestroyed(isFinishing());
+        unregisterUserUnlockedReceiver();
+        getApplicationContext().stopService(PROVISIONING_SERVICE_INTENT);
         super.onDestroy();
     }
 
