@@ -49,10 +49,10 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Unit tests for {@link DisclaimersParserImpl}.
+ * Unit tests for {@link DisclaimersParser}.
  */
 @SmallTest
-public class DisclaimersParserImplTest {
+public class DisclaimersParserTest {
     private static final String TEST_FILE_DIRNAME = "DisclaimersParserTest";
     private static final String TEST_PACKAGE = "com.android.managedprovisioning.tests";
     private static final long TEST_PROVISIONING_ID = 999L;
@@ -75,7 +75,7 @@ public class DisclaimersParserImplTest {
     @Mock
     Context mContext;
 
-    DisclaimerParser mDisclaimerParser;
+    DisclaimersParser mDisclaimersParser;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -103,7 +103,7 @@ public class DisclaimersParserImplTest {
         when(mContext.getFilesDir()).thenReturn(TEST_FILE_DIR);
         when(mContext.getContentResolver()).thenReturn(cr);
 
-        mDisclaimerParser = new DisclaimersParserImpl(mContext, TEST_PROVISIONING_ID);
+        mDisclaimersParser = new DisclaimersParser(mContext, TEST_PROVISIONING_ID);
     }
 
     @After
@@ -113,15 +113,15 @@ public class DisclaimersParserImplTest {
 
     @Test
     public void testEmpty() {
-        assertNull(mDisclaimerParser.parse(null));
-        assertNull(mDisclaimerParser.parse(new Bundle[0]));
+        assertNull(mDisclaimersParser.parse(null));
+        assertNull(mDisclaimersParser.parse(new Bundle[0]));
     }
 
     @Test
     public void testHeaderOnly() {
         Bundle bundle = new Bundle();
         bundle.putString(EXTRA_PROVISIONING_DISCLAIMER_HEADER, DISCLAIMER_HEADER_1);
-        assertNull(mDisclaimerParser.parse(new Bundle[] { bundle }));
+        assertNull(mDisclaimersParser.parse(new Bundle[] { bundle }));
     }
 
     @Test
@@ -130,7 +130,7 @@ public class DisclaimersParserImplTest {
         bundle.putString(EXTRA_PROVISIONING_DISCLAIMER_HEADER, DISCLAIMER_HEADER_1);
         bundle.putParcelable(EXTRA_PROVISIONING_DISCLAIMER_CONTENT, DISCLAIMER_URI_1);
 
-        DisclaimersParam disclaimers = mDisclaimerParser.parse(new Bundle[] { bundle });
+        DisclaimersParam disclaimers = mDisclaimersParser.parse(new Bundle[] { bundle });
 
         assertNotNull(disclaimers);
         assertEquals(disclaimers.mDisclaimers.length, 1);
@@ -152,7 +152,7 @@ public class DisclaimersParserImplTest {
         bundle3.putString(EXTRA_PROVISIONING_DISCLAIMER_HEADER, DISCLAIMER_HEADER_3);
         bundle3.putParcelable(EXTRA_PROVISIONING_DISCLAIMER_CONTENT, DISCLAIMER_URI_3);
 
-        DisclaimersParam disclaimers = mDisclaimerParser.parse(
+        DisclaimersParam disclaimers = mDisclaimersParser.parse(
                 new Bundle[] { bundle1, bundle2, bundle3 });
 
         // The order of disclaimers must follow the original orders
