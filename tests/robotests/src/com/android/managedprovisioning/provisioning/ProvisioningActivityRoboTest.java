@@ -19,6 +19,7 @@ package com.android.managedprovisioning.provisioning;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
 
+import static com.android.managedprovisioning.common.LogoUtils.saveOrganisationLogo;
 import static com.android.managedprovisioning.provisioning.AbstractProvisioningActivity.CANCEL_PROVISIONING_DIALOG_OK;
 import static com.android.managedprovisioning.provisioning.AbstractProvisioningActivity.ERROR_DIALOG_OK;
 import static com.android.managedprovisioning.provisioning.AbstractProvisioningActivity.ERROR_DIALOG_RESET;
@@ -420,6 +421,7 @@ public class ProvisioningActivityRoboTest {
         Bitmap bitmap = Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888);
         InputStream inputStream = bitmapToInputStream(bitmap);
         shadowOf(context.getContentResolver()).registerInputStream(logoUri, inputStream);
+        saveOrganisationLogo(context, logoUri);
     }
 
     private static InputStream bitmapToInputStream(Bitmap bitmap) {
