@@ -73,8 +73,10 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
                 ? R.layout.empty_loading_layout
                 : R.layout.provisioning_progress;
 
+        CustomizationParams customizationParams =
+                CustomizationParams.createInstance(getParams(), activity, getUtils());
         getInitializeLayoutParamsConsumer().initializeLayoutParams(
-                layoutResId, /* headerResId */ null);
+                layoutResId, /* headerResId */ null, customizationParams);
         activity.setTitle(titleResId);
 
         GlifLayout layout = activity.findViewById(R.id.setup_wizard_layout);

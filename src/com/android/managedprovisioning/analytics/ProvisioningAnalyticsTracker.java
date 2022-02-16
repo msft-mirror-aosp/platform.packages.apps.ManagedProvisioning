@@ -49,7 +49,6 @@ import android.content.Intent;
 import android.stats.devicepolicy.DevicePolicyEnums;
 
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
-import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.task.AbstractProvisioningTask;
 
@@ -101,6 +100,17 @@ public class ProvisioningAnalyticsTracker {
     public void logProvisioningStarted(Context context, ProvisioningParams params) {
         logDpcPackageInformation(context, params.inferDeviceAdminPackageName());
         logNetworkType(context);
+    }
+
+    /**
+     * Logs some metrics when the preprovisioning starts.
+     *
+     * @param context Context passed to MetricsLogger
+     * @param intent Intent that started provisioning
+     */
+    public void logPreProvisioningStarted(Context context, Intent intent) {
+        logProvisioningExtras(context, intent);
+        maybeLogEntryPoint(context, intent);
     }
 
     /**
@@ -338,7 +348,7 @@ public class ProvisioningAnalyticsTracker {
      * @param context Context passed to MetricsLogger
      * @param intent Intent that started provisioning
      */
-    public void logProvisioningExtras(Context context, Intent intent) {
+    private void logProvisioningExtras(Context context, Intent intent) {
         final List<String> provisioningExtras = AnalyticsUtils.getAllProvisioningExtras(intent);
         for (String extra : provisioningExtras) {
             mMetricsLoggerWrapper.logAction(context, PROVISIONING_EXTRA, extra);
@@ -355,7 +365,7 @@ public class ProvisioningAnalyticsTracker {
      * @param context Context passed to MetricsLogger
      * @param intent Intent that started provisioning
      */
-    public void logEntryPoint(Context context, Intent intent) {
+    private void maybeLogEntryPoint(Context context, Intent intent) {
         if (intent == null || intent.getAction() == null) {
             return;
         }
@@ -382,13 +392,7 @@ public class ProvisioningAnalyticsTracker {
         mMetricsWriter.write(DevicePolicyEventLogger
                 .createEvent(DevicePolicyEnums.PROVISIONING_ENTRY_POINT_TRUSTED_SOURCE)
                 .setInt(provisioningTrigger)
-                .setTimePeriod(AnalyticsUtils.getProvisioningTime(mSharedPreferences))
-                .setBoolean(isDuringSetupWizard(context)));
-    }
-
-    private boolean isDuringSetupWizard(Context context) {
-        SettingsFacade settingsFacade = new SettingsFacade();
-        return settingsFacade.isDuringSetupWizard(context);
+                .setTimePeriod(AnalyticsUtils.getProvisioningTime(mSharedPreferences)));
     }
 
     /**
