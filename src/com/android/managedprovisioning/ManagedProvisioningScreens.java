@@ -18,7 +18,6 @@ package com.android.managedprovisioning;
 
 public enum ManagedProvisioningScreens {
     PRE_PROVISIONING,
-    PRE_PROVISIONING_VIA_NFC,
     LANDING,
     PROVISIONING,
     ADMIN_INTEGRATED_PREPARE,
@@ -28,6 +27,5 @@ public enum ManagedProvisioningScreens {
     POST_ENCRYPT,
     FINALIZATION_INSIDE_SUW,
     TERMS,
-    FINANCED_DEVICE_LANDING,
-    RETRY_LAUNCH
+    FINANCED_DEVICE_LANDING
 }
