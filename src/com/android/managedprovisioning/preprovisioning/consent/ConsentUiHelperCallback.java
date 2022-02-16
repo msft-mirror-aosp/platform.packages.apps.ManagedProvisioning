@@ -31,5 +31,6 @@ public interface ConsentUiHelperCallback {
      */
     void onInitiateUi(
             int layoutResourceId,
-            @Nullable Integer headerResourceId);
+            @Nullable Integer headerResourceId,
+            CustomizationParams params);
 }

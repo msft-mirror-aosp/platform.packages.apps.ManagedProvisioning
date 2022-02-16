@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.managedprovisioning.provisioninglisteners;
+package com.android.managedprovisioning.manageduser;
 
 import static android.content.Intent.ACTION_USER_REMOVED;
 

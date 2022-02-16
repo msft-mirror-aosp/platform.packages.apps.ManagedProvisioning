@@ -23,10 +23,14 @@ import static com.android.internal.util.Preconditions.checkNotNull;
 
 import static java.util.Objects.requireNonNull;
 
+import android.Manifest.permission;
 import android.annotation.IntDef;
 import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.ViewGroup;
@@ -57,6 +61,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -252,13 +257,13 @@ public class ProvisioningActivity extends AbstractProvisioningActivity
     // Enforces DPCs to implement the POLICY_COMPLIANCE handler for NFC and financed device
     // provisioning, since we no longer set up the DPC on setup wizard's exit procedure.
     // No need to verify it for the other flows, as that was already done earlier.
-    // TODO(b/177849035): Remove financed device-specific logic
+    // TODO(b/177849035): Remove NFC and financed device-specific logic
     private boolean validatePolicyComplianceExists() {
-        if (!mUtils.isFinancedDeviceAction(mParams.provisioningAction)) {
+        if (!mParams.isNfc && !mUtils.isFinancedDeviceAction(mParams.provisioningAction)) {
             return true;
         }
-        return mPolicyComplianceUtils.isPolicyComplianceActivityResolvableForManagedUser(
-                this, mParams, mUtils);
+        return mPolicyComplianceUtils.isPolicyComplianceActivityResolvableForUser(
+                this, mParams, mUtils, UserHandle.SYSTEM);
     }
 
     protected final void updateProvisioningFinalizedScreen() {
@@ -278,6 +283,7 @@ public class ProvisioningActivity extends AbstractProvisioningActivity
         final Intent intent = new Intent(this,
                 getActivityForScreen(ManagedProvisioningScreens.RESET_AND_RETURN_DEVICE));
         WizardManagerHelper.copyWizardManagerExtras(getIntent(), intent);
+        intent.putExtra(ProvisioningParams.EXTRA_PROVISIONING_PARAMS, mParams);
         getTransitionHelper().startActivityWithTransition(this, intent);
     }
 
@@ -287,6 +293,7 @@ public class ProvisioningActivity extends AbstractProvisioningActivity
         } else {
             setResult(Activity.RESULT_OK);
         }
+        maybeLaunchNfcUserSetupCompleteIntent();
         getTransitionHelper().finishActivity(this);
     }
 
@@ -307,6 +314,45 @@ public class ProvisioningActivity extends AbstractProvisioningActivity
         }
     }
 
+    private void maybeLaunchNfcUserSetupCompleteIntent() {
+        if (mParams != null && mParams.isNfc) {
+            // Start SetupWizard to complete the intent.
+            final Intent intent = new Intent(DevicePolicyManager.ACTION_STATE_USER_SETUP_COMPLETE)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            final PackageManager pm = getPackageManager();
+            List<ResolveInfo> ris = pm.queryIntentActivities(intent, 0);
+
+            // Look for the first legitimate component protected by the permission
+            ComponentName targetComponent = null;
+            for (ResolveInfo ri : ris) {
+                if (ri.activityInfo == null) {
+                    continue;
+                }
+                if (!permission.BIND_DEVICE_ADMIN.equals(ri.activityInfo.permission)) {
+                    ProvisionLogger.loge("Component " + ri.activityInfo.getComponentName()
+                            + " is not protected by " + permission.BIND_DEVICE_ADMIN);
+                } else if (pm.checkPermission(permission.DISPATCH_PROVISIONING_MESSAGE,
+                        ri.activityInfo.packageName) != PackageManager.PERMISSION_GRANTED) {
+                    ProvisionLogger.loge("Package " + ri.activityInfo.packageName
+                            + " does not have " + permission.DISPATCH_PROVISIONING_MESSAGE);
+                } else {
+                    targetComponent = ri.activityInfo.getComponentName();
+                    break;
+                }
+            }
+
+            if (targetComponent == null) {
+                ProvisionLogger.logw("No activity accepts intent ACTION_STATE_USER_SETUP_COMPLETE");
+                return;
+            }
+
+            intent.setComponent(targetComponent);
+            getTransitionHelper().startActivityWithTransition(this, intent);
+            ProvisionLogger.logi("Launched ACTION_STATE_USER_SETUP_COMPLETE with component "
+                    + targetComponent);
+        }
+    }
+
     @Override
     protected int getMetricsCategory() {
         return PROVISIONING_PROVISIONING_ACTIVITY_TIME_MS;
@@ -314,8 +360,8 @@ public class ProvisioningActivity extends AbstractProvisioningActivity
 
     @Override
     protected void decideCancelProvisioningDialog() {
-        // TODO(b/213306538): Improve behaviour when cancelling BYOD mid-provisioning
-        if (!mParams.isOrganizationOwnedProvisioning) {
+        if ((mState == STATE_PROVISIONING_COMPLETED || mState == STATE_PROVISIONING_FINALIZED)
+                && !mParams.isOrganizationOwnedProvisioning) {
             return;
         }
 
