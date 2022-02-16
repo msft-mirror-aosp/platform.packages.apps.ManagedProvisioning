@@ -169,18 +169,12 @@ public abstract class AbstractProvisioningController implements AbstractProvisio
 
     @Override
     // Note that this callback might come on the main thread
-    public synchronized void onError(AbstractProvisioningTask task, int errorCode,
-            String errorMessage) {
+    public synchronized void onError(AbstractProvisioningTask task, int errorCode) {
         mStatus = STATUS_ERROR;
         cleanup(STATUS_ERROR);
         mProvisioningAnalyticsTracker.logProvisioningError(mContext, task, errorCode);
-        if (errorMessage == null) {
-            mCallback.error(getErrorTitle(), getErrorMsgId(task, errorCode),
-                    getRequireFactoryReset(task, errorCode));
-        } else {
-            mCallback.error(
-                    getErrorTitle(), errorMessage, getRequireFactoryReset(task, errorCode));
-        }
+        mCallback.error(getErrorTitle(), getErrorMsgId(task, errorCode),
+                getRequireFactoryReset(task, errorCode));
     }
 
     private void cleanup(final int newStatus) {

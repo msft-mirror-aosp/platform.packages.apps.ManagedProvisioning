@@ -20,8 +20,6 @@ import static android.stats.devicepolicy.DevicePolicyEnums.PROVISIONING_PREPARE_
 import static com.android.internal.util.Preconditions.checkNotNull;
 import static com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker.CANCELLED_DURING_PROVISIONING_PREPARE;
 
-import static java.util.Objects.requireNonNull;
-
 import android.content.Context;
 import android.os.UserHandle;
 
@@ -33,10 +31,7 @@ import com.android.managedprovisioning.analytics.TimeLogger;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.SettingsFacade;
-import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.ProvisioningParams;
-
-import java.util.Objects;
 
 /**
  * Singleton instance that provides communications between the ongoing admin integrated flow
@@ -52,8 +47,6 @@ class AdminIntegratedFlowPrepareManager implements ProvisioningControllerCallbac
     private final ProvisioningManagerHelper mHelper;
     private final ProvisioningAnalyticsTracker mProvisioningAnalyticsTracker;
     private final TimeLogger mTimeLogger;
-    private final Utils mUtils;
-    private final SettingsFacade mSettingsFacade;
 
     @GuardedBy("this")
     private AbstractProvisioningController mController;
@@ -72,9 +65,7 @@ class AdminIntegratedFlowPrepareManager implements ProvisioningControllerCallbac
                 new ProvisioningAnalyticsTracker(
                         MetricsWriterFactory.getMetricsWriter(context, new SettingsFacade()),
                         new ManagedProvisioningSharedPreferences(context)),
-                new TimeLogger(context, PROVISIONING_PREPARE_TOTAL_TIME_MS),
-                new Utils(),
-                new SettingsFacade());
+                new TimeLogger(context, PROVISIONING_PREPARE_TOTAL_TIME_MS));
     }
 
     @VisibleForTesting
@@ -82,15 +73,11 @@ class AdminIntegratedFlowPrepareManager implements ProvisioningControllerCallbac
             Context context,
             ProvisioningManagerHelper helper,
             ProvisioningAnalyticsTracker analyticsTracker,
-            TimeLogger timeLogger,
-            Utils utils,
-            SettingsFacade settingsFacade) {
-        mContext = requireNonNull(context);
-        mHelper = requireNonNull(helper);
-        mProvisioningAnalyticsTracker = requireNonNull(analyticsTracker);
-        mTimeLogger = requireNonNull(timeLogger);
-        mUtils = requireNonNull(utils);
-        mSettingsFacade = requireNonNull(settingsFacade);
+            TimeLogger timeLogger) {
+        mContext = checkNotNull(context);
+        mHelper = checkNotNull(helper);
+        mProvisioningAnalyticsTracker = checkNotNull(analyticsTracker);
+        mTimeLogger = checkNotNull(timeLogger);
     }
 
     @Override
@@ -155,19 +142,12 @@ class AdminIntegratedFlowPrepareManager implements ProvisioningControllerCallbac
         mHelper.error(titleId, messageId, factoryResetRequired);
     }
 
-    @Override
-    public void error(int titleId, String message, boolean factoryResetRequired) {
-        mHelper.error(titleId, message, factoryResetRequired);
-    }
-
     private AbstractProvisioningController getController(ProvisioningParams params) {
         return AdminIntegratedFlowPrepareController.createInstance(
                 mContext,
                 params,
                 UserHandle.myUserId(),
-                this,
-                mUtils,
-                mSettingsFacade);
+                this);
     }
 
     private void clearControllerLocked() {
