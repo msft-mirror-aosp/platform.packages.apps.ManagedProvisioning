@@ -162,7 +162,7 @@ public class DeleteNonRequiredAppsTaskTest {
         verify(mLogic).maybeTakeSystemAppsSnapshot(TEST_USER_ID);
 
         // THEN error should be returned
-        verify(mCallback).onError(mTask, 0, /* errorMessage= */ null);
+        verify(mCallback).onError(mTask, 0);
         verifyNoMoreInteractions(mCallback);
     }
 
