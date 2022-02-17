@@ -16,10 +16,13 @@
 
 package com.android.managedprovisioning.preprovisioning;
 
+import static android.app.admin.DevicePolicyManager.RESULT_UPDATE_DEVICE_MANAGEMENT_ROLE_HOLDER_RECOVERABLE_ERROR;
+import static android.app.admin.DevicePolicyManager.RESULT_UPDATE_ROLE_HOLDER;
 import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
-import static android.nfc.NfcAdapter.ACTION_NDEF_DISCOVERED;
 
+import static com.android.managedprovisioning.ManagedProvisioningScreens.RETRY_LAUNCH;
+import static com.android.managedprovisioning.common.RetryLaunchActivity.EXTRA_INTENT_TO_LAUNCH;
 import static com.android.managedprovisioning.model.ProvisioningParams.FLOW_TYPE_LEGACY;
 import static com.android.managedprovisioning.preprovisioning.PreProvisioningViewModel.STATE_PREPROVISIONING_INITIALIZING;
 import static com.android.managedprovisioning.preprovisioning.PreProvisioningViewModel.STATE_SHOWING_USER_CONSENT;
@@ -27,12 +30,15 @@ import static com.android.managedprovisioning.provisioning.Constants.PROVISIONIN
 
 import static com.google.android.setupcompat.util.WizardManagerHelper.EXTRA_IS_SETUP_FLOW;
 
+import static java.util.Objects.requireNonNull;
+
 import android.app.Activity;
 import android.app.BackgroundServiceStartNotAllowedException;
 import android.app.DialogFragment;
-import android.content.ComponentName;
+import android.app.admin.DevicePolicyManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.provider.Settings;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -41,16 +47,21 @@ import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 
+import com.android.managedprovisioning.ManagedProvisioningBaseApplication;
 import com.android.managedprovisioning.ManagedProvisioningScreens;
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.AccessibilityContextMenuMaker;
+import com.android.managedprovisioning.common.DefaultFeatureFlagChecker;
+import com.android.managedprovisioning.common.DefaultPackageInstallChecker;
+import com.android.managedprovisioning.common.DeviceManagementRoleHolderUpdaterHelper;
 import com.android.managedprovisioning.common.GetProvisioningModeUtils;
-import com.android.managedprovisioning.common.Globals;
-import com.android.managedprovisioning.common.LogoUtils;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.ProvisionLogger;
+import com.android.managedprovisioning.common.RetryLaunchActivity;
+import com.android.managedprovisioning.common.RoleHolderProvider;
+import com.android.managedprovisioning.common.RoleHolderUpdaterProvider;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.SetupGlifLayoutActivity;
 import com.android.managedprovisioning.common.SimpleDialog;
@@ -62,7 +73,6 @@ import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.preprovisioning.PreProvisioningActivityController.UiParams;
 import com.android.managedprovisioning.provisioning.AdminIntegratedFlowPrepareActivity;
 import com.android.managedprovisioning.provisioning.ProvisioningActivity;
-import com.android.managedprovisioning.provisioning.ProvisioningService;
 
 import com.google.android.setupcompat.util.WizardManagerHelper;
 
@@ -78,6 +88,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     private static final int GET_PROVISIONING_MODE_REQUEST_CODE = 6;
     private static final int FINANCED_DEVICE_PREPARE_REQUEST_CODE = 7;
     private static final int ADMIN_INTEGRATED_FLOW_PREPARE_REQUEST_CODE = 8;
+    private static final int START_DEVICE_MANAGEMENT_ROLE_HOLDER_UPDATER_REQUEST_CODE = 9;
+    private static final int START_DEVICE_MANAGEMENT_ROLE_HOLDER_PROVISIONING_REQUEST_CODE = 10;
 
     // Note: must match the constant defined in HomeSettings
     private static final String EXTRA_SUPPORT_MANAGED_PROFILES = "support_managed_profiles";
@@ -93,6 +105,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     private final AccessibilityContextMenuMaker mContextMenuMaker;
     private PreProvisioningActivityBridge mBridge;
     private boolean mShouldForwardTransition;
+    private final RoleHolderUpdaterProvider mRoleHolderUpdaterProvider;
+    private final RoleHolderProvider mRoleHolderProvider;
 
     private static final String ERROR_DIALOG_RESET = "ErrorDialogReset";
 
@@ -104,29 +118,33 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                 new SettingsFacade(),
                 new ThemeHelper(
                     new DefaultNightModeChecker(),
-                    new DefaultSetupWizardBridge()));
+                    new DefaultSetupWizardBridge()),
+                RoleHolderProvider.DEFAULT,
+                RoleHolderUpdaterProvider.DEFAULT);
     }
 
     @VisibleForTesting
     public PreProvisioningActivity(
             ControllerProvider controllerProvider,
             AccessibilityContextMenuMaker contextMenuMaker, Utils utils,
-            SettingsFacade settingsFacade, ThemeHelper themeHelper) {
+            SettingsFacade settingsFacade, ThemeHelper themeHelper,
+            RoleHolderProvider roleHolderProvider,
+            RoleHolderUpdaterProvider roleHolderUpdaterProvider) {
         super(utils, settingsFacade, themeHelper);
-        mControllerProvider = controllerProvider;
+        mControllerProvider = requireNonNull(controllerProvider);
         mContextMenuMaker =
                 contextMenuMaker != null ? contextMenuMaker : new AccessibilityContextMenuMaker(
                         this);
+        mRoleHolderUpdaterProvider = requireNonNull(roleHolderUpdaterProvider);
+        mRoleHolderProvider = requireNonNull(roleHolderProvider);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO(b/192074477): Remove deferred setup-specific logic after the managed account flow
         //  starts ManagedProvisioning with the isSetupFlow extra
-        // TODO(b/178822333): Remove NFC-specific logic after adding support for the
-        //  admin-integrated flow
         // This temporary fix only works when called before super.onCreate
-        if (mSettingsFacade.isDeferredSetup(getApplicationContext()) || isNfcSetup()) {
+        if (mSettingsFacade.isDeferredSetup(getApplicationContext())) {
             getIntent().putExtra(EXTRA_IS_SETUP_FLOW, true);
         }
 
@@ -145,10 +163,6 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
         } catch (BackgroundServiceStartNotAllowedException e) {
             ProvisionLogger.loge(e);
         }
-    }
-
-    private boolean isNfcSetup() {
-        return ACTION_NDEF_DISCOVERED.equals(getIntent().getAction());
     }
 
     @Override
@@ -199,7 +213,6 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     @Override
     public void finish() {
         // The user has backed out of provisioning, so we perform the necessary clean up steps.
-        LogoUtils.cleanUp(this);
         ProvisioningParams params = mController.getParams();
         if (params != null) {
             params.cleanUp();
@@ -240,12 +253,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
             case ORGANIZATION_OWNED_LANDING_PAGE_REQUEST_CODE:
             case ADMIN_INTEGRATED_FLOW_PREPARE_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
-                    // TODO(b/177849035): Remove NFC-specific logic
-                    if (mController.getParams().isNfc) {
-                        mController.startNfcFlow();
-                    } else {
-                        handleAdminIntegratedFlowPreparerResult();
-                    }
+                    handleAdminIntegratedFlowPreparerResult();
                 } else {
                     ProvisionLogger.loge(
                             "Provisioning was aborted in the preparation stage, "
@@ -297,6 +305,39 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
             case FINANCED_DEVICE_PREPARE_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
                     startFinancedDeviceFlow();
+                } else {
+                    setResult(resultCode);
+                    getTransitionHelper().finishActivity(this);
+                }
+                break;
+            case START_DEVICE_MANAGEMENT_ROLE_HOLDER_UPDATER_REQUEST_CODE:
+                if (resultCode == RESULT_UPDATE_DEVICE_MANAGEMENT_ROLE_HOLDER_RECOVERABLE_ERROR
+                        && mController.canRetryRoleHolderUpdate()) {
+                    mController.startRoleHolderUpdaterWithLastState();
+                    mController.incrementRoleHolderUpdateRetryCount();
+                } else if (resultCode == RESULT_OK
+                        || mController.getParams().allowOffline) {
+                    mController.startAppropriateProvisioning(getIntent());
+                } else {
+                    ProvisionLogger.loge("Update failed and offline provisioning is not allowed.");
+                    if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
+                        showFactoryResetDialog(R.string.cant_set_up_device,
+                                R.string.contact_your_admin_for_help);
+                    } else {
+                        showErrorAndClose(
+                                R.string.cant_set_up_device,
+                                R.string.contact_your_admin_for_help,
+                                "Failed to provision personally-owned device.");
+                    }
+                }
+                break;
+            case START_DEVICE_MANAGEMENT_ROLE_HOLDER_PROVISIONING_REQUEST_CODE:
+                ProvisionLogger.logw("Role holder returned result code " + resultCode);
+                if (resultCode == RESULT_UPDATE_ROLE_HOLDER) {
+                    PersistableBundle roleHolderState =
+                            data.getParcelableExtra(DevicePolicyManager.EXTRA_ROLE_HOLDER_STATE);
+                    mController.resetRoleHolderUpdateRetryCount();
+                    mController.startRoleHolderUpdater(roleHolderState);
                 } else {
                     setResult(resultCode);
                     getTransitionHelper().finishActivity(this);
@@ -427,6 +468,44 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                     this, intent, ADMIN_INTEGRATED_FLOW_PREPARE_REQUEST_CODE);
         } else {
             handleAdminIntegratedFlowPreparerResult();
+        }
+    }
+
+    @Override
+    public void startRoleHolderUpdater() {
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                new DeviceManagementRoleHolderUpdaterHelper(
+                        mRoleHolderUpdaterProvider.getPackageName(this),
+                        RoleHolderProvider.DEFAULT.getPackageName(this),
+                        new DefaultPackageInstallChecker(mUtils),
+                        new DefaultFeatureFlagChecker(getContentResolver()));
+        Intent intent = new Intent(this, getActivityForScreen(RETRY_LAUNCH));
+        intent.putExtra(
+                EXTRA_INTENT_TO_LAUNCH,
+                roleHolderUpdaterHelper.createRoleHolderUpdaterIntent(getIntent()));
+        getTransitionHelper().startActivityForResultWithTransition(
+                 this,
+                intent,
+                 START_DEVICE_MANAGEMENT_ROLE_HOLDER_UPDATER_REQUEST_CODE);
+    }
+
+    @Override
+    public void startRoleHolderProvisioning(Intent intent) {
+        Intent retryLaunchIntent = new Intent(this, getActivityForScreen(RETRY_LAUNCH));
+        retryLaunchIntent.putExtra(RetryLaunchActivity.EXTRA_INTENT_TO_LAUNCH, intent);
+        getTransitionHelper().startActivityForResultWithTransition(
+                /* activity= */ this,
+                retryLaunchIntent,
+                START_DEVICE_MANAGEMENT_ROLE_HOLDER_PROVISIONING_REQUEST_CODE);
+    }
+
+    @Override
+    public void onParamsValidated(ProvisioningParams params) {
+        if (params.keepScreenOn) {
+            ManagedProvisioningBaseApplication application =
+                    (ManagedProvisioningBaseApplication) getApplication();
+            application.markKeepScreenOn();
+            application.maybeKeepScreenOn(this);
         }
     }
 
