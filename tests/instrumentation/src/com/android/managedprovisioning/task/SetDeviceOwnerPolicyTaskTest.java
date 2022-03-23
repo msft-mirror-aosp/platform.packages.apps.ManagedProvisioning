@@ -151,7 +151,7 @@ public class SetDeviceOwnerPolicyTaskTest extends AndroidTestCase {
         mTask.run(TEST_USER_ID);
 
         // THEN an error should be returned
-        verify(mCallback).onError(mTask, 0, /* errorMessage= */ null);
+        verify(mCallback).onError(mTask, 0);
         verifyNoMoreInteractions(mCallback);
     }
 
@@ -197,7 +197,7 @@ public class SetDeviceOwnerPolicyTaskTest extends AndroidTestCase {
         mTask.run(TEST_USER_ID);
 
         // THEN an error should be returned
-        verify(mCallback).onError(mTask, 0, /* errorMessage= */ null);
+        verify(mCallback).onError(mTask, 0);
         verifyNoMoreInteractions(mCallback);
     }
 
@@ -214,7 +214,7 @@ public class SetDeviceOwnerPolicyTaskTest extends AndroidTestCase {
         mTask.run(TEST_USER_ID);
 
         // THEN an error should be returned
-        verify(mCallback).onError(mTask, 0, /* errorMessage= */ null);
+        verify(mCallback).onError(mTask, 0);
         verifyNoMoreInteractions(mCallback);
     }
 
