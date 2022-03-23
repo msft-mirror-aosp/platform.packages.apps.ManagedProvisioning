@@ -41,6 +41,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
+import android.content.pm.UserInfo;
 import android.content.res.TypedArray;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
@@ -357,15 +358,15 @@ public class Utils {
      */
     // TODO: Add unit tests
     public UserHandle getManagedProfile(Context context) {
-        DevicePolicyManager devicePolicyManager =
-                context.getSystemService(DevicePolicyManager.class);
-        int currentUserId = UserHandle.myUserId();
-        List<UserHandle> managedProfiles =
-                devicePolicyManager.getPolicyManagedProfiles(UserHandle.of(currentUserId));
-        if (managedProfiles.isEmpty()) {
-            return null;
+        UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+        int currentUserId = userManager.getUserHandle();
+        List<UserInfo> userProfiles = userManager.getProfiles(currentUserId);
+        for (UserInfo profile : userProfiles) {
+            if (profile.isManagedProfile()) {
+                return new UserHandle(profile.id);
+            }
         }
-        return managedProfiles.get(0);
+        return null;
     }
 
     /**
@@ -434,6 +435,10 @@ public class Utils {
      * </ul>
      */
     public boolean checkAdminIntegratedFlowPreconditions(ProvisioningParams params) {
+        if (params.isNfc) {
+            ProvisionLogger.logi("NFC provisioning");
+            return false;
+        }
         if (isFinancedDeviceAction(params.provisioningAction)) {
             ProvisionLogger.logi("Financed device provisioning");
             return false;

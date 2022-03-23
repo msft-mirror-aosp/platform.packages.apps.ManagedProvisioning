@@ -25,6 +25,9 @@ import com.android.managedprovisioning.common.Utils;
  * Captures parameters related to brand customization (e.g. tint color).
  */
 public class CustomizationParams {
+    /** Color used in everywhere else */
+    public final int logoColor;
+
     /** Support url of the organization where the device is being provisioned. */
     public final @Nullable String supportUrl;
 
@@ -35,17 +38,20 @@ public class CustomizationParams {
      */
     public static CustomizationParams createInstance(
             ProvisioningParams params, Context context, Utils utils) {
-        return createInstance(params.supportUrl, context);
+        return createInstance(params.supportUrl, context, utils);
     }
 
     private static CustomizationParams createInstance(
             @Nullable String supportUrl,
-            Context context) {
+            Context context,
+            Utils utils) {
+        int logoColor = utils.getAccentColor(context);
         supportUrl = URLUtil.isNetworkUrl(supportUrl) ? supportUrl : null;
-        return new CustomizationParams(supportUrl);
+        return new CustomizationParams(logoColor, supportUrl);
     }
 
-    private CustomizationParams(String supportUrl) {
+    private CustomizationParams(int logoColor, String supportUrl) {
+        this.logoColor = logoColor;
         this.supportUrl = supportUrl;
     }
 }
