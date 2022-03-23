@@ -49,7 +49,6 @@ import android.content.Intent;
 import android.stats.devicepolicy.DevicePolicyEnums;
 
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
-import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.task.AbstractProvisioningTask;
 
@@ -101,6 +100,17 @@ public class ProvisioningAnalyticsTracker {
     public void logProvisioningStarted(Context context, ProvisioningParams params) {
         logDpcPackageInformation(context, params.inferDeviceAdminPackageName());
         logNetworkType(context);
+    }
+
+    /**
+     * Logs some metrics when the preprovisioning starts.
+     *
+     * @param context Context passed to MetricsLogger
+     * @param intent Intent that started provisioning
+     */
+    public void logPreProvisioningStarted(Context context, Intent intent) {
+        logProvisioningExtras(context, intent);
+        maybeLogEntryPoint(context, intent);
     }
 
     /**
@@ -338,7 +348,7 @@ public class ProvisioningAnalyticsTracker {
      * @param context Context passed to MetricsLogger
      * @param intent Intent that started provisioning
      */
-    public void logProvisioningExtras(Context context, Intent intent) {
+    private void logProvisioningExtras(Context context, Intent intent) {
         final List<String> provisioningExtras = AnalyticsUtils.getAllProvisioningExtras(intent);
         for (String extra : provisioningExtras) {
             mMetricsLoggerWrapper.logAction(context, PROVISIONING_EXTRA, extra);
@@ -351,12 +361,11 @@ public class ProvisioningAnalyticsTracker {
 
     /**
      * Logs some entry points to provisioning.
-     *  @param context Context passed to MetricsLogger
+     *
+     * @param context Context passed to MetricsLogger
      * @param intent Intent that started provisioning
-     * @param settingsFacade
      */
-    public void logEntryPoint(Context context, Intent intent,
-            SettingsFacade settingsFacade) {
+    private void maybeLogEntryPoint(Context context, Intent intent) {
         if (intent == null || intent.getAction() == null) {
             return;
         }
@@ -368,13 +377,12 @@ public class ProvisioningAnalyticsTracker {
                         .setTimePeriod(AnalyticsUtils.getProvisioningTime(mSharedPreferences)));
                 break;
             case ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE:
-                logProvisionedFromTrustedSource(context, intent, settingsFacade);
+                logProvisionedFromTrustedSource(context, intent);
                 break;
         }
     }
 
-    private void logProvisionedFromTrustedSource(Context context, Intent intent,
-            SettingsFacade settingsFacade) {
+    private void logProvisionedFromTrustedSource(Context context, Intent intent) {
         mMetricsLoggerWrapper.logAction(context, PROVISIONING_ENTRY_POINT_TRUSTED_SOURCE);
         final int provisioningTrigger = intent.getIntExtra(EXTRA_PROVISIONING_TRIGGER,
                 PROVISIONING_TRIGGER_UNSPECIFIED);
@@ -384,8 +392,7 @@ public class ProvisioningAnalyticsTracker {
         mMetricsWriter.write(DevicePolicyEventLogger
                 .createEvent(DevicePolicyEnums.PROVISIONING_ENTRY_POINT_TRUSTED_SOURCE)
                 .setInt(provisioningTrigger)
-                .setTimePeriod(AnalyticsUtils.getProvisioningTime(mSharedPreferences))
-                .setBoolean(settingsFacade.isDuringSetupWizard(context)));
+                .setTimePeriod(AnalyticsUtils.getProvisioningTime(mSharedPreferences)));
     }
 
     /**

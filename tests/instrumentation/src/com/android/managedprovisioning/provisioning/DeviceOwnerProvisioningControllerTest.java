@@ -23,9 +23,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 
 import android.content.ComponentName;
-import android.content.Context;
 
-import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import com.android.managedprovisioning.R;
@@ -62,16 +60,9 @@ public class DeviceOwnerProvisioningControllerTest extends ProvisioningControlle
             .setLocation(TEST_DOWNLOAD_LOCATION)
             .setSignatureChecksum(TEST_PACKAGE_CHECKSUM)
             .build();
-    private static final String TEST_ERROR_MESSAGE = "test error message";
-    private static final Context mContext = InstrumentationRegistry.getTargetContext();
 
     @Mock
     private ProvisioningControllerCallback mCallback;
-
-    private static final AbstractProvisioningTask TASK =
-            new AddWifiNetworkTask(mContext,
-                    createProvisioningParamsBuilder().build(),
-                    createTaskCallback());
 
     @Mock
     private Utils mUtils;
@@ -158,7 +149,7 @@ public class DeviceOwnerProvisioningControllerTest extends ProvisioningControlle
         AbstractProvisioningTask task = verifyTaskRun(AddWifiNetworkTask.class);
 
         // WHEN the task causes an error
-        mController.onError(task, 0, /* errorMessage= */ null);
+        mController.onError(task, 0);
 
         // THEN the onError callback should have been called without factory reset being required
         verify(mCallback).error(eq(R.string.cant_set_up_device), anyInt(), eq(false));
@@ -179,20 +170,10 @@ public class DeviceOwnerProvisioningControllerTest extends ProvisioningControlle
         AbstractProvisioningTask task = verifyTaskRun(DownloadPackageTask.class);
 
         // WHEN the task causes an error
-        mController.onError(task, 0, /* errorMessage= */ null);
+        mController.onError(task, 0);
 
         // THEN the onError callback should have been called with factory reset being required
         verify(mCallback).error(anyInt(), anyInt(), eq(true));
-    }
-
-    @SmallTest
-    public void testErrorWithStringMessage() {
-        createController(createProvisioningParamsBuilder().build());
-        mController.start(mHandler);
-
-        mController.onError(TASK, /* errorCode= */ 0, TEST_ERROR_MESSAGE);
-
-        verify(mCallback).error(anyInt(), eq(TEST_ERROR_MESSAGE), eq(false));
     }
 
     @SmallTest
@@ -225,26 +206,11 @@ public class DeviceOwnerProvisioningControllerTest extends ProvisioningControlle
                 mUtils);
     }
 
-    private static ProvisioningParams.Builder createProvisioningParamsBuilder() {
+    private ProvisioningParams.Builder createProvisioningParamsBuilder() {
         return new ProvisioningParams.Builder()
                 .setDeviceAdminComponentName(TEST_ADMIN)
                 .setProvisioningAction(ACTION_PROVISION_MANAGED_DEVICE)
                 .setWifiInfo(TEST_WIFI_INFO)
                 .setDeviceAdminDownloadInfo(TEST_DOWNLOAD_INFO);
-    }
-
-    private static AbstractProvisioningTask.Callback createTaskCallback() {
-        return new AbstractProvisioningTask.Callback() {
-            @Override
-            public void onSuccess(AbstractProvisioningTask task) {
-
-            }
-
-            @Override
-            public void onError(AbstractProvisioningTask task, int errorCode,
-                    String errorMessage) {
-
-            }
-        };
     }
 }
