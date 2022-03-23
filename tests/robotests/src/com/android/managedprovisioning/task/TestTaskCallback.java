@@ -24,7 +24,7 @@ public class TestTaskCallback implements AbstractProvisioningTask.Callback {
     }
 
     @Override
-    public void onError(AbstractProvisioningTask task, int errorCode, String errorMessage) {
+    public void onError(AbstractProvisioningTask task, int errorCode) {
 
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.managedprovisioning.provisioninglisteners;
+package com.android.managedprovisioning.manageduser;
 
 import static android.app.admin.DevicePolicyManager.STATE_USER_PROFILE_FINALIZED;
 
