@@ -70,9 +70,8 @@ public class DownloadPackageTask extends AbstractProvisioningTask
     public DownloadPackageTask(
             Context context,
             ProvisioningParams provisioningParams,
-            PackageDownloadInfo packageDownloadInfo,
             Callback callback) {
-        this(new Utils(), context, provisioningParams, packageDownloadInfo, callback,
+        this(new Utils(), context, provisioningParams, callback,
                 new ProvisioningAnalyticsTracker(
                         MetricsWriterFactory.getMetricsWriter(context, new SettingsFacade()),
                         new ManagedProvisioningSharedPreferences(context)));
@@ -83,7 +82,6 @@ public class DownloadPackageTask extends AbstractProvisioningTask
             Utils utils,
             Context context,
             ProvisioningParams provisioningParams,
-            PackageDownloadInfo packageDownloadInfo,
             Callback callback,
             ProvisioningAnalyticsTracker provisioningAnalyticsTracker) {
         super(context, provisioningParams, callback, provisioningAnalyticsTracker);
@@ -92,7 +90,7 @@ public class DownloadPackageTask extends AbstractProvisioningTask
         mDownloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         mDownloadManager.setAccessFilename(true);
         mPackageName = provisioningParams.inferDeviceAdminPackageName();
-        mPackageDownloadInfo = checkNotNull(packageDownloadInfo);
+        mPackageDownloadInfo = checkNotNull(provisioningParams.deviceAdminDownloadInfo);
     }
 
     @Override
@@ -120,8 +118,7 @@ public class DownloadPackageTask extends AbstractProvisioningTask
         mContext.registerReceiver(mReceiver,
                 new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
                 null,
-                new Handler(Looper.myLooper()),
-                Context.RECEIVER_EXPORTED);
+                new Handler(Looper.myLooper()));
 
         if (Globals.DEBUG) {
             ProvisionLogger.logd("Starting download from " + mPackageDownloadInfo.location);

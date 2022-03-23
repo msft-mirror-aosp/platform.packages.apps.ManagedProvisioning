@@ -31,13 +31,17 @@ import com.google.auto.value.AutoValue;
 abstract class ResetAndReturnDeviceActivityBridgeImpl
         implements ResetAndReturnDeviceActivityBridge {
 
+    abstract Utils getUtils();
+    abstract ProvisioningParams getParams();
     abstract ResetAndReturnDeviceActivityBridgeCallback getBridgeCallback();
     abstract InitializeLayoutConsumerHandler getInitializeLayoutParamsConsumer();
 
     @Override
     public void initiateUi(Activity activity) {
+        CustomizationParams customizationParams =
+                CustomizationParams.createInstance(getParams(), activity, getUtils());
         getInitializeLayoutParamsConsumer()
-                .initializeLayoutParams(R.layout.return_device_screen, null);
+                .initializeLayoutParams(R.layout.return_device_screen, null, customizationParams);
 
         GlifLayout layout = activity.findViewById(R.id.setup_wizard_layout);
         layout.setIcon(activity.getDrawable(R.drawable.ic_error_outline));
@@ -50,6 +54,8 @@ abstract class ResetAndReturnDeviceActivityBridgeImpl
 
     @AutoValue.Builder
     abstract static class Builder {
+        abstract Builder setUtils(Utils utils);
+        abstract Builder setParams(ProvisioningParams params);
         abstract Builder setBridgeCallback(ResetAndReturnDeviceActivityBridgeCallback callback);
         abstract Builder setInitializeLayoutParamsConsumer(
                 InitializeLayoutConsumerHandler initializeLayoutParamsConsumer);

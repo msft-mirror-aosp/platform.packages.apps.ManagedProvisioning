@@ -21,7 +21,6 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.UserIdInt;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.FullyManagedDeviceProvisioningParams;
-import android.app.admin.ProvisioningException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.stats.devicepolicy.DevicePolicyEnums;
@@ -36,6 +35,7 @@ import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.ProvisioningParams;
+import com.android.managedprovisioning.task.nonrequiredapps.SystemAppsSnapshot;
 
 /**
  * Task to provision a fully managed device.
@@ -43,6 +43,7 @@ import com.android.managedprovisioning.model.ProvisioningParams;
 public class ProvisionFullyManagedDeviceTask extends AbstractProvisioningTask {
     private final DevicePolicyManager mDpm;
     private final Utils mUtils;
+    private final SystemAppsSnapshot mSystemAppsSnapshot;
 
     public ProvisionFullyManagedDeviceTask(
             Context context,
@@ -51,6 +52,7 @@ public class ProvisionFullyManagedDeviceTask extends AbstractProvisioningTask {
         this(
                 new Utils(),
                 context,
+                new SystemAppsSnapshot(context),
                 params,
                 callback,
                 new ProvisioningAnalyticsTracker(
@@ -62,6 +64,7 @@ public class ProvisionFullyManagedDeviceTask extends AbstractProvisioningTask {
     ProvisionFullyManagedDeviceTask(
             Utils utils,
             Context context,
+            SystemAppsSnapshot systemAppsSnapshot,
             ProvisioningParams params,
             Callback callback,
             ProvisioningAnalyticsTracker provisioningAnalyticsTracker) {
@@ -69,6 +72,7 @@ public class ProvisionFullyManagedDeviceTask extends AbstractProvisioningTask {
 
         mDpm = requireNonNull(context.getSystemService(DevicePolicyManager.class));
         mUtils = requireNonNull(utils);
+        mSystemAppsSnapshot = requireNonNull(systemAppsSnapshot);
     }
 
     @Override
@@ -87,10 +91,6 @@ public class ProvisionFullyManagedDeviceTask extends AbstractProvisioningTask {
 
         try {
             mDpm.provisionFullyManagedDevice(params);
-        } catch (ProvisioningException provisioningException) {
-            ProvisionLogger.loge("Failure provisioning device owner", provisioningException);
-            error(/* resultCode= */ 0, provisioningException.getMessage());
-            return;
         } catch (Exception e) {
             // Catching all Exceptions to allow Managed Provisioning to handle any failure
             // during provisioning properly and perform any necessary cleanup.
@@ -98,6 +98,8 @@ public class ProvisionFullyManagedDeviceTask extends AbstractProvisioningTask {
             error(/* resultCode= */ 0);
             return;
         }
+
+        maybeTakeSystemAppsSnapshots(userId, mProvisioningParams.leaveAllSystemAppsEnabled);
 
         stopTaskTimer();
         success();
@@ -119,10 +121,16 @@ public class ProvisionFullyManagedDeviceTask extends AbstractProvisioningTask {
                 .setLocale(mProvisioningParams.locale)
                 // The device owner can grant sensors permissions if it has not opted
                 // out of controlling them.
-                .setCanDeviceOwnerGrantSensorsPermissions(
+                .setDeviceOwnerCanGrantSensorsPermissions(
                         !mProvisioningParams.deviceOwnerPermissionGrantOptOut)
-                .setAdminExtras(mProvisioningParams.adminExtrasBundle)
                 .build();
+    }
+
+    private void maybeTakeSystemAppsSnapshots(
+            @UserIdInt int userId, boolean leaveAllSystemAppsEnabled) {
+        if (!leaveAllSystemAppsEnabled) {
+            mSystemAppsSnapshot.takeNewSnapshot(userId);
+        }
     }
 
     @Override
