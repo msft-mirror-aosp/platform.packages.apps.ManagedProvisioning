@@ -38,7 +38,6 @@ import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.finalization.SendDpcBroadcastService;
 import com.android.managedprovisioning.model.ProvisioningParams;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -90,7 +89,6 @@ public class PolicyComplianceUtilsTest {
         assertThat(result).isFalse();
     }
 
-    @Ignore("b/218480743")
     @Test
     public void startPolicyComplianceActivityForResultIfResolved_activityExists_isStarted() {
         Intent intent = createPolicyComplianceIntent();
@@ -112,7 +110,6 @@ public class PolicyComplianceUtilsTest {
         assertThat(result).isTrue();
     }
 
-    @Ignore("b/218480743")
     @Test
     public void startPolicyComplianceActivityForResultIfResolved_activityDoesNotExist_notStarted() {
         Activity parentActivity = Robolectric.buildActivity(Activity.class).create().get();
@@ -130,7 +127,6 @@ public class PolicyComplianceUtilsTest {
         assertThat(result).isFalse();
     }
 
-    @Ignore("b/218480743")
     @Test
     public void startPolicyComplianceActivityIfResolved_activityExists_isStarted() {
         Intent intent = createPolicyComplianceIntent();
@@ -150,7 +146,6 @@ public class PolicyComplianceUtilsTest {
         assertThat(result).isTrue();
     }
 
-    @Ignore("b/218480743")
     @Test
     public void startPolicyComplianceActivityIfResolved_activityDoesNotExist_notStarted() {
         Activity parentActivity = Robolectric.buildActivity(Activity.class).create().get();
@@ -183,29 +178,6 @@ public class PolicyComplianceUtilsTest {
         assertThat(startedIntent.getPackage()).isEqualTo(TEST_MDM_PACKAGE_NAME);
         assertThat(startedIntent.getFlags()).isEqualTo(Intent.FLAG_ACTIVITY_NEW_TASK);
         assertThat(result).isTrue();
-    }
-
-    @Test
-    public void isPolicyComplianceActivityResolvableForManagedUser_withSystemUser_activityExists_returnsTrue() {
-        Intent intent = createPolicyComplianceIntent();
-        shadowOf(mContext.getPackageManager()).addResolveInfoForIntent(intent, new ResolveInfo());
-
-        boolean result = mPolicyComplianceUtils.isPolicyComplianceActivityResolvableForManagedUser(
-                mContext,
-                createTrustedSourceParamsBuilder().build(),
-                mUtils);
-
-        assertThat(result).isTrue();
-    }
-
-    @Test
-    public void isPolicyComplianceActivityResolvableForManagedUser_withSystemUser_activityDoesNotExist_returnsFalse() {
-        boolean result = mPolicyComplianceUtils.isPolicyComplianceActivityResolvableForManagedUser(
-                mContext,
-                createTrustedSourceParamsBuilder().build(),
-                mUtils);
-
-        assertThat(result).isFalse();
     }
 
     private Intent createPolicyComplianceIntent() {
