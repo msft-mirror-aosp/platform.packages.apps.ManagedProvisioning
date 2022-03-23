@@ -113,7 +113,7 @@ public class InstallExistingPackageTaskTest {
         mTask.run(TEST_USER_ID);
 
         // THEN an error should be returned
-        verify(mCallback).onError(mTask, 0, /* errorMessage= */ null);
+        verify(mCallback).onError(mTask, 0);
         verifyNoMoreInteractions(mCallback);
     }
 
@@ -127,7 +127,7 @@ public class InstallExistingPackageTaskTest {
         mTask.run(TEST_USER_ID);
 
         // THEN an error should be returned
-        verify(mCallback).onError(mTask, 0, /* errorMessage= */ null);
+        verify(mCallback).onError(mTask, 0);
         verifyNoMoreInteractions(mCallback);
     }
 }

@@ -52,8 +52,7 @@ public final class PreFinalizationController {
                 new Utils(),
                 new SettingsFacade(),
                 userProvisioningStateHelper,
-                new ProvisioningParamsUtils(
-                        ProvisioningParamsUtils.DEFAULT_PROVISIONING_PARAMS_FILE_PROVIDER),
+                new ProvisioningParamsUtils(),
                 new SendDpcBroadcastServiceUtils());
     }
 
@@ -63,8 +62,7 @@ public final class PreFinalizationController {
                 new Utils(),
                 new SettingsFacade(),
                 new UserProvisioningStateHelper(context),
-                new ProvisioningParamsUtils(
-                        ProvisioningParamsUtils.DEFAULT_PROVISIONING_PARAMS_FILE_PROVIDER),
+                new ProvisioningParamsUtils(),
                 new SendDpcBroadcastServiceUtils());
     }
 
