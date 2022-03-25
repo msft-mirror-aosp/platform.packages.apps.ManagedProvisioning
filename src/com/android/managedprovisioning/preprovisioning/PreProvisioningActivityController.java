@@ -20,36 +20,45 @@ import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_FINANCED_DE
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
-import static android.app.admin.DevicePolicyManager.CODE_CANNOT_ADD_MANAGED_PROFILE;
-import static android.app.admin.DevicePolicyManager.CODE_HAS_DEVICE_OWNER;
-import static android.app.admin.DevicePolicyManager.CODE_MANAGED_USERS_NOT_SUPPORTED;
-import static android.app.admin.DevicePolicyManager.CODE_NOT_SYSTEM_USER;
-import static android.app.admin.DevicePolicyManager.CODE_OK;
-import static android.app.admin.DevicePolicyManager.CODE_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS;
-import static android.app.admin.DevicePolicyManager.CODE_USER_SETUP_COMPLETED;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ALLOWED_PROVISIONING_MODES;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DISCLAIMERS;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_IMEI;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_KEEP_SCREEN_ON;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LOCALE;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LOCAL_TIME;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SENSORS_PERMISSION_GRANT_OPT_OUT;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SERIAL_NUMBER;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_EDUCATION_SCREENS;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_TIME_ZONE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_TRIGGER;
+import static android.app.admin.DevicePolicyManager.EXTRA_ROLE_HOLDER_STATE;
 import static android.app.admin.DevicePolicyManager.FLAG_SUPPORTED_MODES_DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.FLAG_SUPPORTED_MODES_ORGANIZATION_OWNED;
 import static android.app.admin.DevicePolicyManager.PROVISIONING_MODE_MANAGED_PROFILE_ON_PERSONAL_DEVICE;
+import static android.app.admin.DevicePolicyManager.PROVISIONING_TRIGGER_NFC;
 import static android.app.admin.DevicePolicyManager.PROVISIONING_TRIGGER_QR_CODE;
 import static android.app.admin.DevicePolicyManager.PROVISIONING_TRIGGER_UNSPECIFIED;
-import static android.nfc.NfcAdapter.ACTION_NDEF_DISCOVERED;
+import static android.app.admin.DevicePolicyManager.STATUS_CANNOT_ADD_MANAGED_PROFILE;
+import static android.app.admin.DevicePolicyManager.STATUS_HAS_DEVICE_OWNER;
+import static android.app.admin.DevicePolicyManager.STATUS_MANAGED_USERS_NOT_SUPPORTED;
+import static android.app.admin.DevicePolicyManager.STATUS_NOT_SYSTEM_USER;
+import static android.app.admin.DevicePolicyManager.STATUS_OK;
+import static android.app.admin.DevicePolicyManager.STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS;
+import static android.app.admin.DevicePolicyManager.STATUS_USER_SETUP_COMPLETED;
 
 import static com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker.CANCELLED_BEFORE_PROVISIONING;
 import static com.android.managedprovisioning.common.Globals.ACTION_RESUME_PROVISIONING;
 import static com.android.managedprovisioning.model.ProvisioningParams.DEFAULT_EXTRA_PROVISIONING_KEEP_ACCOUNT_MIGRATED;
+import static com.android.managedprovisioning.model.ProvisioningParams.DEFAULT_EXTRA_PROVISIONING_KEEP_SCREEN_ON;
+import static com.android.managedprovisioning.model.ProvisioningParams.DEFAULT_EXTRA_PROVISIONING_PERMISSION_GRANT_OPT_OUT;
+import static com.android.managedprovisioning.model.ProvisioningParams.DEFAULT_EXTRA_PROVISIONING_SKIP_ENCRYPTION;
 import static com.android.managedprovisioning.model.ProvisioningParams.DEFAULT_LEAVE_ALL_SYSTEM_APPS_ENABLED;
 import static com.android.managedprovisioning.model.ProvisioningParams.FLOW_TYPE_ADMIN_INTEGRATED;
-import static com.android.managedprovisioning.model.ProvisioningParams.FLOW_TYPE_LEGACY;
 
 import static java.util.Objects.requireNonNull;
 
@@ -85,19 +94,33 @@ import com.android.managedprovisioning.ManagedProvisioningScreens;
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
+import com.android.managedprovisioning.common.DefaultFeatureFlagChecker;
+import com.android.managedprovisioning.common.DefaultPackageInstallChecker;
+import com.android.managedprovisioning.common.DeviceManagementRoleHolderHelper;
+import com.android.managedprovisioning.common.DeviceManagementRoleHolderHelper.DefaultResolveIntentChecker;
+import com.android.managedprovisioning.common.DeviceManagementRoleHolderHelper.DefaultRoleHolderStubChecker;
+import com.android.managedprovisioning.common.DeviceManagementRoleHolderUpdaterHelper;
 import com.android.managedprovisioning.common.GetProvisioningModeUtils;
 import com.android.managedprovisioning.common.IllegalProvisioningArgumentException;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.PolicyComplianceUtils;
 import com.android.managedprovisioning.common.ProvisionLogger;
+import com.android.managedprovisioning.common.RoleHolderProvider;
+import com.android.managedprovisioning.common.RoleHolderUpdaterProvider;
 import com.android.managedprovisioning.common.SettingsFacade;
+import com.android.managedprovisioning.common.StoreUtils;
 import com.android.managedprovisioning.common.Utils;
-import com.android.managedprovisioning.model.CustomizationParams;
+import com.android.managedprovisioning.model.DisclaimersParam;
 import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.model.ProvisioningParams.FlowType;
+import com.android.managedprovisioning.parser.DisclaimerParser;
+import com.android.managedprovisioning.parser.DisclaimersParserImpl;
+import com.android.managedprovisioning.preprovisioning.PreProvisioningViewModel.DefaultConfig;
 import com.android.managedprovisioning.preprovisioning.PreProvisioningViewModel.PreProvisioningViewModelFactory;
 
+import java.util.IllformedLocaleException;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * Controller which contains business logic related to provisioning preparation.
@@ -122,6 +145,9 @@ public class PreProvisioningActivityController {
     private final ManagedProvisioningSharedPreferences mSharedPreferences;
 
     private final PreProvisioningViewModel mViewModel;
+    private final BiFunction<Context, Long, DisclaimerParser> mDisclaimerParserProvider;
+    private final DeviceManagementRoleHolderHelper mRoleHolderHelper;
+    private final DeviceManagementRoleHolderUpdaterHelper mRoleHolderUpdaterHelper;
 
     public PreProvisioningActivityController(
             @NonNull ComponentActivity activity,
@@ -134,8 +160,22 @@ public class PreProvisioningActivityController {
                 new ViewModelProvider(
                         activity,
                         new PreProvisioningViewModelFactory(
-                                (ManagedProvisioningBaseApplication) activity.getApplication()))
-                                        .get(PreProvisioningViewModel.class));
+                                (ManagedProvisioningBaseApplication) activity.getApplication(),
+                                new DefaultConfig()))
+                                        .get(PreProvisioningViewModel.class),
+                DisclaimersParserImpl::new,
+                new DeviceManagementRoleHolderHelper(
+                        RoleHolderProvider.DEFAULT.getPackageName(activity),
+                        new DefaultPackageInstallChecker(new Utils()),
+                        new DefaultResolveIntentChecker(),
+                        new DefaultRoleHolderStubChecker(),
+                        new DefaultFeatureFlagChecker(activity.getContentResolver())
+                ),
+                new DeviceManagementRoleHolderUpdaterHelper(
+                        RoleHolderUpdaterProvider.DEFAULT.getPackageName(activity),
+                        RoleHolderProvider.DEFAULT.getPackageName(activity),
+                        new DefaultPackageInstallChecker(new Utils()),
+                        new DefaultFeatureFlagChecker(activity.getContentResolver())));
     }
     @VisibleForTesting
     PreProvisioningActivityController(
@@ -146,7 +186,10 @@ public class PreProvisioningActivityController {
             @NonNull ManagedProvisioningSharedPreferences sharedPreferences,
             @NonNull PolicyComplianceUtils policyComplianceUtils,
             @NonNull GetProvisioningModeUtils getProvisioningModeUtils,
-            @NonNull PreProvisioningViewModel viewModel) {
+            @NonNull PreProvisioningViewModel viewModel,
+            @NonNull BiFunction<Context, Long, DisclaimerParser> disclaimerParserProvider,
+            @NonNull DeviceManagementRoleHolderHelper roleHolderHelper,
+            @NonNull DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper) {
         mContext = requireNonNull(context, "Context must not be null");
         mUi = requireNonNull(ui, "Ui must not be null");
         mSettingsFacade = requireNonNull(settingsFacade);
@@ -167,6 +210,59 @@ public class PreProvisioningActivityController {
         mProvisioningAnalyticsTracker = new ProvisioningAnalyticsTracker(
                 MetricsWriterFactory.getMetricsWriter(mContext, mSettingsFacade),
                 mSharedPreferences);
+        mDisclaimerParserProvider = requireNonNull(disclaimerParserProvider);
+        mRoleHolderHelper = requireNonNull(roleHolderHelper);
+        mRoleHolderUpdaterHelper = requireNonNull(roleHolderUpdaterHelper);
+    }
+
+    /**
+     * Starts provisioning via the role holder if possible, or falls back to AOSP
+     * ManagedProvisioning provisioning otherwise.
+     */
+    public void startAppropriateProvisioning(Intent managedProvisioningIntent) {
+        boolean isRoleHolderReadyForProvisioning = mRoleHolderHelper
+                .isRoleHolderReadyForProvisioning(mContext, managedProvisioningIntent);
+        if (isRoleHolderReadyForProvisioning) {
+            ProvisionLogger.logw("Provisioning via role holder.");
+            Intent roleHolderProvisioningIntent =
+                    createRoleHolderProvisioningIntent(managedProvisioningIntent);
+            mSharedPreferences.setIsProvisioningFlowDelegatedToRoleHolder(true);
+            mViewModel.onRoleHolderProvisioningInitiated();
+            mUi.startRoleHolderProvisioning(roleHolderProvisioningIntent);
+        } else {
+            performPlatformProvidedProvisioning();
+        }
+    }
+
+    private Intent createRoleHolderProvisioningIntent(Intent managedProvisioningIntent) {
+        Intent intent =
+                mRoleHolderHelper.createRoleHolderProvisioningIntent(managedProvisioningIntent);
+        if (mViewModel.getRoleHolderState() != null) {
+            intent.putExtra(EXTRA_ROLE_HOLDER_STATE, mViewModel.getRoleHolderState());
+        }
+        return intent;
+    }
+
+    /**
+     * Starts the role holder updater, saving {@code roleHolderState} to be used to restart
+     * the role holder.
+     *
+     * @see DevicePolicyManager#EXTRA_ROLE_HOLDER_STATE
+     * @param roleHolderState
+     */
+    public void startRoleHolderUpdater(@Nullable PersistableBundle roleHolderState) {
+        mViewModel.onRoleHolderUpdateInitiated();
+        mViewModel.setRoleHolderState(roleHolderState);
+        mUi.startRoleHolderUpdater();
+    }
+
+    /**
+     * Starts the role holder updater with the last provided role holder state.
+     *
+     * <p>This can be useful in update retry cases.
+     */
+    public void startRoleHolderUpdaterWithLastState() {
+        startRoleHolderUpdater(mViewModel.getRoleHolderState());
     }
 
     interface Ui {
@@ -215,6 +311,14 @@ public class PreProvisioningActivityController {
         void abortProvisioning();
 
         void prepareAdminIntegratedFlow(ProvisioningParams params);
+
+        void startRoleHolderUpdater();
+
+        void startRoleHolderProvisioning(Intent intent);
+
+        void onParamsValidated(ProvisioningParams params);
+
+        void startRoleHolderDownload();
     }
 
     /**
@@ -227,10 +331,6 @@ public class PreProvisioningActivityController {
          * Admin application package name.
          */
         public String packageName;
-        /**
-         * Various organization-defined customizations, e.g. colors, organization name.
-         */
-        public CustomizationParams customization;
         /**
          * List of headings for the organization-provided terms and conditions.
          */
@@ -250,6 +350,7 @@ public class PreProvisioningActivityController {
      */
     public void initiateProvisioning(Intent intent, String callingPackage) {
         mSharedPreferences.writeProvisioningStartedTimestamp(SystemClock.elapsedRealtime());
+        mSharedPreferences.setIsProvisioningFlowDelegatedToRoleHolder(false);
         mProvisioningAnalyticsTracker.logProvisioningSessionStarted(mContext);
 
         if (!tryParseParameters(intent)) {
@@ -264,6 +365,9 @@ public class PreProvisioningActivityController {
         if (!verifyActionAndCaller(intent, callingPackage)) {
             return;
         }
+
+        mProvisioningAnalyticsTracker.logProvisioningExtras(mContext, intent);
+        mProvisioningAnalyticsTracker.logEntryPoint(mContext, intent, mSettingsFacade);
 
         // Check whether provisioning is allowed for the current action. This check needs to happen
         // before any actions that might affect the state of the device.
@@ -305,9 +409,27 @@ public class PreProvisioningActivityController {
             }
         }
 
+        mUi.onParamsValidated(params);
+
+        // TODO(b/207376815): Have a PreProvisioningForwarderActivity to forward to either
+        //  platform-provided provisioning or DMRH
+        if (mRoleHolderUpdaterHelper.shouldPlatformDownloadRoleHolder(intent, params)) {
+            mUi.startRoleHolderDownload();
+        } else if (mRoleHolderUpdaterHelper
+                .shouldStartRoleHolderUpdater(mContext, intent, params)) {
+            resetRoleHolderUpdateRetryCount();
+            startRoleHolderUpdater(/* roleHolderState= */ null);
+        } else {
+            startAppropriateProvisioning(intent);
+        }
+    }
+
+    void performPlatformProvidedProvisioning() {
+        ProvisionLogger.logw("Provisioning via platform-provided provisioning");
+        ProvisioningParams params = mViewModel.getParams();
+
         mViewModel.getTimeLogger().start();
-        mProvisioningAnalyticsTracker.logPreProvisioningStarted(mContext, intent);
-        mViewModel.onProvisioningInitiated();
+        mViewModel.onPlatformProvisioningInitiated();
 
         if (mUtils.checkAdminIntegratedFlowPreconditions(params)) {
             if (mUtils.shouldShowOwnershipDisclaimerScreen(params)) {
@@ -318,18 +440,8 @@ public class PreProvisioningActivityController {
             mViewModel.onAdminIntegratedFlowInitiated();
         } else if (mUtils.isFinancedDeviceAction(params.provisioningAction)) {
             mUi.prepareFinancedDeviceFlow(params);
-        } else if (params.isNfc) {
-            // TODO(b/177849035): Remove NFC-specific logic
-            if (mUtils.shouldShowOwnershipDisclaimerScreen(params)) {
-                mUi.showOwnershipDisclaimerScreen(params);
-            } else {
-                startNfcFlow();
-            }
         } else if (isProfileOwnerProvisioning()) {
             startManagedProfileFlow();
-        } else if (isDpcTriggeredManagedDeviceProvisioning(intent)) {
-            // TODO(b/175678720): Fail provisioning if flow started by PROVISION_MANAGED_DEVICE
-            startManagedDeviceFlow();
         }
     }
 
@@ -337,28 +449,14 @@ public class PreProvisioningActivityController {
         return !ACTION_PROVISION_MANAGED_DEVICE.equals(action);
     }
 
-    void startNfcFlow() {
-        ProvisionLogger.logi("Starting the NFC provisioning flow.");
-        updateProvisioningFlowState(FLOW_TYPE_LEGACY);
-        showUserConsentScreen();
-    }
-
     private void startManagedProfileFlow() {
         ProvisionLogger.logi("Starting the managed profile flow.");
         showUserConsentScreen();
     }
 
-    private void startManagedDeviceFlow() {
-        ProvisionLogger.logi("Starting the legacy managed device flow.");
-        showUserConsentScreen();
-    }
-
-    private boolean isDpcTriggeredManagedDeviceProvisioning(Intent intent) {
-        return ACTION_PROVISION_MANAGED_DEVICE.equals(intent.getAction());
-    }
-
     private boolean isNfcProvisioning(Intent intent) {
-        return ACTION_NDEF_DISCOVERED.equals(intent.getAction());
+        return intent.getIntExtra(EXTRA_PROVISIONING_TRIGGER, PROVISIONING_TRIGGER_UNSPECIFIED)
+                == PROVISIONING_TRIGGER_NFC;
     }
 
     private boolean isQrCodeProvisioning(Intent intent) {
@@ -405,13 +503,9 @@ public class PreProvisioningActivityController {
             mProvisioningAnalyticsTracker.logOrganizationOwnedManagedProfileProvisioning();
         }
 
-        CustomizationParams customization =
-                CustomizationParams.createInstance(mViewModel.getParams(), mContext, mUtils);
-
         // show UI so we can get user's consent to continue
         final String packageName = mViewModel.getParams().inferDeviceAdminPackageName();
         final UiParams uiParams = new UiParams();
-        uiParams.customization = customization;
         uiParams.provisioningAction = mViewModel.getParams().provisioningAction;
         uiParams.packageName = packageName;
         uiParams.isDeviceManaged = mDevicePolicyManager.isDeviceManaged();
@@ -469,6 +563,9 @@ public class PreProvisioningActivityController {
         builder.setIsOrganizationOwnedProvisioning(isOrganizationOwnedProvisioning);
         maybeUpdateAdminExtrasBundle(builder, resultIntent);
         maybeUpdateSkipEducationScreens(builder, resultIntent);
+        maybeUpdateDisclaimers(builder, resultIntent);
+        maybeUpdateSkipEncryption(builder, resultIntent);
+        maybeUpdateKeepScreenOn(builder, resultIntent);
         if (updateAccountToMigrate) {
             maybeUpdateAccountToMigrate(builder, resultIntent);
         }
@@ -476,7 +573,79 @@ public class PreProvisioningActivityController {
             maybeUpdateKeepAccountMigrated(builder, resultIntent);
             maybeUpdateLeaveAllSystemAppsEnabled(builder, resultIntent);
         }
+        else if (provisioningAction.equals(ACTION_PROVISION_MANAGED_DEVICE)){
+            maybeUpdateDeviceOwnerPermissionGrantOptOut(builder, resultIntent);
+            maybeUpdateLocale(builder, resultIntent);
+            maybeUpdateLocalTime(builder, resultIntent);
+            maybeUpdateTimeZone(builder, resultIntent);
+        }
         mViewModel.updateParams(builder.build());
+    }
+
+    private void maybeUpdateDeviceOwnerPermissionGrantOptOut(
+            ProvisioningParams.Builder builder, Intent resultIntent) {
+        if (resultIntent.hasExtra(EXTRA_PROVISIONING_SENSORS_PERMISSION_GRANT_OPT_OUT)) {
+            builder.setDeviceOwnerPermissionGrantOptOut(resultIntent.getBooleanExtra(
+                    EXTRA_PROVISIONING_SENSORS_PERMISSION_GRANT_OPT_OUT,
+                    DEFAULT_EXTRA_PROVISIONING_PERMISSION_GRANT_OPT_OUT));
+        }
+    }
+
+    private void maybeUpdateKeepScreenOn(
+            ProvisioningParams.Builder builder, Intent resultIntent) {
+        if (resultIntent.hasExtra(EXTRA_PROVISIONING_KEEP_SCREEN_ON)) {
+            builder.setKeepScreenOn(resultIntent.getBooleanExtra(
+                    EXTRA_PROVISIONING_KEEP_SCREEN_ON,
+                    DEFAULT_EXTRA_PROVISIONING_KEEP_SCREEN_ON));
+        }
+    }
+
+    private void maybeUpdateSkipEncryption(
+            ProvisioningParams.Builder builder, Intent resultIntent) {
+        if (resultIntent.hasExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION)) {
+            builder.setSkipEncryption(resultIntent.getBooleanExtra(
+                    EXTRA_PROVISIONING_SKIP_ENCRYPTION,
+                    DEFAULT_EXTRA_PROVISIONING_SKIP_ENCRYPTION));
+        }
+    }
+
+    private void maybeUpdateTimeZone(ProvisioningParams.Builder builder, Intent resultIntent) {
+        if (resultIntent.hasExtra(EXTRA_PROVISIONING_TIME_ZONE)) {
+            builder.setTimeZone(resultIntent.getStringExtra(EXTRA_PROVISIONING_TIME_ZONE));
+        }
+    }
+
+    private void maybeUpdateLocalTime(ProvisioningParams.Builder builder, Intent resultIntent) {
+        if (resultIntent.hasExtra(EXTRA_PROVISIONING_LOCAL_TIME)) {
+            builder.setLocalTime(resultIntent.getLongExtra(
+                    EXTRA_PROVISIONING_LOCAL_TIME, ProvisioningParams.DEFAULT_LOCAL_TIME));
+        }
+    }
+
+    private void maybeUpdateLocale(ProvisioningParams.Builder builder, Intent resultIntent) {
+        if (resultIntent.hasExtra(EXTRA_PROVISIONING_LOCALE)) {
+            try {
+                builder.setLocale(StoreUtils.stringToLocale(
+                        resultIntent.getStringExtra(EXTRA_PROVISIONING_LOCALE)));
+            } catch (IllformedLocaleException e) {
+                ProvisionLogger.loge("Could not parse locale.", e);
+            }
+        }
+    }
+
+    private void maybeUpdateDisclaimers(ProvisioningParams.Builder builder, Intent resultIntent) {
+        if (resultIntent.hasExtra(EXTRA_PROVISIONING_DISCLAIMERS)) {
+            try {
+                DisclaimersParam disclaimersParam = mDisclaimerParserProvider.apply(
+                        mContext,
+                        mSharedPreferences.getProvisioningId())
+                        .parse(resultIntent.getParcelableArrayExtra(
+                                EXTRA_PROVISIONING_DISCLAIMERS));
+                builder.setDisclaimersParam(disclaimersParam);
+            } catch (ClassCastException e) {
+                ProvisionLogger.loge("Could not parse disclaimer params.", e);
+            }
+        }
     }
 
     private void maybeUpdateSkipEducationScreens(ProvisioningParams.Builder builder,
@@ -673,11 +842,11 @@ public class PreProvisioningActivityController {
     /** @return False if condition preventing further provisioning */
     @VisibleForTesting protected boolean checkDevicePolicyPreconditions() {
         ProvisioningParams params = mViewModel.getParams();
-        int provisioningPreCondition = mDevicePolicyManager.checkProvisioningPreCondition(
+        int provisioningPreCondition = mDevicePolicyManager.checkProvisioningPrecondition(
                 params.provisioningAction,
                 params.inferDeviceAdminPackageName());
         // Check whether provisioning is allowed for the current action.
-        if (provisioningPreCondition != CODE_OK) {
+        if (provisioningPreCondition != STATUS_OK) {
             mProvisioningAnalyticsTracker.logProvisioningNotAllowed(mContext,
                     provisioningPreCondition);
             showProvisioningErrorAndClose(
@@ -717,8 +886,6 @@ public class PreProvisioningActivityController {
         // Otherwise, verify that the calling app is trying to set itself as Device/ProfileOwner
         if (ACTION_RESUME_PROVISIONING.equals(intent.getAction())) {
             return verifyActivityAlias(intent, "PreProvisioningActivityAfterEncryption");
-        } else if (ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
-            return verifyActivityAlias(intent, "PreProvisioningActivityViaNfc");
         } else if (ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE.equals(intent.getAction())
                 || ACTION_PROVISION_FINANCED_DEVICE.equals(intent.getAction())) {
             return verifyActivityAlias(intent, "PreProvisioningActivityViaTrustedApp");
@@ -873,6 +1040,18 @@ public class PreProvisioningActivityController {
         return mViewModel.getState();
     }
 
+    void incrementRoleHolderUpdateRetryCount() {
+        mViewModel.incrementRoleHolderUpdateRetryCount();
+    }
+
+    void resetRoleHolderUpdateRetryCount() {
+        mViewModel.resetRoleHolderUpdateRetryCount();
+    }
+
+    boolean canRetryRoleHolderUpdate() {
+        return mViewModel.canRetryRoleHolderUpdate();
+    }
+
     private void showProvisioningErrorAndClose(String action, int provisioningPreCondition) {
         // Try to show an error message explaining why provisioning is not allowed.
         switch (action) {
@@ -888,7 +1067,7 @@ public class PreProvisioningActivityController {
     }
 
     private void showManagedProfileErrorAndClose(int provisioningPreCondition) {
-        UserInfo userInfo = mUserManager.getUserInfo(mUserManager.getUserHandle());
+        UserInfo userInfo = mUserManager.getUserInfo(mUserManager.getProcessUserId());
         ProvisionLogger.logw("DevicePolicyManager.checkProvisioningPreCondition returns code: "
                 + provisioningPreCondition);
         // If this is organization-owned provisioning, do not show any other error dialog, just
@@ -906,13 +1085,13 @@ public class PreProvisioningActivityController {
             return;
         }
         switch (provisioningPreCondition) {
-            case CODE_MANAGED_USERS_NOT_SUPPORTED:
+            case STATUS_MANAGED_USERS_NOT_SUPPORTED:
                 mUi.showErrorAndClose(R.string.cant_add_work_profile,
                         R.string.work_profile_cant_be_added_contact_admin,
                         "Exiting managed profile provisioning, managed profiles "
                                 + "feature is not available");
                 break;
-            case CODE_CANNOT_ADD_MANAGED_PROFILE:
+            case STATUS_CANNOT_ADD_MANAGED_PROFILE:
                 if (!userInfo.canHaveProfile()) {
                     mUi.showErrorAndClose(R.string.cant_add_work_profile,
                             R.string.work_profile_cant_be_added_contact_admin,
@@ -930,7 +1109,7 @@ public class PreProvisioningActivityController {
                                     + "profiles");
                 }
                 break;
-            case CODE_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS:
+            case STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS:
                 mUi.showErrorAndClose(R.string.cant_add_work_profile,
                         R.string.work_profile_cant_be_added_contact_admin,
                         "Exiting managed profile provisioning, "
@@ -951,17 +1130,17 @@ public class PreProvisioningActivityController {
 
     private void showDeviceOwnerErrorAndClose(int provisioningPreCondition) {
         switch (provisioningPreCondition) {
-            case CODE_HAS_DEVICE_OWNER:
-            case CODE_USER_SETUP_COMPLETED:
+            case STATUS_HAS_DEVICE_OWNER:
+            case STATUS_USER_SETUP_COMPLETED:
                 mUi.showErrorAndClose(R.string.device_already_set_up,
                         R.string.if_questions_contact_admin, "Device already provisioned.");
                 return;
-            case CODE_NOT_SYSTEM_USER:
+            case STATUS_NOT_SYSTEM_USER:
                 mUi.showErrorAndClose(R.string.cant_set_up_device,
                         R.string.contact_your_admin_for_help,
                         "Device owner can only be set up for USER_SYSTEM.");
                 return;
-            case CODE_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS:
+            case STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS:
                 mUi.showErrorAndClose(R.string.cant_set_up_device,
                         R.string.contact_your_admin_for_help,
                         "Provisioning not allowed by OEM");
