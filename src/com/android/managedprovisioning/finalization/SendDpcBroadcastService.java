@@ -27,7 +27,6 @@ import android.os.UserHandle;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
-import com.android.managedprovisioning.common.PolicyComplianceUtils;
 import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.Utils;
@@ -43,7 +42,6 @@ public class SendDpcBroadcastService extends Service implements Callback {
 
     public static String EXTRA_PROVISIONING_PARAMS =
             "com.android.managedprovisioning.PROVISIONING_PARAMS";
-    private SettingsFacade mSettingsFacade = new SettingsFacade();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -52,49 +50,31 @@ public class SendDpcBroadcastService extends Service implements Callback {
         Utils utils = new Utils();
         ProvisioningIntentProvider helper = new ProvisioningIntentProvider();
         UserHandle managedProfileUserHandle = utils.getManagedProfile(context);
-        if (params.flowType == ProvisioningParams.FLOW_TYPE_ADMIN_INTEGRATED) {
-            new PrimaryProfileFinalizationHelper(params.accountToMigrate, managedProfileUserHandle,
-                    params.inferDeviceAdminPackageName())
-                .finalizeProvisioningInPrimaryProfile(/* context */ this, /* callback */ this);
-        } else {
-            sendDpcReceivedSuccessReceiver(
-                    context, params, utils, helper, managedProfileUserHandle);
-        }
-
-        maybeLaunchDpc(context, params, utils, helper, managedProfileUserHandle);
-
-        return START_STICKY;
-    }
-
-    private void maybeLaunchDpc(Context context, ProvisioningParams params, Utils utils,
-            ProvisioningIntentProvider helper, UserHandle managedProfileUserHandle) {
-        final ProvisioningAnalyticsTracker provisioningAnalyticsTracker =
-                new ProvisioningAnalyticsTracker(
-                        MetricsWriterFactory.getMetricsWriter(context, mSettingsFacade),
-                        new ManagedProvisioningSharedPreferences(context));
-
-        PolicyComplianceUtils policyComplianceUtils = new PolicyComplianceUtils();
-        helper.maybeLaunchDpc(
-                params, managedProfileUserHandle.getIdentifier(),
-                utils, context, provisioningAnalyticsTracker, policyComplianceUtils,
-                mSettingsFacade);
-    }
-
-    private void sendDpcReceivedSuccessReceiver(Context context, ProvisioningParams params,
-            Utils utils, ProvisioningIntentProvider helper, UserHandle managedProfileUserHandle) {
+        int managedProfileUserIdentifier = managedProfileUserHandle.getIdentifier();
         Intent completeIntent =
                 helper.createProvisioningCompleteIntent(params,
-                        managedProfileUserHandle.getIdentifier(), utils, context);
+                        managedProfileUserIdentifier, utils, context);
         // Use an ordered broadcast, so that we only finish when the DPC has received it.
         // Avoids a lag in the transition between provisioning and the DPC.
         BroadcastReceiver dpcReceivedSuccessReceiver =
                 new DpcReceivedSuccessReceiver(params.accountToMigrate,
-                        managedProfileUserHandle, params.inferDeviceAdminPackageName(),
-                        this);
+                        params.keepAccountMigrated, managedProfileUserHandle,
+                        params.inferDeviceAdminPackageName(), this,
+                        utils.isAdminIntegratedFlow(params));
         sendOrderedBroadcastAsUser(completeIntent, managedProfileUserHandle, null,
                 dpcReceivedSuccessReceiver, null, Activity.RESULT_OK, null, null);
         ProvisionLogger.logd("Provisioning complete broadcast has been sent to user "
-                + managedProfileUserHandle.getIdentifier());
+                + managedProfileUserIdentifier);
+
+        final ProvisioningAnalyticsTracker provisioningAnalyticsTracker =
+                new ProvisioningAnalyticsTracker(
+                        MetricsWriterFactory.getMetricsWriter(context, new SettingsFacade()),
+                        new ManagedProvisioningSharedPreferences(context));
+
+        helper.maybeLaunchDpc(
+                params, managedProfileUserIdentifier, utils, context, provisioningAnalyticsTracker);
+
+        return START_STICKY;
     }
 
     @Override

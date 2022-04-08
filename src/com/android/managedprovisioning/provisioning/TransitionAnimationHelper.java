@@ -15,31 +15,28 @@
  */
 package com.android.managedprovisioning.provisioning;
 
-import static java.util.Objects.requireNonNull;
+import static com.android.internal.util.Preconditions.checkNotNull;
+import static com.android.managedprovisioning.provisioning.ProvisioningActivity.PROVISIONING_MODE_FULLY_MANAGED_DEVICE;
+import static com.android.managedprovisioning.provisioning.ProvisioningActivity.PROVISIONING_MODE_WORK_PROFILE;
+import static com.android.managedprovisioning.provisioning.ProvisioningActivity.PROVISIONING_MODE_WORK_PROFILE_ON_ORG_OWNED_DEVICE;
 
+import android.annotation.DrawableRes;
 import android.annotation.StringRes;
 import android.content.Context;
+import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.Space;
 import android.widget.TextView;
-
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.common.CrossFadeHelper;
 import com.android.managedprovisioning.common.CrossFadeHelper.Callback;
-import com.android.managedprovisioning.common.StylerHelper;
-import com.android.managedprovisioning.provisioning.ProvisioningModeWrapperProvider.ProvisioningModeWrapper;
-
-import com.airbnb.lottie.LottieAnimationView;
-
+import com.android.managedprovisioning.common.RepeatingVectorAnimation;
+import com.android.managedprovisioning.provisioning.ProvisioningActivity.ProvisioningMode;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Handles the animated transitions in the education screens. Transitions consist of cross fade
@@ -49,15 +46,44 @@ class TransitionAnimationHelper {
 
     interface TransitionAnimationCallback {
         void onAllTransitionsShown();
-
-        void onAnimationSetup(LottieAnimationView animationView);
-
     }
-    interface TransitionAnimationStateManager {
-        void saveState(TransitionAnimationState state);
 
-        TransitionAnimationState restoreState();
-    }
+    @VisibleForTesting
+    static final ProvisioningModeWrapper WORK_PROFILE_WRAPPER
+            = new ProvisioningModeWrapper(new TransitionScreenWrapper[] {
+        new TransitionScreenWrapper(R.string.work_profile_provisioning_step_1_header,
+                R.drawable.separate_work_and_personal_animation),
+        new TransitionScreenWrapper(R.string.work_profile_provisioning_step_2_header,
+                R.drawable.pause_work_apps_animation),
+        new TransitionScreenWrapper(R.string.work_profile_provisioning_step_3_header,
+                R.drawable.not_private_animation)
+    }, R.string.work_profile_provisioning_summary);
+
+    @VisibleForTesting
+    static final ProvisioningModeWrapper FULLY_MANAGED_DEVICE_WRAPPER
+            = new ProvisioningModeWrapper(new TransitionScreenWrapper[] {
+        new TransitionScreenWrapper(R.string.fully_managed_device_provisioning_step_1_header,
+                R.drawable.connect_on_the_go_animation),
+        new TransitionScreenWrapper(R.string.fully_managed_device_provisioning_step_2_header,
+                R.drawable.not_private_animation,
+                R.string.fully_managed_device_provisioning_step_2_subheader,
+                /* showContactAdmin */ true,
+                /* shouldLoop */ true)
+    }, R.string.fully_managed_device_provisioning_summary);
+
+    @VisibleForTesting
+    static final ProvisioningModeWrapper WORK_PROFILE_ON_ORG_OWNED_DEVICE_WRAPPER
+            = new ProvisioningModeWrapper(new TransitionScreenWrapper[] {
+        new TransitionScreenWrapper(R.string.cope_provisioning_step_1_header,
+                R.drawable.separate_work_and_personal_animation),
+        new TransitionScreenWrapper(R.string.cope_provisioning_step_2_header,
+                R.drawable.personal_apps_separate_hidden_from_work_animation,
+                /* subHeader */ 0,
+                /* showContactAdmin */ false,
+                /* shouldLoop */ false),
+        new TransitionScreenWrapper(R.string.cope_provisioning_step_3_header,
+                R.drawable.it_admin_control_device_block_apps_animation)
+    }, R.string.cope_provisioning_summary);
 
     private static final int TRANSITION_TIME_MILLIS = 5000;
     private static final int CROSSFADE_ANIMATION_DURATION_MILLIS = 500;
@@ -67,77 +93,40 @@ class TransitionAnimationHelper {
     private final Runnable mStartNextTransitionRunnable = this::startNextAnimation;
     private final boolean mShowAnimations;
     private TransitionAnimationCallback mCallback;
-    private TransitionAnimationStateManager mStateManager;
     private final ProvisioningModeWrapper mProvisioningModeWrapper;
 
     private Handler mUiThreadHandler = new Handler(Looper.getMainLooper());
-    private TransitionAnimationState mTransitionAnimationState;
-    private final StylerHelper mStylerHelper;
+    private int mCurrentTransitionIndex;
+    private RepeatingVectorAnimation mRepeatingVectorAnimation;
 
-    TransitionAnimationHelper(AnimationComponents animationComponents,
-            TransitionAnimationCallback callback,
-            TransitionAnimationStateManager stateManager,
-            StylerHelper stylerHelper,
-            ProvisioningModeWrapper provisioningModeWrapper) {
-        mAnimationComponents = requireNonNull(animationComponents);
-        mCallback = requireNonNull(callback);
-        mStateManager = requireNonNull(stateManager);
-        mProvisioningModeWrapper = provisioningModeWrapper;
+    TransitionAnimationHelper(@ProvisioningMode int provisioningMode,
+            AnimationComponents animationComponents, TransitionAnimationCallback callback) {
+        mAnimationComponents = checkNotNull(animationComponents);
+        mCallback = checkNotNull(callback);
+        mProvisioningModeWrapper = getProvisioningModeWrapper(provisioningMode);
         mCrossFadeHelper = getCrossFadeHelper();
         mShowAnimations = shouldShowAnimations();
-        mStylerHelper = requireNonNull(stylerHelper);
 
-        applyContentDescription(
-                mAnimationComponents.mAnimationView,
-                mProvisioningModeWrapper.summary);
+        applyContentDescription();
+        updateUiValues(mCurrentTransitionIndex);
     }
 
     boolean areAllTransitionsShown() {
-        return mTransitionAnimationState.mAnimationIndex
-                == mProvisioningModeWrapper.transitions.length - 1;
+        return mCurrentTransitionIndex == mProvisioningModeWrapper.transitions.length - 1;
     }
 
     void start() {
-        mTransitionAnimationState = maybeRestoreState();
-        scheduleNextTransition(getTimeLeftForTransition(mTransitionAnimationState));
-        updateUiValues(mTransitionAnimationState.mAnimationIndex);
-        startCurrentAnimatedDrawable(mTransitionAnimationState.mProgress);
+        mUiThreadHandler.postDelayed(mStartNextTransitionRunnable, TRANSITION_TIME_MILLIS);
+        updateUiValues(mCurrentTransitionIndex);
+        startCurrentAnimatedDrawable();
     }
 
-    private long getTimeLeftForTransition(TransitionAnimationState transitionAnimationState) {
-        long timeSinceLastTransition =
-                System.currentTimeMillis() - transitionAnimationState.mLastTransitionTimestamp;
-        return TRANSITION_TIME_MILLIS - timeSinceLastTransition;
-    }
-
-    void stop() {
-        updateState();
-        mStateManager.saveState(mTransitionAnimationState);
-        clean();
-    }
-
-    private void updateState() {
-        mTransitionAnimationState.mProgress = mAnimationComponents.mAnimationView.getProgress();
-    }
-
-    private TransitionAnimationState maybeRestoreState() {
-        TransitionAnimationState transitionAnimationState = mStateManager.restoreState();
-        if (transitionAnimationState == null) {
-            return new TransitionAnimationState(
-                    /* animationIndex */ 0,
-                    /* progress */ 0,
-                    /* lastTransitionTimestamp */ System.currentTimeMillis());
-        }
-        return transitionAnimationState;
-    }
-
-    private void clean() {
+    void clean() {
         stopCurrentAnimatedDrawable();
         mCrossFadeHelper.cleanup();
         mUiThreadHandler.removeCallbacksAndMessages(null);
         mUiThreadHandler = null;
         mCallback = null;
-        mStateManager = null;
     }
 
     @VisibleForTesting
@@ -149,27 +138,22 @@ class TransitionAnimationHelper {
                 @Override
                 public void fadeOutCompleted() {
                     stopCurrentAnimatedDrawable();
-                    mTransitionAnimationState.mAnimationIndex++;
-                    updateUiValues(mTransitionAnimationState.mAnimationIndex);
-                    startCurrentAnimatedDrawable(/* startProgress */ 0f);
+                    mCurrentTransitionIndex++;
+                    updateUiValues(mCurrentTransitionIndex);
+                    startCurrentAnimatedDrawable();
                 }
 
                 @Override
                 public void fadeInCompleted() {
-                    mTransitionAnimationState.mLastTransitionTimestamp = System.currentTimeMillis();
-                    scheduleNextTransition(TRANSITION_TIME_MILLIS);
+                    mUiThreadHandler.postDelayed(
+                        mStartNextTransitionRunnable, TRANSITION_TIME_MILLIS);
                 }
             });
     }
 
-    private void scheduleNextTransition(long timeLeftForTransition) {
-        mUiThreadHandler.postDelayed(mStartNextTransitionRunnable, timeLeftForTransition);
-    }
-
     @VisibleForTesting
     void startNextAnimation() {
-        if (mTransitionAnimationState.mAnimationIndex
-                >= mProvisioningModeWrapper.transitions.length - 1) {
+        if (mCurrentTransitionIndex >= mProvisioningModeWrapper.transitions.length-1) {
             if (mCallback != null) {
                 mCallback.onAllTransitionsShown();
             }
@@ -179,15 +163,18 @@ class TransitionAnimationHelper {
     }
 
     @VisibleForTesting
-    void startCurrentAnimatedDrawable(float startProgress) {
+    void startCurrentAnimatedDrawable() {
         if (!mShowAnimations) {
             return;
         }
-        boolean shouldLoop =
-                getTransitionForIndex(mTransitionAnimationState.mAnimationIndex).shouldLoop;
-        mAnimationComponents.mAnimationView.loop(shouldLoop);
-        mAnimationComponents.mAnimationView.setProgress(startProgress);
-        mAnimationComponents.mAnimationView.playAnimation();
+        if (!(mAnimationComponents.image.getDrawable() instanceof AnimatedVectorDrawable)) {
+            return;
+        }
+        final AnimatedVectorDrawable vectorDrawable =
+            (AnimatedVectorDrawable) mAnimationComponents.image.getDrawable();
+        boolean shouldLoop = getTransitionForIndex(mCurrentTransitionIndex).shouldLoop;
+        mRepeatingVectorAnimation = new RepeatingVectorAnimation(vectorDrawable, shouldLoop);
+        mRepeatingVectorAnimation.start();
     }
 
     @VisibleForTesting
@@ -195,84 +182,39 @@ class TransitionAnimationHelper {
         if (!mShowAnimations) {
             return;
         }
-        mAnimationComponents.mAnimationView.pauseAnimation();
+        if (!(mAnimationComponents.image.getDrawable() instanceof AnimatedVectorDrawable)) {
+            return;
+        }
+        mRepeatingVectorAnimation.stop();
     }
 
     @VisibleForTesting
     void updateUiValues(int currentTransitionIndex) {
         final TransitionScreenWrapper transition =
                 getTransitionForIndex(currentTransitionIndex);
-        setupHeaderText(transition);
-        setupDescriptionText(transition);
-        setupAnimation(transition);
 
-        boolean isTextBasedEduScreen = transition.subHeaderIcon != 0;
-        updateItemValues(
-                mAnimationComponents.mItem1,
-                transition.subHeaderIcon,
-                transition.subHeaderTitle,
-                transition.subHeader,
-                isTextBasedEduScreen);
-        updateItemValues(
-                mAnimationComponents.mItem2,
-                transition.secondarySubHeaderIcon,
-                transition.secondarySubHeaderTitle,
-                transition.secondarySubHeader,
-                isTextBasedEduScreen);
-        updateSpaceVisibility(mAnimationComponents.mSpace1, isTextBasedEduScreen);
-        updateSpaceVisibility(mAnimationComponents.mSpace2, isTextBasedEduScreen);
-    }
+        mAnimationComponents.header.setText(transition.header);
 
-    private void setupHeaderText(TransitionScreenWrapper transition) {
-        mAnimationComponents.mHeader.setText(transition.header);
-        triggerTextToSpeechIfFocused(mAnimationComponents.mHeader);
-    }
-
-    private void triggerTextToSpeechIfFocused(TextView view) {
-        if (view.isAccessibilityFocused()) {
-            view.announceForAccessibility(view.getText().toString());
-        }
-    }
-
-    private void setupAnimation(TransitionScreenWrapper transition) {
-        if (mShowAnimations && transition.drawable != 0) {
-            mAnimationComponents.mAnimationView.setAnimation(transition.drawable);
-            mCallback.onAnimationSetup(mAnimationComponents.mAnimationView);
-            mAnimationComponents.mImageContainer.setVisibility(View.VISIBLE);
+        final ImageView image = mAnimationComponents.image;
+        if (mShowAnimations) {
+            image.setImageResource(transition.drawable);
         } else {
-            mAnimationComponents.mImageContainer.setVisibility(View.GONE);
+            image.setVisibility(View.GONE);
         }
-    }
 
-    private void setupDescriptionText(TransitionScreenWrapper transition) {
-        if (transition.description != 0) {
-            mAnimationComponents.mDescription.setText(transition.description);
-            mAnimationComponents.mDescription.setVisibility(View.VISIBLE);
-            triggerTextToSpeechIfFocused(mAnimationComponents.mDescription);
+        final TextView subHeader = mAnimationComponents.subHeader;
+        if (transition.subHeader != 0) {
+            subHeader.setVisibility(View.VISIBLE);
+            subHeader.setText(transition.subHeader);
         } else {
-            mAnimationComponents.mDescription.setVisibility(View.GONE);
+            subHeader.setVisibility(View.INVISIBLE);
         }
-    }
 
-    private void updateItemValues(ViewGroup item, int icon, int subHeaderTitle, int subHeader,
-            boolean isTextBasedEduScreen) {
-        if (isTextBasedEduScreen) {
-            ((ImageView) item.findViewById(R.id.sud_items_icon)).setImageResource(icon);
-            ((TextView) item.findViewById(R.id.sud_items_title)).setText(subHeaderTitle);
-            ((TextView) item.findViewById(R.id.sud_items_summary)).setText(subHeader);
-            mStylerHelper.applyListItemStyling(
-                    item, new LinearLayout.LayoutParams(item.getLayoutParams()));
-            item.setVisibility(View.VISIBLE);
+        final TextView providerInfo = mAnimationComponents.providerInfo;
+        if (transition.showContactAdmin) {
+            providerInfo.setVisibility(View.VISIBLE);
         } else {
-            item.setVisibility(View.GONE);
-        }
-    }
-
-    private void updateSpaceVisibility(Space space, boolean isTextBasedEduScreen) {
-        if (isTextBasedEduScreen) {
-            space.setVisibility(View.VISIBLE);
-        } else {
-            space.setVisibility(View.GONE);
+            providerInfo.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -281,71 +223,81 @@ class TransitionAnimationHelper {
         return transitions[currentTransitionIndex % transitions.length];
     }
 
+    @VisibleForTesting
+    ProvisioningModeWrapper getProvisioningModeWrapper(
+            @ProvisioningMode int provisioningMode) {
+        switch (provisioningMode) {
+            case PROVISIONING_MODE_WORK_PROFILE:
+                return WORK_PROFILE_WRAPPER;
+            case PROVISIONING_MODE_FULLY_MANAGED_DEVICE:
+                return FULLY_MANAGED_DEVICE_WRAPPER;
+            case PROVISIONING_MODE_WORK_PROFILE_ON_ORG_OWNED_DEVICE:
+                return WORK_PROFILE_ON_ORG_OWNED_DEVICE_WRAPPER;
+        }
+        throw new IllegalStateException("Unexpected provisioning mode " + provisioningMode);
+    }
+
     private boolean shouldShowAnimations() {
-        final Context context = mAnimationComponents.mHeader.getContext();
+        final Context context = mAnimationComponents.header.getContext();
         return context.getResources().getBoolean(R.bool.show_edu_animations);
     }
 
-    private void applyContentDescription(View view, @StringRes int summaryRes) {
-        Context context = view.getContext();
-        view.setContentDescription(context.getString(summaryRes));
+    private void applyContentDescription() {
+        final TextView header = mAnimationComponents.header;
+        final Context context = header.getContext();
+        header.setContentDescription(context.getString(mProvisioningModeWrapper.summary));
+    }
+
+    private static final class TransitionScreenWrapper {
+        final @StringRes int header;
+        final @DrawableRes int drawable;
+        final @StringRes int subHeader;
+        final boolean showContactAdmin;
+        final boolean shouldLoop;
+
+        TransitionScreenWrapper(@StringRes int header, @DrawableRes int drawable) {
+            this(header, drawable, /* subHeader */ 0, /* showContactAdmin */ false,
+                    /* shouldLoop */ true);
+        }
+
+        TransitionScreenWrapper(@StringRes int header, @DrawableRes int drawable,
+                @StringRes int subHeader, boolean showContactAdmin, boolean shouldLoop) {
+            this.header = checkNotNull(header,
+                    "Header resource id must be a positive number.");
+            this.drawable = checkNotNull(drawable,
+                    "Drawable resource id must be a positive number.");
+            this.subHeader = subHeader;
+            this.showContactAdmin = showContactAdmin;
+            this.shouldLoop = shouldLoop;
+        }
+    }
+
+    private static final class ProvisioningModeWrapper {
+        final TransitionScreenWrapper[] transitions;
+        final @StringRes int summary;
+
+        ProvisioningModeWrapper(TransitionScreenWrapper[] transitions, @StringRes int summary) {
+            this.transitions = checkNotNull(transitions);
+            this.summary = summary;
+        }
     }
 
     static final class AnimationComponents {
-        private final TextView mHeader;
-        private final TextView mDescription;
-        private final LottieAnimationView mAnimationView;
-        private final ViewGroup mImageContainer;
-        private final ViewGroup mItem1;
-        private final ViewGroup mItem2;
-        private final Space mSpace1;
-        private final Space mSpace2;
+        private final TextView header;
+        private final TextView subHeader;
+        private final ImageView image;
+        private final TextView providerInfo;
 
-        AnimationComponents(TextView header, TextView description, ViewGroup item1,
-                ViewGroup item2, LottieAnimationView animationView, ViewGroup imageContainer,
-                Space space1, Space space2) {
-            this.mHeader = requireNonNull(header);
-            this.mDescription = requireNonNull(description);
-            this.mItem1 = requireNonNull(item1);
-            this.mItem2 = requireNonNull(item2);
-            this.mImageContainer = requireNonNull(imageContainer);
-            this.mAnimationView = requireNonNull(animationView);
-            this.mSpace1 = requireNonNull(space1);
-            this.mSpace2 = requireNonNull(space2);
+        AnimationComponents(
+                TextView header, TextView subHeader, ImageView image, TextView providerInfo) {
+            this.header = checkNotNull(header);
+            this.subHeader = checkNotNull(subHeader);
+            this.image = checkNotNull(image);
+            this.providerInfo = checkNotNull(providerInfo);
         }
 
         List<View> asList() {
-            return Arrays.asList(mHeader, mItem1, mItem2, mImageContainer);
-        }
-    }
-
-    static final class TransitionAnimationState {
-        private int mAnimationIndex;
-        private float mProgress;
-        private long mLastTransitionTimestamp;
-
-        TransitionAnimationState(
-                int animationIndex,
-                float progress,
-                long lastTransitionTimestamp) {
-            mAnimationIndex = animationIndex;
-            mProgress = progress;
-            mLastTransitionTimestamp = lastTransitionTimestamp;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof TransitionAnimationState)) return false;
-            TransitionAnimationState that = (TransitionAnimationState) o;
-            return mAnimationIndex == that.mAnimationIndex &&
-                    Float.compare(that.mProgress, mProgress) == 0 &&
-                    mLastTransitionTimestamp == that.mLastTransitionTimestamp;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(mAnimationIndex, mProgress, mLastTransitionTimestamp);
+            return Arrays.asList(header, subHeader, image, providerInfo);
         }
     }
 }

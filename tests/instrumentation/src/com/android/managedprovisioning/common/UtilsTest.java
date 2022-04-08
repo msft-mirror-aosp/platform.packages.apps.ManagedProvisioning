@@ -38,6 +38,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -183,7 +184,7 @@ public class UtilsTest extends AndroidTestCase {
         assertFalse(mUtils.isConnectedToNetwork(mockContext));
     }
 
-    public void testIsConnectedToWifi() throws Exception {
+    public void testIsNetworkTypeWifiConnected() throws Exception {
         // GIVEN the device is currently connected to mobile network
         setCurrentNetworkMock(ConnectivityManager.TYPE_MOBILE, true);
         // WHEN checking whether connected to wifi
@@ -203,7 +204,7 @@ public class UtilsTest extends AndroidTestCase {
         assertFalse(mUtils.isNetworkTypeConnected(mockContext, ConnectivityManager.TYPE_WIFI));
     }
 
-    public void testIsConnectedToEthernet() throws Exception {
+    public void testIsNetworkTypeEthernetConnected() throws Exception {
         // GIVEN the device is currently connected to mobile network
         setCurrentNetworkMock(ConnectivityManager.TYPE_MOBILE, true);
         // WHEN checking whether connected to wifi
@@ -399,6 +400,13 @@ public class UtilsTest extends AndroidTestCase {
 
         // THEN computeHashOfFile should return null
         assertNull(mUtils.computeHashOfFile(fileLocation, Utils.SHA256_TYPE));
+    }
+
+    public void testBrightColors() {
+        assertTrue(mUtils.isBrightColor(Color.WHITE));
+        assertTrue(mUtils.isBrightColor(Color.YELLOW));
+        assertFalse(mUtils.isBrightColor(Color.BLACK));
+        assertFalse(mUtils.isBrightColor(Color.BLUE));
     }
 
     public void testCanResolveIntentAsUser() {

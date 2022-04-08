@@ -15,6 +15,7 @@
  */
 package com.android.managedprovisioning.preprovisioning.terms.adapters;
 
+import android.annotation.ColorInt;
 import android.content.Context;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
@@ -39,10 +40,10 @@ final class TermsAdapterUtils {
      * @param disclaimer the term document that contains the contents
      */
     public static void populateContentTextView(Context context, TextView contentTextView,
-            TermsDocument disclaimer, ClickableSpanFactory clickableSpanFactory) {
+            TermsDocument disclaimer, @ColorInt int statusBarColor) {
         HtmlToSpannedParser htmlToSpannedParser = new HtmlToSpannedParser(
-                clickableSpanFactory,
-                url -> WebActivity.createIntent(context, url));
+                new ClickableSpanFactory(context.getColor(R.color.blue_text)),
+                url -> WebActivity.createIntent(context, url, statusBarColor));
         Spanned content = htmlToSpannedParser.parseHtml(disclaimer.getContent());
         contentTextView.setText(content);
         contentTextView.setContentDescription(

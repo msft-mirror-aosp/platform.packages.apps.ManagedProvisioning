@@ -21,9 +21,10 @@ import static com.android.managedprovisioning.finalization.FinalizationControlle
 import static com.android.managedprovisioning.finalization.FinalizationController.ProvisioningFinalizedResult;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.UserHandle;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
@@ -31,7 +32,6 @@ import com.android.managedprovisioning.common.PolicyComplianceUtils;
 import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.StartDpcInsideSuwServiceConnection;
-import com.android.managedprovisioning.common.TransitionHelper;
 import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.ProvisioningParams;
 
@@ -39,46 +39,72 @@ import com.android.managedprovisioning.model.ProvisioningParams;
  * This controller is used to finalize managed provisioning before the end of Setup Wizard.
  */
 public class FinalizationInsideSuwControllerLogic implements FinalizationControllerLogic {
+    @VisibleForTesting
+    static final String EXTRA_DPC_INTENT_CATEGORY = "android.intent.extra.dpc_intent_category";
+
     private static final String START_DPC_SERVICE_STATE_KEY = "start_dpc_service_state";
+    private static final String LAST_DPC_INTENT_CATEGORY_KEY = "last_dpc_intent_category";
     private static final String LAST_REQUEST_CODE_KEY = "last_request_code";
 
     private final Activity mActivity;
     private final Utils mUtils;
     private final PolicyComplianceUtils mPolicyComplianceUtils;
     private final ProvisioningAnalyticsTracker mProvisioningAnalyticsTracker;
-    private final TransitionHelper mTransitionHelper;
     private StartDpcInsideSuwServiceConnection mStartDpcInsideSuwServiceConnection;
+    private String mLastDpcIntentCategory = null;
     private int mLastRequestCode = 0;
 
     public FinalizationInsideSuwControllerLogic(Activity activity) {
         this(activity, new Utils(), new PolicyComplianceUtils(),
                 new ProvisioningAnalyticsTracker(
                         MetricsWriterFactory.getMetricsWriter(activity, new SettingsFacade()),
-                        new ManagedProvisioningSharedPreferences(activity)),
-                new TransitionHelper());
+                        new ManagedProvisioningSharedPreferences(activity)));
     }
 
     public FinalizationInsideSuwControllerLogic(Activity activity, Utils utils,
             PolicyComplianceUtils policyComplianceUtils,
-            ProvisioningAnalyticsTracker provisioningAnalyticsTracker,
-            TransitionHelper transitionHelper) {
+            ProvisioningAnalyticsTracker provisioningAnalyticsTracker) {
         mActivity = activity;
         mUtils = utils;
         mPolicyComplianceUtils = policyComplianceUtils;
         mProvisioningAnalyticsTracker = provisioningAnalyticsTracker;
-        mTransitionHelper = transitionHelper;
+    }
+
+    @Override
+    public boolean isReadyForFinalization(ProvisioningParams params) {
+        // In this release, we only allow provisioning during SUW under certain conditions.  If
+        // those conditions aren't met, skip finalization now, so that we do it after SUW instead.
+
+        if (params.isOrganizationOwnedProvisioning) {
+            if (!mUtils.isAdminIntegratedFlow(params)) {
+                ProvisionLogger.logw("Skipping finalization during SUW for organization "
+                        + "owned provisioning, which is not admin integrated flow");
+                return false;
+            }
+        } else {
+            if (!mPolicyComplianceUtils.isPolicyComplianceActivityResolvable(
+                    mActivity, params, getDpcIntentCategory(), mUtils)) {
+                ProvisionLogger.logw("Skipping finalization during SUW for non-organization "
+                        + "owned provisioning, because DPC doesn't implement intent handler");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
     public @ProvisioningFinalizedResult int notifyDpcManagedProfile(
             ProvisioningParams params, int requestCode) {
-        return startPolicyComplianceActivityForResultIfResolved(params, requestCode);
+        return startPolicyComplianceActivityForResultIfResolved(params, getDpcIntentCategory(),
+                requestCode);
     }
 
     @Override
     public @ProvisioningFinalizedResult int notifyDpcManagedDeviceOrUser(
             ProvisioningParams params, int requestCode) {
-        return startPolicyComplianceActivityForResultIfResolved(params, requestCode);
+        return startPolicyComplianceActivityForResultIfResolved(params, getDpcIntentCategory(),
+                requestCode);
     }
 
     @Override
@@ -88,6 +114,7 @@ public class FinalizationInsideSuwControllerLogic implements FinalizationControl
 
     @Override
     public void saveInstanceState(Bundle outState) {
+        outState.putString(LAST_DPC_INTENT_CATEGORY_KEY, mLastDpcIntentCategory);
         outState.putInt(LAST_REQUEST_CODE_KEY, mLastRequestCode);
 
         if (mStartDpcInsideSuwServiceConnection != null) {
@@ -99,6 +126,7 @@ public class FinalizationInsideSuwControllerLogic implements FinalizationControl
 
     @Override
     public void restoreInstanceState(Bundle savedInstanceState, ProvisioningParams params) {
+        mLastDpcIntentCategory = savedInstanceState.getString(LAST_DPC_INTENT_CATEGORY_KEY);
         mLastRequestCode = savedInstanceState.getInt(LAST_REQUEST_CODE_KEY);
 
         final Bundle startDpcServiceState =
@@ -108,7 +136,7 @@ public class FinalizationInsideSuwControllerLogic implements FinalizationControl
             mStartDpcInsideSuwServiceConnection = new StartDpcInsideSuwServiceConnection(
                     mActivity,
                     startDpcServiceState,
-                    getDpcIntentSender(params, mLastRequestCode));
+                    getDpcIntentSender(params, mLastDpcIntentCategory, mLastRequestCode));
         }
     }
 
@@ -127,10 +155,18 @@ public class FinalizationInsideSuwControllerLogic implements FinalizationControl
         }
     }
 
+    private String getDpcIntentCategory() {
+        final Intent activityIntent = mActivity.getIntent();
+        final Bundle extras = activityIntent != null ? activityIntent.getExtras() : null;
+        return extras != null && extras.containsKey(EXTRA_DPC_INTENT_CATEGORY)
+                ? extras.getString(EXTRA_DPC_INTENT_CATEGORY)
+                : null;
+    }
+
     private @ProvisioningFinalizedResult int startPolicyComplianceActivityForResultIfResolved(
-            ProvisioningParams params, int requestCode) {
-        if (!mPolicyComplianceUtils.isPolicyComplianceActivityResolvableForUser(
-                mActivity, params, mUtils, UserHandle.SYSTEM)) {
+            ProvisioningParams params, String dpcIntentCategory, int requestCode) {
+        if (!mPolicyComplianceUtils.isPolicyComplianceActivityResolvable(mActivity, params,
+                dpcIntentCategory, mUtils)) {
             return PROVISIONING_FINALIZED_RESULT_NO_CHILD_ACTIVITY_LAUNCHED;
         }
 
@@ -142,17 +178,19 @@ public class FinalizationInsideSuwControllerLogic implements FinalizationControl
         // Connect to a SUW service to disable network intent interception before starting the DPC.
         mStartDpcInsideSuwServiceConnection = new StartDpcInsideSuwServiceConnection();
         mStartDpcInsideSuwServiceConnection.triggerDpcStart(mActivity,
-                getDpcIntentSender(params, requestCode));
+                getDpcIntentSender(params, dpcIntentCategory, requestCode));
 
+        mLastDpcIntentCategory = dpcIntentCategory;
         mLastRequestCode = requestCode;
 
         return PROVISIONING_FINALIZED_RESULT_CHILD_ACTIVITY_LAUNCHED;
     }
 
-    private Runnable getDpcIntentSender(ProvisioningParams params, int requestCode) {
+    private Runnable getDpcIntentSender(ProvisioningParams params, String dpcIntentCategory,
+            int requestCode) {
         return () ->
                 mPolicyComplianceUtils.startPolicyComplianceActivityForResultIfResolved(
-                        mActivity, params, requestCode, mUtils, mProvisioningAnalyticsTracker,
-                        mTransitionHelper);
+                        mActivity, params, dpcIntentCategory, requestCode, mUtils,
+                        mProvisioningAnalyticsTracker);
     }
 }

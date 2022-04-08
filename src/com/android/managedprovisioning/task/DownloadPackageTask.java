@@ -36,9 +36,10 @@ import android.provider.Settings;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
-import com.android.managedprovisioning.common.Globals;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.ProvisionLogger;
+import com.android.managedprovisioning.R;
+import com.android.managedprovisioning.common.Globals;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.PackageDownloadInfo;
@@ -48,11 +49,9 @@ import java.io.File;
 
 /**
  * Downloads the management app apk from the url provided by {@link PackageDownloadInfo#location}.
- * The location of the downloaded file can be read via {@link PackageLocationProvider
- * #getDownloadLocation()}}.
+ * The location of the downloaded file can be read via {@link #getDownloadedPackageLocation()}.
  */
-public class DownloadPackageTask extends AbstractProvisioningTask
-        implements PackageLocationProvider {
+public class DownloadPackageTask extends AbstractProvisioningTask {
     public static final int ERROR_DOWNLOAD_FAILED = 0;
     public static final int ERROR_OTHER = 1;
 
@@ -64,7 +63,7 @@ public class DownloadPackageTask extends AbstractProvisioningTask
 
     private final Utils mUtils;
 
-    private File mDownloadLocationTo; //local file where the package is downloaded.
+    private String mDownloadLocationTo; //local file where the package is downloaded.
     private boolean mDoneDownloading;
 
     public DownloadPackageTask(
@@ -91,6 +90,11 @@ public class DownloadPackageTask extends AbstractProvisioningTask
         mDownloadManager.setAccessFilename(true);
         mPackageName = provisioningParams.inferDeviceAdminPackageName();
         mPackageDownloadInfo = checkNotNull(provisioningParams.deviceAdminDownloadInfo);
+    }
+
+    @Override
+    public int getStatusMsgId() {
+        return R.string.progress_download;
     }
 
     @Override
@@ -170,8 +174,8 @@ public class DownloadPackageTask extends AbstractProvisioningTask
                     if (c.moveToFirst()) {
                         int columnIndex = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
                         if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(columnIndex)) {
-                            mDownloadLocationTo = new File(c.getString(
-                                    c.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME)));
+                            mDownloadLocationTo = c.getString(
+                                    c.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
                             c.close();
                             onDownloadSuccess();
                         } else if (DownloadManager.STATUS_FAILED == c.getInt(columnIndex)) {
@@ -196,15 +200,13 @@ public class DownloadPackageTask extends AbstractProvisioningTask
             return;
         }
 
-        ProvisionLogger.logd("Downloaded successfully to: "
-                + mDownloadLocationTo.getAbsolutePath());
+        ProvisionLogger.logd("Downloaded succesfully to: " + mDownloadLocationTo);
         mDoneDownloading = true;
         stopTaskTimer();
         success();
     }
 
-    @Override
-    public File getPackageLocation() {
+    public String getDownloadedPackageLocation() {
         return mDownloadLocationTo;
     }
 

@@ -61,7 +61,7 @@ class AdminIntegratedFlowPrepareManager implements ProvisioningControllerCallbac
     private AdminIntegratedFlowPrepareManager(Context context) {
         this(
                 context,
-                new ProvisioningManagerHelper(),
+                new ProvisioningManagerHelper(context),
                 new ProvisioningAnalyticsTracker(
                         MetricsWriterFactory.getMetricsWriter(context, new SettingsFacade()),
                         new ManagedProvisioningSharedPreferences(context)),
@@ -143,7 +143,7 @@ class AdminIntegratedFlowPrepareManager implements ProvisioningControllerCallbac
     }
 
     private AbstractProvisioningController getController(ProvisioningParams params) {
-        return AdminIntegratedFlowPrepareController.createInstance(
+        return new AdminIntegratedFlowPrepareController(
                 mContext,
                 params,
                 UserHandle.myUserId(),

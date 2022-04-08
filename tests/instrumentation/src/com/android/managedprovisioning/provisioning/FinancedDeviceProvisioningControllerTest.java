@@ -24,14 +24,15 @@ import android.content.ComponentName;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.model.PackageDownloadInfo;
 import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.task.DeviceOwnerInitializeProvisioningTask;
 import com.android.managedprovisioning.task.DisallowAddUserTask;
 import com.android.managedprovisioning.task.DownloadPackageTask;
-import com.android.managedprovisioning.task.SetDeviceOwnerPolicyTask;
+import com.android.managedprovisioning.task.InstallPackageTask;
+import com.android.managedprovisioning.task.SetDevicePolicyTask;
 import com.android.managedprovisioning.task.VerifyPackageTask;
-
 import org.mockito.Mock;
 
 /**
@@ -70,11 +71,11 @@ public class FinancedDeviceProvisioningControllerTest extends ProvisioningContro
         // THEN the verify package task should be run
         taskSucceeded(VerifyPackageTask.class);
 
-        // THEN the install package tasks should be run
-        tasksDownloadAndInstallDeviceOwnerPackageSucceeded(TEST_USER_ID);
+        // THEN the install package task should be run
+        taskSucceeded(InstallPackageTask.class);
 
         // THEN the set device policy task should be run
-        taskSucceeded(SetDeviceOwnerPolicyTask.class);
+        taskSucceeded(SetDevicePolicyTask.class);
 
         // THEN the disallow add user task should be run
         taskSucceeded(DisallowAddUserTask.class);
@@ -97,7 +98,7 @@ public class FinancedDeviceProvisioningControllerTest extends ProvisioningContro
         taskSucceeded(DeviceOwnerInitializeProvisioningTask.class);
 
         // THEN the set device policy task should be run
-        taskSucceeded(SetDeviceOwnerPolicyTask.class);
+        taskSucceeded(SetDevicePolicyTask.class);
 
         // THEN the disallow add user task should be run
         taskSucceeded(DisallowAddUserTask.class);
@@ -107,7 +108,7 @@ public class FinancedDeviceProvisioningControllerTest extends ProvisioningContro
     }
 
     private void createController(ProvisioningParams params) {
-        mController = FinancedDeviceProvisioningController.createInstance(
+        mController = new FinancedDeviceProvisioningController(
                 getContext(),
                 params,
                 TEST_USER_ID,

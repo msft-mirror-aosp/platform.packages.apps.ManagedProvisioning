@@ -24,6 +24,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
@@ -129,6 +130,11 @@ public class DeleteNonRequiredAppsTask extends AbstractProvisioningTask {
             }
         }
         packages.removeAll(toBeRemoved);
+    }
+
+    @Override
+    public int getStatusMsgId() {
+        return R.string.progress_delete_non_required_apps;
     }
 
     /**

@@ -15,56 +15,56 @@
  */
 package com.android.managedprovisioning.preprovisioning;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
+import android.graphics.Color;
+import android.test.ActivityUnitTestCase;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
-import androidx.test.rule.ActivityTestRule;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import com.android.managedprovisioning.common.CustomizationVerifier;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 @SmallTest
-@RunWith(MockitoJUnitRunner.class)
-public class WebActivityTest {
+public class WebActivityTest extends ActivityUnitTestCase<WebActivity> {
     private static final String TEST_URL = "http://www.test.com/support";
+    private static final int STATUS_BAR_COLOR = Color.parseColor("#BDBDBD"); // any color would do
 
-    @Rule
-    public ActivityTestRule<WebActivity> mActivityRule = new ActivityTestRule<>(
-            WebActivity.class, true, false);
-    private Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
-
-    @Test
-    public void testNoUrl() {
-        Intent intent = WebActivity.createIntent(mInstrumentation.getTargetContext(), null);
-
-        assertThat(intent).isNull();
+    public WebActivityTest() {
+        super(WebActivity.class);
     }
 
-    @Ignore("b/181323689")
-    @Test
+    public void testNoUrl() {
+        Intent intent = WebActivity.createIntent(getInstrumentation().getTargetContext(), null,
+                STATUS_BAR_COLOR);
+        assertThat(intent, nullValue());
+    }
+
     public void testUrlLaunched() {
+        startActivityOnMainSync(WebActivity.createIntent(getInstrumentation().getTargetContext(),
+                TEST_URL, STATUS_BAR_COLOR));
+        assertFalse(isFinishCalled());
         final AtomicReference<String> urlRef = new AtomicReference<>(null);
-
-        Activity activity = mActivityRule.launchActivity(
-                WebActivity.createIntent(mInstrumentation.getTargetContext(),
-                        TEST_URL));
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(() ->
-                urlRef.set(((WebView) ((ViewGroup) activity
+        getInstrumentation().runOnMainSync(() ->
+                urlRef.set(((WebView) ((ViewGroup) getActivity()
                         .findViewById(android.R.id.content)).getChildAt(0)).getUrl()));
+        assertEquals(TEST_URL, urlRef.get());
+        new CustomizationVerifier(getActivity()).assertStatusBarColorCorrect(STATUS_BAR_COLOR);
+    }
 
-        assertThat(activity.isFinishing()).isFalse();
-        assertThat(urlRef.get()).isEqualTo(TEST_URL);
+    private void startActivityOnMainSync(final Intent intent) {
+        getInstrumentation().runOnMainSync(() -> startActivity(intent, null, null));
+    }
+
+    @Override
+    public Instrumentation getInstrumentation() {
+        return InstrumentationRegistry.getInstrumentation();
     }
 }

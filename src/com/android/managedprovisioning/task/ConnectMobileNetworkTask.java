@@ -20,6 +20,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.provider.Settings;
 
+import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.ProvisioningParams;
@@ -46,7 +47,7 @@ public class ConnectMobileNetworkTask extends AbstractProvisioningTask
             ProvisioningParams provisioningParams,
             Callback callback) {
         super(context, provisioningParams, callback);
-        mNetworkMonitor = new NetworkMonitor(context, /* waitForValidated */ true);
+        mNetworkMonitor = new NetworkMonitor(context);
         mUtils = new Utils();
     }
 
@@ -83,20 +84,15 @@ public class ConnectMobileNetworkTask extends AbstractProvisioningTask
     }
 
     @Override
+    public int getStatusMsgId() {
+        return R.string.progress_connect_to_mobile_network;
+    }
+
+    @Override
     public void onNetworkConnected() {
         ProvisionLogger.logd("onNetworkConnected");
         if (isLegacyConnected()
                 || ((mProvisioningParams.isNfc || mProvisioningParams.isQrProvisioning)
-                // TODO: instead of having NetworkMonitor wait for any default network (which could
-                // be wifi), and checking that any mobile network (which may not be the default) is
-                // connected, either:
-                // - If the device should wait for mobile data to be default before continuing,
-                //   have NetworkMonitor check that the default network it obtains has
-                //   TRANSPORT_MOBILE. This will typically never happen when wifi is usable.
-                // - If the device should continue when mobile data is connected but not default,
-                //   have NetworkMonitor use requestNetwork with TRANSPORT_MOBILE and have
-                //   all subsequent network usage explicitly specify the obtained mobile network
-                //   with APIs such as Network.openConnection or Network.bindSocket.
                 && mUtils.isMobileNetworkConnectedToInternet(mContext))) {
             ProvisionLogger.logd("Connected to mobile data");
             finishTask(true);

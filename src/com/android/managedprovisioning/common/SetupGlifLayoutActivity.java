@@ -17,10 +17,11 @@
 package com.android.managedprovisioning.common;
 
 import android.annotation.Nullable;
-import android.content.res.Resources;
+import android.content.res.ColorStateList;
+import android.content.res.Resources.Theme;
 import android.os.Bundle;
+import android.sysprop.SetupWizardProperties;
 import android.text.Editable;
-import android.text.Layout;
 import android.text.TextWatcher;
 import android.widget.TextView;
 
@@ -28,8 +29,8 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.model.CustomizationParams;
-
 import com.google.android.setupdesign.GlifLayout;
+import com.google.android.setupdesign.util.ThemeResolver;
 
 
 /**
@@ -37,25 +38,28 @@ import com.google.android.setupdesign.GlifLayout;
  */
 public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
 
-    private int mInitialHeaderMaxLines;
+    /**
+     * Number of characters in the header needed before adding an extra line of text.
+     */
+    private static final int CHAR_THRESHOLD_FOR_ADDITIONAL_LINE = 70;
 
     public SetupGlifLayoutActivity() {
         super();
     }
 
-    @VisibleForTesting
-    protected SetupGlifLayoutActivity(
-            Utils utils, SettingsFacade settingsFacade, ThemeHelper themeHelper) {
-        super(utils, settingsFacade, themeHelper);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setDefaultTheme();
+    }
+
+    @VisibleForTesting
+    protected SetupGlifLayoutActivity(Utils utils) {
+        super(utils);
     }
 
     @Override
-    protected void onApplyThemeResource(Resources.Theme theme, int resid, boolean first) {
+    protected void onApplyThemeResource(Theme theme, int resid, boolean first) {
         theme.applyStyle(R.style.SetupWizardPartnerResource, true);
         super.onApplyThemeResource(theme, resid, first);
     }
@@ -65,13 +69,22 @@ public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
         setContentView(layoutResourceId);
         GlifLayout layout = findViewById(R.id.setup_wizard_layout);
 
+        // ManagedProvisioning's customization has prioritization than stencil theme currently. If
+        // there is no status bar color customized by ManagedProvisioning, it can apply status bar
+        // color from stencil theme.
+        if (!params.useSetupStatusBarColor) {
+            setStatusBarColor(params.statusBarColor);
+        }
+        layout.setPrimaryColor(ColorStateList.valueOf(params.mainColor));
+
         if (headerResourceId != null) {
             layout.setHeaderText(headerResourceId);
+            layout.setHeaderColor(
+                    getResources().getColorStateList(R.color.header_text_color, getTheme()));
         }
 
         TextView header = findViewById(R.id.suc_layout_title);
         if (header != null) {
-            mInitialHeaderMaxLines = header.getMaxLines();
             header.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -83,31 +96,33 @@ public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    increaseMaxLinesIfNecessary(header, mInitialHeaderMaxLines);
+                    adjustHeaderMaxLines();
                 }
             });
 
-            increaseMaxLinesIfNecessary(header, mInitialHeaderMaxLines);
+            adjustHeaderMaxLines();
         }
 
-        layout.setIcon(LogoUtils.getOrganisationLogo(this, params.logoColor));
+        layout.setIcon(LogoUtils.getOrganisationLogo(this, params.mainColor));
     }
 
-    /**
-     * If the text takes more than its {@code textView}'s {@code initialMaxLines}, expand it one
-     * more line.
-     */
-    private void increaseMaxLinesIfNecessary(TextView textView, int initialMaxLines) {
-        textView.setMaxLines(initialMaxLines);
-        textView.post(() -> {
-            Layout layout = textView.getLayout();
-            if (layout == null) {
-                return;
-            }
-            int lineCount = layout.getLineCount();
-            if (lineCount > 0 && layout.getEllipsisCount(lineCount - 1) > 0) {
-                textView.setMaxLines(initialMaxLines + 1);
-            }
-        });
+    private void adjustHeaderMaxLines() {
+        TextView header = findViewById(R.id.suc_layout_title);
+        int maxLines = 3;
+        if (header.getText().length() > CHAR_THRESHOLD_FOR_ADDITIONAL_LINE) {
+            maxLines++;
+        }
+        if (header.getMaxLines() != maxLines) {
+            header.setMaxLines(maxLines);
+        }
     }
+
+    private void setDefaultTheme() {
+        setTheme(new ThemeResolver.Builder(ThemeResolver.getDefault())
+            .setDefaultTheme(R.style.SudThemeGlifV3_Light)
+            .setUseDayNight(false)
+            .build()
+            .resolve(SetupWizardProperties.theme().orElse("")));
+    }
+
 }

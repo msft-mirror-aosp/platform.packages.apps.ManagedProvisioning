@@ -41,7 +41,9 @@ import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferenc
 import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.model.ProvisioningParams;
+import com.android.managedprovisioning.task.CrossProfileIntentFiltersSetter;
 import com.android.managedprovisioning.task.DeleteNonRequiredAppsTask;
+import com.android.managedprovisioning.task.DisableInstallShortcutListenersTask;
 import com.android.managedprovisioning.task.DisallowAddUserTask;
 import com.android.managedprovisioning.task.InstallExistingPackageTask;
 import com.android.managedprovisioning.task.MigrateSystemAppsSnapshotTask;
@@ -54,13 +56,13 @@ import java.util.function.IntFunction;
  * After a system update, this class resets the cross-profile intent filters and performs any
  * tasks necessary to bring the system up to date.
  */
-// TODO(b/178711424): move any business logic from here into the framework.
 public class OtaController {
 
     private static final String TELECOM_PACKAGE = "com.android.server.telecom";
 
     private final Context mContext;
     private final TaskExecutor mTaskExecutor;
+    private final CrossProfileIntentFiltersSetter mCrossProfileIntentFiltersSetter;
 
     private final UserManager mUserManager;
     private final DevicePolicyManager mDevicePolicyManager;
@@ -69,7 +71,7 @@ public class OtaController {
     private final ProvisioningAnalyticsTracker mProvisioningAnalyticsTracker;
 
     public OtaController(Context context) {
-        this(context, new TaskExecutor(),
+        this(context, new TaskExecutor(), new CrossProfileIntentFiltersSetter(context),
                 userId -> getMissingSystemImePackages(context, UserHandle.of(userId)),
                 new ProvisioningAnalyticsTracker(
                         MetricsWriterFactory.getMetricsWriter(context, new SettingsFacade()),
@@ -78,10 +80,12 @@ public class OtaController {
 
     @VisibleForTesting
     OtaController(Context context, TaskExecutor taskExecutor,
+            CrossProfileIntentFiltersSetter crossProfileIntentFiltersSetter,
             IntFunction<ArraySet<String>> missingSystemImeProvider,
             ProvisioningAnalyticsTracker provisioningAnalyticsTracker) {
         mContext = checkNotNull(context);
         mTaskExecutor = checkNotNull(taskExecutor);
+        mCrossProfileIntentFiltersSetter = checkNotNull(crossProfileIntentFiltersSetter);
         mProvisioningAnalyticsTracker = checkNotNull(provisioningAnalyticsTracker);
 
         mUserManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
@@ -114,7 +118,7 @@ public class OtaController {
             } else {
                 // if this user has managed profiles, reset the cross-profile intent filters between
                 // this user and its managed profiles.
-                mDevicePolicyManager.resetDefaultCrossProfileIntentFilters(userInfo.id);
+                mCrossProfileIntentFiltersSetter.resetFilters(userInfo.id);
             }
         }
 
@@ -144,7 +148,7 @@ public class OtaController {
                 new DeleteNonRequiredAppsTask(false, context, fakeParams, mTaskExecutor,
                         mProvisioningAnalyticsTracker));
         mTaskExecutor.execute(userId,
-                new DisallowAddUserTask(UserManager.isHeadlessSystemUserMode(), context, fakeParams,
+                new DisallowAddUserTask(UserManager.isSplitSystemUser(), context, fakeParams,
                         mTaskExecutor, mProvisioningAnalyticsTracker));
     }
 
@@ -168,6 +172,9 @@ public class OtaController {
                 .setDeviceAdminComponentName(profileOwner)
                 .setProvisioningAction(ACTION_PROVISION_MANAGED_PROFILE)
                 .build();
+        mTaskExecutor.execute(userId,
+                new DisableInstallShortcutListenersTask(context, fakeParams, mTaskExecutor,
+                        mProvisioningAnalyticsTracker));
         mTaskExecutor.execute(userId,
                 new DeleteNonRequiredAppsTask(false, context, fakeParams, mTaskExecutor,
                         mProvisioningAnalyticsTracker));

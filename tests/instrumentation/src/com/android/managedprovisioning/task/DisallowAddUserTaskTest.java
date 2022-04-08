@@ -40,21 +40,21 @@ import java.util.Collections;
 
 /**
  * Unit-tests for {@link DisallowAddUserTask}.
- *
- * <p>Run as {@code atest ManagedProvisioningTests:DisallowAddUserTaskTest}.
  */
 public class DisallowAddUserTaskTest extends AndroidTestCase {
-    @Mock private Context mMockContext;
-    @Mock private UserManager mMockUserManager;
+    @Mock private Context mockContext;
+    @Mock private UserManager mockUserManager;
     @Mock private AbstractProvisioningTask.Callback mCallback;
     @Mock private ProvisioningAnalyticsTracker mProvisioningAnalyticsTracker;
 
     // Normal cases.
-    private final UserInfo mSystemUser = new UserInfo(UserHandle.USER_SYSTEM, "System",
+    private UserInfo primaryUser = new UserInfo(0, "Primary",
             UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN);
 
-    // Headless-system-user cases.
-    private final UserInfo mFullUser = new UserInfo(10, "FullUser", UserInfo.FLAG_ADMIN);
+    // Split-system-user cases.
+    private UserInfo systemUser = new UserInfo(UserHandle.USER_SYSTEM, "System", 0 /* flags */);
+    private UserInfo meatUser = new UserInfo(10, "Primary",
+            UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN);
 
     @Override
     public void setUp() {
@@ -63,80 +63,86 @@ public class DisallowAddUserTaskTest extends AndroidTestCase {
 
         MockitoAnnotations.initMocks(this);
 
-        when(mMockContext.getSystemService(Context.USER_SERVICE)).thenReturn(mMockUserManager);
+        when(mockContext.getSystemService(Context.USER_SERVICE)).thenReturn(mockUserManager);
         // Setup sensible default responses.
-        when(mMockUserManager.hasUserRestriction(anyString(), any(UserHandle.class)))
+        when(mockUserManager.hasUserRestriction(anyString(), any(UserHandle.class)))
                 .thenReturn(false);
     }
 
     @SmallTest
     public void testMaybeDisallowAddUsers_normalSystem() {
-        // GIVEN that only one user exists on the device and the system doesn't have a headless
-        // system user
-        when(mMockUserManager.getUsers()).thenReturn(Collections.singletonList(mSystemUser));
+        // GIVEN that only one user exists on the device and the system doesn't have a split system
+        // user
+        when(mockUserManager.getUsers()).thenReturn(Collections.singletonList(primaryUser));
         final DisallowAddUserTask task =
-                new DisallowAddUserTask(false, mMockContext, null, mCallback,
+                new DisallowAddUserTask(false, mockContext, null, mCallback,
                         mProvisioningAnalyticsTracker);
 
         // WHEN running the DisallowAddUserTask on the single user
-        task.run(mSystemUser.id);
+        task.run(primaryUser.id);
 
         // THEN the user restriction should be set
-        verify(mMockUserManager).setUserRestriction(UserManager.DISALLOW_ADD_USER, true,
-                mSystemUser.getUserHandle());
+        verify(mockUserManager).setUserRestriction(UserManager.DISALLOW_ADD_USER, true,
+                primaryUser.getUserHandle());
         verify(mCallback).onSuccess(task);
     }
 
     @SmallTest
     public void testMaybeDisallowAddUsers_normalSystem_restrictionAlreadySetupForOneUser() {
-        // GIVEN that only one user exists on the device and the system doesn't have a headless
-        // system user
-        when(mMockUserManager.getUsers()).thenReturn(Collections.singletonList(mSystemUser));
+        // GIVEN that only one user exists on the device and the system doesn't have a split system
+        // user
+        when(mockUserManager.getUsers()).thenReturn(Collections.singletonList(primaryUser));
         final DisallowAddUserTask task =
-                new DisallowAddUserTask(false, mMockContext, null, mCallback,
+                new DisallowAddUserTask(false, mockContext, null, mCallback,
                         mProvisioningAnalyticsTracker);
 
         // GIVEN that the user restriction has already been set
-        when(mMockUserManager.hasUserRestriction(UserManager.DISALLOW_ADD_USER,
-                mSystemUser.getUserHandle()))
+        when(mockUserManager.hasUserRestriction(UserManager.DISALLOW_ADD_USER,
+                primaryUser.getUserHandle()))
                 .thenReturn(true);
 
         // WHEN running the DisallowAddUserTask on the single user
-        task.run(mSystemUser.id);
+        task.run(primaryUser.id);
 
         // THEN the user restriction should not be set
-        verify(mMockUserManager, never()).setUserRestriction(anyString(), anyBoolean(),
+        verify(mockUserManager, never()).setUserRestriction(anyString(), anyBoolean(),
                 any(UserHandle.class));
         verify(mCallback).onSuccess(task);
     }
 
     @SmallTest
-    public void testNeverDisallowAddUsers_headlessSystemUserMode_currentUserIsSystemUser() {
-        testNeverDisallowAddUsers_headlessSystemUserMode(/* currentUser= */ mSystemUser);
+    public void testMaybeDisallowAddUsers_splitUserSystem_meatUserDeviceOwner() {
+        // GIVEN that we have a split system user and a single meat user on the device
+        when(mockUserManager.getUsers()).thenReturn(Arrays.asList(new UserInfo[]{
+                systemUser, meatUser}));
+        final DisallowAddUserTask task =
+                new DisallowAddUserTask(true, mockContext, null, mCallback,
+                        mProvisioningAnalyticsTracker);
+
+        // WHEN running the DisallowAddUserTask on the meat user
+        task.run(meatUser.id);
+
+        // THEN the user restriction should be added on both users
+        verify(mockUserManager).setUserRestriction(UserManager.DISALLOW_ADD_USER, true,
+                systemUser.getUserHandle());
+        verify(mockUserManager).setUserRestriction(UserManager.DISALLOW_ADD_USER, true,
+                meatUser.getUserHandle());
+        verify(mCallback).onSuccess(task);
     }
 
     @SmallTest
-    public void testNeverDisallowAddUsers_headlessSystemUserMode_currentUserIsFullUser() {
-        // This scenario should not happen on real life, but the end result would be the same - the
-        // restriction is not set on any user
-        testNeverDisallowAddUsers_headlessSystemUserMode(/* currentUser= */ mFullUser);
-    }
-
-    // Not a @Test per se, but a helpers that contains the logic of the 2
-    // testNeverDisallowAddUsers_headlessSystemUserMode() - the behavior and logic is identical, the
-    // only difference is the current user
-    private void testNeverDisallowAddUsers_headlessSystemUserMode(UserInfo currentUser) {
-        // GIVEN that we have a headless system user, it has a full user as well
-        when(mMockUserManager.getUsers()).thenReturn(Arrays.asList(mSystemUser, mFullUser));
+    public void testMaybeDisallowAddUsers_splitUserSystem_systemDeviceOwner() {
+        // GIVEN that we have a split system user and only the system user on the device
+        when(mockUserManager.getUsers()).thenReturn(Collections.singletonList(systemUser));
         final DisallowAddUserTask task =
-                new DisallowAddUserTask(true, mMockContext, null, mCallback,
+                new DisallowAddUserTask(true, mockContext, null, mCallback,
                         mProvisioningAnalyticsTracker);
 
-        // WHEN running the DisallowAddUserTask as the given user
-        task.run(currentUser.id);
+        // WHEN running the DisallowAddUserTask on the system user
+        task.run(systemUser.id);
 
         // THEN the user restriction should not be set
-        verify(mMockUserManager, never()).setUserRestriction(anyString(), anyBoolean(),
+        verify(mockUserManager, never()).setUserRestriction(anyString(), anyBoolean(),
                 any(UserHandle.class));
         verify(mCallback).onSuccess(task);
     }

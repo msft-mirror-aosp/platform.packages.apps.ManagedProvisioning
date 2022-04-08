@@ -20,10 +20,10 @@ import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.PROVIS
 
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.annotation.Nullable;
 import android.webkit.URLUtil;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -32,15 +32,10 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-
-import com.android.managedprovisioning.ManagedProvisioningBaseApplication;
-import com.android.managedprovisioning.ManagedProvisioningScreens;
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.SetupLayoutActivity;
-import com.android.managedprovisioning.common.TransitionHelper;
 import com.android.managedprovisioning.preprovisioning.terms.TermsActivity;
 
 /**
@@ -54,19 +49,25 @@ import com.android.managedprovisioning.preprovisioning.terms.TermsActivity;
  */
 public class WebActivity extends SetupLayoutActivity {
     private static final String EXTRA_URL = "extra_url";
+    private static final String EXTRA_STATUS_BAR_COLOR = "extra_status_bar_color";
 
     private WebView mWebView;
-    private final SettingsFacade mSettingsFacade = new SettingsFacade();
-    private final TransitionHelper mTransitionHelper = new TransitionHelper();
+    private SettingsFacade mSettingsFacade = new SettingsFacade();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         String extraUrl = getIntent().getStringExtra(EXTRA_URL);
         if (extraUrl == null) {
             Toast.makeText(this, R.string.url_error, Toast.LENGTH_SHORT).show();
             ProvisionLogger.loge("No url provided to WebActivity.");
-            mTransitionHelper.finishActivity(this);
+            finish();
+        }
+
+        Bundle extras = getIntent().getExtras();
+        if (extras.containsKey(EXTRA_STATUS_BAR_COLOR)) {
+            setStatusBarColor(extras.getInt(EXTRA_STATUS_BAR_COLOR));
         }
 
         mWebView = new WebView(this);
@@ -94,8 +95,6 @@ public class WebActivity extends SetupLayoutActivity {
             // User should not be able to escape provisioning if user setup isn't complete.
             mWebView.setOnLongClickListener(v -> true);
         }
-        getThemeHelper()
-                .applyWebSettingsDayNight(getApplicationContext(), webSettings, getIntent());
         setContentView(mWebView);
     }
 
@@ -123,20 +122,12 @@ public class WebActivity extends SetupLayoutActivity {
      * @param url the url to be shown upon launching this activity
      */
     @Nullable
-    public static Intent createIntent(Context context, String url) {
+    public static Intent createIntent(Context context, String url, int statusBarColor) {
         if (URLUtil.isNetworkUrl(url)) {
-            return new Intent(context, getWebActivityClass(context))
-                    .putExtra(EXTRA_URL, url);
+            return new Intent(context, WebActivity.class)
+                    .putExtra(EXTRA_URL, url)
+                    .putExtra(EXTRA_STATUS_BAR_COLOR, statusBarColor);
         }
         return null;
-    }
-
-    private static Class<? extends Activity> getWebActivityClass(Context context) {
-        return getBaseApplication(context)
-                .getActivityClassForScreen(ManagedProvisioningScreens.WEB);
-    }
-
-    private static ManagedProvisioningBaseApplication getBaseApplication(Context context) {
-        return (ManagedProvisioningBaseApplication) context.getApplicationContext();
     }
 }

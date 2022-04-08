@@ -21,6 +21,7 @@ import android.content.Context;
 
 import com.android.internal.app.LocalePicker;
 import com.android.managedprovisioning.common.ProvisionLogger;
+import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.model.ProvisioningParams;
 
 import java.util.Locale;
@@ -33,6 +34,11 @@ public class DeviceOwnerInitializeProvisioningTask extends AbstractProvisioningT
     public DeviceOwnerInitializeProvisioningTask(Context context, ProvisioningParams params,
             Callback callback) {
         super(context, params, callback);
+    }
+
+    @Override
+    public int getStatusMsgId() {
+        return R.string.progress_initialize;
     }
 
     @Override

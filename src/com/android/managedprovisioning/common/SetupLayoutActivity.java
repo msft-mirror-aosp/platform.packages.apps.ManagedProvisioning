@@ -16,112 +16,58 @@
 
 package com.android.managedprovisioning.common;
 
+import static android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
+
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.VIEW_UNKNOWN;
-import static com.android.managedprovisioning.provisioning.Constants.LOCK_TO_PORTRAIT_MODE;
 
 import android.app.Activity;
+import android.app.ActivityManager.TaskDescription;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
-import com.android.managedprovisioning.ManagedProvisioningBaseApplication;
-import com.android.managedprovisioning.ManagedProvisioningScreens;
 import com.android.managedprovisioning.R;
-import com.android.managedprovisioning.analytics.MetricsWriterFactory;
-import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.analytics.TimeLogger;
-import com.android.managedprovisioning.common.ThemeHelper.DefaultNightModeChecker;
-import com.android.managedprovisioning.common.ThemeHelper.DefaultSetupWizardBridge;
-import com.android.managedprovisioning.preprovisioning.EncryptionController;
 
 /**
  * Base class for setting up the layout.
  */
-public abstract class SetupLayoutActivity extends AppCompatActivity {
+public abstract class SetupLayoutActivity extends Activity {
     protected final Utils mUtils;
-    protected final SettingsFacade mSettingsFacade;
-    private final ThemeHelper mThemeHelper;
-    private final TransitionHelper mTransitionHelper;
+
     private TimeLogger mTimeLogger;
 
     public SetupLayoutActivity() {
-        this(new Utils(), new SettingsFacade(),
-                new ThemeHelper(new DefaultNightModeChecker(), new DefaultSetupWizardBridge()));
+        this(new Utils());
     }
 
     @VisibleForTesting
-    protected SetupLayoutActivity(
-            Utils utils, SettingsFacade settingsFacade, ThemeHelper themeHelper) {
+    protected SetupLayoutActivity(Utils utils) {
         mUtils = utils;
-        mSettingsFacade = settingsFacade;
-        mThemeHelper = themeHelper;
-        // TODO(b/183036855): Add dependency injection in ManagedProvisioning
-        mTransitionHelper = new TransitionHelper();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (!isWaitingScreen()) {
-            mTransitionHelper.applyContentScreenTransitions(this);
-        }
-        updateDefaultNightMode();
-        setTheme(mThemeHelper.inferThemeResId(this, getIntent()));
-        if (shouldSetupDynamicColors()) {
-            mThemeHelper.setupDynamicColors(this);
-        }
         super.onCreate(savedInstanceState);
+
+        getWindow().addSystemFlags(SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS);
+
         mTimeLogger = new TimeLogger(this, getMetricsCategory());
         mTimeLogger.start();
 
-        // lock orientation to portrait on phones if necessary
-        if (LOCK_TO_PORTRAIT_MODE && getResources().getBoolean(R.bool.lock_to_portrait)) {
+        // lock orientation to portrait on phones
+        if (getResources().getBoolean(R.bool.lock_to_portrait)) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-        logMetrics();
-    }
-
-    protected boolean shouldSetupDynamicColors() {
-        return true;
-    }
-
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        updateDefaultNightMode();
-    }
-
-    private void updateDefaultNightMode() {
-        int nightMode = mThemeHelper.getDefaultNightMode(this, getIntent());
-        AppCompatDelegate delegate = AppCompatDelegate.create(this, /* callback= */ null);
-        delegate.setLocalNightMode(nightMode);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (isWaitingScreen()) {
-            mTransitionHelper.applyWaitingScreenTransitions(this);
-        }
-    }
-
-    private void logMetrics() {
-        // TODO(b/183036855): Add dependency injection in ManagedProvisioning
-        ProvisioningAnalyticsTracker analyticsTracker = new ProvisioningAnalyticsTracker(
-                MetricsWriterFactory.getMetricsWriter(this, new SettingsFacade()),
-                new ManagedProvisioningSharedPreferences(this));
-        final int orientation = getResources().getConfiguration().orientation;
-        analyticsTracker.logIsLandscape(
-                orientation == Configuration.ORIENTATION_LANDSCAPE,
-                getLocalClassName());
     }
 
     @Override
@@ -138,33 +84,34 @@ public abstract class SetupLayoutActivity extends AppCompatActivity {
         return mUtils;
     }
 
-    protected ThemeHelper getThemeHelper() {
-        return mThemeHelper;
-    }
+    /**
+     * @param statusBarColor integer representing the color (i.e. not resource id)
+     */
+    protected void setStatusBarColor(int statusBarColor) {
+        statusBarColor = toSolidColor(statusBarColor);
 
-    protected TransitionHelper getTransitionHelper() {
-        return mTransitionHelper;
-    }
+        Window window = getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(statusBarColor);
 
-    private ManagedProvisioningBaseApplication getBaseApplication() {
-        return ((ManagedProvisioningBaseApplication) getApplication());
-    }
+        // set status bar icon style
+        View decorView = getWindow().getDecorView();
+        int visibility = decorView.getSystemUiVisibility();
+        decorView.setSystemUiVisibility(getUtils().isBrightColor(statusBarColor)
+                ? (visibility | SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)
+                : (visibility & ~SYSTEM_UI_FLAG_LIGHT_STATUS_BAR));
 
-    protected Class<? extends Activity> getActivityForScreen(ManagedProvisioningScreens screen) {
-        return getBaseApplication().getActivityClassForScreen(screen);
-    }
-
-    protected EncryptionController getEncryptionController() {
-        return getBaseApplication().getEncryptionController();
+        setTaskDescription(new TaskDescription(null /* label */, null /* icon */, statusBarColor));
     }
 
     /**
-     * Whether the current screen is a waiting screen.
+     * Removes transparency from the color
      *
-     * <p>A waiting screen is a screen that shows a spinner and not content.
+     * <p>Needed for correct calculation of Status Bar icons (light / dark)
      */
-    protected boolean isWaitingScreen() {
-        return false;
+    private Integer toSolidColor(Integer color) {
+        return Color.argb(255, Color.red(color), Color.green(color), Color.blue(color));
     }
 
     /**

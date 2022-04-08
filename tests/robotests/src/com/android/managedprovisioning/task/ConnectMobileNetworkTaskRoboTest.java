@@ -19,7 +19,6 @@ import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.task.AbstractProvisioningTask.Callback;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -71,7 +70,6 @@ public class ConnectMobileNetworkTaskRoboTest {
         assertThat(callback.getSuccessCount(task)).isEqualTo(0);
     }
 
-    @Ignore("b/188545416")
     @Test
     public void connectToNetwork_afterRun_callbackSuccess() {
         FakeAbstractProvisioningTaskCallback callback = new FakeAbstractProvisioningTaskCallback();
@@ -162,8 +160,7 @@ public class ConnectMobileNetworkTaskRoboTest {
     }
 
     private void sendConnectionBroadcast() {
-        // TODO: Test itself does not really expect an INET_CONDITION_ACTION. Correct the logic.
-        mContext.sendBroadcast(new Intent("android.net.conn.INET_CONDITION_ACTION"));
+        mContext.sendBroadcast(new Intent(ConnectivityManager.INET_CONDITION_ACTION));
     }
 
     // TODO(http://b/110676015): Turn into the official supported fake for

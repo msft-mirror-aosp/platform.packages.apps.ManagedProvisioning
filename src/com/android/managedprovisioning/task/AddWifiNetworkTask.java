@@ -26,6 +26,7 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
@@ -64,7 +65,7 @@ public class AddWifiNetworkTask extends AbstractProvisioningTask
             ProvisioningParams provisioningParams,
             Callback callback) {
         this(
-                new NetworkMonitor(context, /* waitForValidated */ false),
+                new NetworkMonitor(context),
                 new WifiConfigurationProvider(),
                 context, provisioningParams, callback, new Utils(), new Injector(),
                 new ProvisioningAnalyticsTracker(
@@ -113,6 +114,11 @@ public class AddWifiNetworkTask extends AbstractProvisioningTask
         mHandler = new Handler();
         mNetworkMonitor.startListening(this);
         connectToProvidedNetwork();
+    }
+
+    @Override
+    public int getStatusMsgId() {
+        return R.string.progress_connect_to_wifi;
     }
 
     private void connectToProvidedNetwork() {

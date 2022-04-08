@@ -22,15 +22,14 @@ import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.PROVIS
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.SetupGlifLayoutActivity;
-import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.CustomizationParams;
 import com.android.managedprovisioning.model.ProvisioningParams;
-
-import com.google.android.setupdesign.GlifLayout;
 
 /**
  * Activity to ask for permission to activate full-filesystem encryption.
@@ -41,6 +40,10 @@ import com.google.android.setupdesign.GlifLayout;
 public class EncryptDeviceActivity extends SetupGlifLayoutActivity {
     private ProvisioningParams mParams;
 
+    protected EncryptionController getEncryptionController() {
+        return EncryptionController.getInstance(this);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +51,7 @@ public class EncryptDeviceActivity extends SetupGlifLayoutActivity {
         mParams = getIntent().getParcelableExtra(ProvisioningParams.EXTRA_PROVISIONING_PARAMS);
         if (mParams == null) {
             ProvisionLogger.loge("Missing params in EncryptDeviceActivity activity");
-            getTransitionHelper().finishActivity(this);
+            finish();
             return;
         }
 
@@ -62,8 +65,17 @@ public class EncryptDeviceActivity extends SetupGlifLayoutActivity {
                     R.string.encrypt_device_text_for_device_owner_setup);
         } else {
             ProvisionLogger.loge("Unknown provisioning action: " + mParams.provisioningAction);
-            getTransitionHelper().finishActivity(this);
+            finish();
+            return;
         }
+
+        Button encryptButton = (Button) findViewById(R.id.encrypt_button);
+        encryptButton.setOnClickListener((View v) -> {
+                    getEncryptionController().setEncryptionReminder(mParams);
+                    // Use settings so user confirms password/pattern and its passed
+                    // to encryption tool.
+                    startActivity(new Intent(ACTION_START_ENCRYPTION));
+                });
     }
 
     @Override
@@ -76,14 +88,6 @@ public class EncryptDeviceActivity extends SetupGlifLayoutActivity {
                 CustomizationParams.createInstance(mParams, this, mUtils);
         initializeLayoutParams(R.layout.encrypt_device, headerRes, customizationParams);
         setTitle(titleRes);
-        GlifLayout layout = findViewById(R.id.setup_wizard_layout);
-        layout.setDescriptionText(mainTextRes);
-        Utils.addEncryptButton(layout, (View view) -> {
-            getEncryptionController().setEncryptionReminder(mParams);
-            // Use settings so user confirms password/pattern and its passed
-            // to encryption tool.
-            getTransitionHelper().startActivityWithTransition(
-                    EncryptDeviceActivity.this, new Intent(ACTION_START_ENCRYPTION));
-        });
+        ((TextView) findViewById(R.id.encrypt_main_text)).setText(mainTextRes);
     }
 }
