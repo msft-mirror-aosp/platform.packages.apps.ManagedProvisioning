@@ -24,15 +24,16 @@ import android.content.pm.PackageManager;
  * A default implementation of {@link PackageInstallChecker}.
  */
 public final class DefaultPackageInstallChecker implements PackageInstallChecker {
+    private final PackageManager mPackageManager;
     private final Utils mUtils;
 
-    public DefaultPackageInstallChecker(Utils utils) {
+    public DefaultPackageInstallChecker(PackageManager packageManager, Utils utils) {
+        mPackageManager = requireNonNull(packageManager);
         mUtils = requireNonNull(utils);
     }
 
     @Override
-    public boolean isPackageInstalled(
-            String packageName, PackageManager packageManager) {
-        return mUtils.isPackageInstalled(packageName, packageManager);
+    public boolean isPackageInstalled(String packageName) {
+        return mUtils.isPackageInstalled(packageName, mPackageManager);
     }
 }
