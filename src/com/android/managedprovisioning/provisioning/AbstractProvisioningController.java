@@ -38,7 +38,7 @@ import com.android.managedprovisioning.task.AbstractProvisioningTask;
 import com.android.managedprovisioning.task.DownloadPackageTask;
 import com.android.managedprovisioning.task.InstallExistingPackageTask;
 import com.android.managedprovisioning.task.InstallPackageTask;
-import com.android.managedprovisioning.task.VerifyPackageTask;
+import com.android.managedprovisioning.task.VerifyAdminPackageTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +78,7 @@ public abstract class AbstractProvisioningController implements AbstractProvisio
 
     protected int mCurrentTaskIndex;
 
-    AbstractProvisioningController(
+    public AbstractProvisioningController(
             Context context,
             ProvisioningParams params,
             int userId,
@@ -191,19 +191,23 @@ public abstract class AbstractProvisioningController implements AbstractProvisio
     }
 
     protected final void addDownloadAndInstallDeviceOwnerPackageTasks() {
-        if (mParams.deviceAdminDownloadInfo == null) return;
+        if (mParams.deviceAdminDownloadInfo == null) {
+            return;
+        }
 
-        DownloadPackageTask downloadTask = new DownloadPackageTask(mContext, mParams, this);
+        DownloadPackageTask downloadTask = new DownloadPackageTask(
+                mContext, mParams, mParams.deviceAdminDownloadInfo, this);
         addTasks(downloadTask,
-                new VerifyPackageTask(downloadTask, mContext, mParams, this),
+                new VerifyAdminPackageTask(
+                        downloadTask, mContext, mParams, mParams.deviceAdminDownloadInfo, this),
                 new InstallPackageTask(downloadTask, mContext, mParams, this));
 
         // TODO(b/170333009): add unit test for headless system user mode
         if (UserManager.isHeadlessSystemUserMode() && mUserId != UserHandle.USER_SYSTEM) {
             ProvisionLogger.logd("Adding InstallExistingPackageTask for system user on "
                       + "headless system user mode");
-            addTasks(new InstallExistingPackageTask(mParams.inferDeviceAdminPackageName(),
-                    mContext, mParams, this, UserHandle.USER_SYSTEM));
+            addTasks(new InstallExistingPackageTask(mParams.inferDeviceAdminPackageName(), mContext,
+                    mParams, /* callback= */ this, UserHandle.USER_SYSTEM));
         }
     }
 
