@@ -37,12 +37,13 @@ import static android.app.admin.DevicePolicyManager.PROVISIONING_TRIGGER_QR_CODE
 import static android.app.admin.DevicePolicyManager.PROVISIONING_TRIGGER_UNSPECIFIED;
 
 import static com.android.internal.util.Preconditions.checkArgument;
-import static com.android.internal.util.Preconditions.checkNotNull;
 import static com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences.DEFAULT_PROVISIONING_ID;
 import static com.android.managedprovisioning.common.StoreUtils.accountToPersistableBundle;
 import static com.android.managedprovisioning.common.StoreUtils.getObjectAttrFromPersistableBundle;
 import static com.android.managedprovisioning.common.StoreUtils.getStringAttrFromPersistableBundle;
 import static com.android.managedprovisioning.common.StoreUtils.putPersistableBundlableIfNotNull;
+
+import static java.util.Objects.requireNonNull;
 
 import android.accounts.Account;
 import android.annotation.IntDef;
@@ -102,6 +103,8 @@ public final class ProvisioningParams extends PersistableBundlable {
     public static final boolean DEFAULT_EXTRA_PROVISIONING_PERMISSION_GRANT_OPT_OUT = false;
     public static final boolean DEFAULT_EXTRA_PROVISIONING_KEEP_SCREEN_ON = false;
     public static final boolean DEFAULT_EXTRA_ALLOW_OFFLINE = false;
+    public static final boolean DEFAULT_EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT = false;
+
 
     // Intent extra used internally for passing data between activities and service.
     public static final String EXTRA_PROVISIONING_PARAMS = "provisioningParams";
@@ -152,6 +155,10 @@ public final class ProvisioningParams extends PersistableBundlable {
             "device-owner-opt-out-of-permission-grants";
     private static final String TAG_KEEP_SCREEN_ON = "keep-screen-on";
     private static final String TAG_ALLOW_OFFLINE = "allow-offline";
+    private static final String TAG_ROLE_HOLDER_PACKAGE_DOWNLOAD_INFO =
+            "role-holder-download-info";
+    private static final String TAG_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT =
+            "provisioning-should-launch-result-intent";
 
     public static final Parcelable.Creator<ProvisioningParams> CREATOR
             = new Parcelable.Creator<ProvisioningParams>() {
@@ -331,6 +338,20 @@ public final class ProvisioningParams extends PersistableBundlable {
      */
     public final boolean allowOffline;
 
+    /**
+     * {@code true} if provisioning should launch the result intent returned by the
+     * device manager role holder.
+     *
+     * {@code false} by default.
+     *
+     * @see DevicePolicyManager#EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT
+     */
+    public final boolean provisioningShouldLaunchResultIntent;
+
+    /** The download information of the role holder package. */
+    @Nullable
+    public final PackageDownloadInfo roleHolderDownloadInfo;
+
     public static String inferStaticDeviceAdminPackageName(ComponentName deviceAdminComponentName,
             String deviceAdminPackageName) {
         if (deviceAdminComponentName != null) {
@@ -386,7 +407,7 @@ public final class ProvisioningParams extends PersistableBundlable {
         leaveAllSystemAppsEnabled = builder.mLeaveAllSystemAppsEnabled;
         skipEncryption = builder.mSkipEncryption;
         accountToMigrate = builder.mAccountToMigrate;
-        provisioningAction = checkNotNull(builder.mProvisioningAction);
+        provisioningAction = builder.mProvisioningAction;
         skipEducationScreens = builder.mSkipEducationScreens;
         keepAccountMigrated = builder.mKeepAccountMigrated;
 
@@ -401,8 +422,13 @@ public final class ProvisioningParams extends PersistableBundlable {
         deviceOwnerPermissionGrantOptOut = builder.mDeviceOwnerPermissionGrantOptOut;
         keepScreenOn = builder.mKeepScreenOn;
         allowOffline = builder.mAllowOffline;
+        roleHolderDownloadInfo = builder.mRoleHolderDownloadInfo;
+        provisioningShouldLaunchResultIntent = builder.mProvisioningShouldLaunchResultIntent;
 
-        validateFields();
+        if (!builder.mSkipValidation) {
+            requireNonNull(provisioningAction);
+            validateFields();
+        }
     }
 
     private ProvisioningParams(Parcel in) {
@@ -461,6 +487,10 @@ public final class ProvisioningParams extends PersistableBundlable {
                 deviceOwnerPermissionGrantOptOut);
         bundle.putBoolean(TAG_KEEP_SCREEN_ON, keepScreenOn);
         bundle.putBoolean(TAG_ALLOW_OFFLINE, allowOffline);
+        putPersistableBundlableIfNotNull(bundle, TAG_ROLE_HOLDER_PACKAGE_DOWNLOAD_INFO,
+                roleHolderDownloadInfo);
+        bundle.putBoolean(TAG_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT,
+                provisioningShouldLaunchResultIntent);
         return bundle;
     }
 
@@ -469,7 +499,7 @@ public final class ProvisioningParams extends PersistableBundlable {
     }
 
     private static Builder createBuilderFromPersistableBundle(PersistableBundle bundle) {
-        Builder builder = new Builder();
+        Builder builder = new Builder(/* skipValidation= */ false);
         builder.setProvisioningId(bundle.getLong(TAG_PROVISIONING_ID, DEFAULT_PROVISIONING_ID));
         builder.setTimeZone(bundle.getString(EXTRA_PROVISIONING_TIME_ZONE));
         builder.setLocalTime(bundle.getLong(EXTRA_PROVISIONING_LOCAL_TIME));
@@ -519,6 +549,12 @@ public final class ProvisioningParams extends PersistableBundlable {
                 bundle.getBoolean(TAG_DEVICE_OWNER_PERMISSION_GRANT_OPT_OUT));
         builder.setKeepScreenOn(bundle.getBoolean(TAG_KEEP_SCREEN_ON));
         builder.setAllowOffline(bundle.getBoolean(TAG_ALLOW_OFFLINE));
+        builder.setRoleHolderDownloadInfo(getObjectAttrFromPersistableBundle(
+                bundle,
+                TAG_ROLE_HOLDER_PACKAGE_DOWNLOAD_INFO,
+                PackageDownloadInfo::fromPersistableBundle));
+        builder.setProvisioningShouldLaunchResultIntent(
+                bundle.getBoolean(TAG_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT));
         return builder;
     }
 
@@ -608,10 +644,11 @@ public final class ProvisioningParams extends PersistableBundlable {
                              PersistableBundle.restoreFromXml(parser)).build();
              }
         }
-        return new Builder().build();
+        return new Builder(/* skipValidation= */ false).build();
     }
 
     public final static class Builder {
+        private final boolean mSkipValidation;
         private long mProvisioningId;
         private String mTimeZone;
         private long mLocalTime = DEFAULT_LOCAL_TIME;
@@ -651,6 +688,17 @@ public final class ProvisioningParams extends PersistableBundlable {
                 DEFAULT_EXTRA_PROVISIONING_PERMISSION_GRANT_OPT_OUT;
         private boolean mKeepScreenOn = DEFAULT_EXTRA_PROVISIONING_KEEP_SCREEN_ON;
         private boolean mAllowOffline = DEFAULT_EXTRA_ALLOW_OFFLINE;
+        public PackageDownloadInfo mRoleHolderDownloadInfo;
+        private boolean mProvisioningShouldLaunchResultIntent =
+                DEFAULT_EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT;
+
+        public Builder() {
+            this(/* skipValidation= */ false);
+        }
+
+        public Builder(boolean skipValidation) {
+            mSkipValidation = skipValidation;
+        }
 
         public Builder setProvisioningId(long provisioningId) {
             mProvisioningId = provisioningId;
@@ -838,6 +886,26 @@ public final class ProvisioningParams extends PersistableBundlable {
         }
 
         /**
+         * Setter for the role holder download info.
+         */
+        public Builder setRoleHolderDownloadInfo(PackageDownloadInfo roleHolderDownloadInfo) {
+            mRoleHolderDownloadInfo = roleHolderDownloadInfo;
+            return this;
+        }
+
+        /**
+         * Setter for whether provisioning should launch the result intent returned by the
+         * device manager role holder.
+         *
+         * @see DevicePolicyManager#EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT
+         */
+        public Builder setProvisioningShouldLaunchResultIntent(
+                boolean provisioningShouldLaunchResultIntent) {
+            mProvisioningShouldLaunchResultIntent = provisioningShouldLaunchResultIntent;
+            return this;
+        }
+
+        /**
          * Builds the {@link ProvisioningParams} object. Note that {@link
          * #setProvisioningAction(String)} and {@link #setDeviceAdminComponentName(ComponentName)}
          * methods must be called with a non-null parameter before this is called.
@@ -848,6 +916,13 @@ public final class ProvisioningParams extends PersistableBundlable {
 
         public static Builder builder() {
             return new Builder();
+        }
+
+        /**
+         * Creates a {@link Builder} with the option to skip validation.
+         */
+        public static Builder builder(boolean skipValidation) {
+            return new Builder(skipValidation);
         }
     }
 }
