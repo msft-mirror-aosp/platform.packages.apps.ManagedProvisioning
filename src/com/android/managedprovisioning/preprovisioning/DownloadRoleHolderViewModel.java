@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.managedprovisioning.ManagedProvisioningBaseApplication;
+import com.android.managedprovisioning.common.ErrorWrapper;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.ProvisioningParams;
@@ -121,23 +122,7 @@ public class DownloadRoleHolderViewModel extends ViewModel implements
         if (stateDownloading != STATE_ERROR) {
             mErrorWrapper = null;
         }
-        mState.setValue(stateDownloading);
-    }
-
-    /**
-     * Wrapper of an error message.
-     */
-    public static class ErrorWrapper {
-        public final int dialogTitleId;
-        public final int errorMessageResId;
-        public final boolean factoryResetRequired;
-
-        private ErrorWrapper(
-                int dialogTitleId, int errorMessageResId, boolean factoryResetRequired) {
-            this.dialogTitleId = dialogTitleId;
-            this.errorMessageResId = errorMessageResId;
-            this.factoryResetRequired = factoryResetRequired;
-        }
+        mState.postValue(stateDownloading);
     }
 
     /**
