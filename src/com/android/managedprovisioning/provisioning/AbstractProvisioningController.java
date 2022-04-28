@@ -38,7 +38,7 @@ import com.android.managedprovisioning.task.AbstractProvisioningTask;
 import com.android.managedprovisioning.task.DownloadPackageTask;
 import com.android.managedprovisioning.task.InstallExistingPackageTask;
 import com.android.managedprovisioning.task.InstallPackageTask;
-import com.android.managedprovisioning.task.VerifyPackageTask;
+import com.android.managedprovisioning.task.VerifyAdminPackageTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +78,7 @@ public abstract class AbstractProvisioningController implements AbstractProvisio
 
     protected int mCurrentTaskIndex;
 
-    AbstractProvisioningController(
+    public AbstractProvisioningController(
             Context context,
             ProvisioningParams params,
             int userId,
@@ -198,7 +198,7 @@ public abstract class AbstractProvisioningController implements AbstractProvisio
         DownloadPackageTask downloadTask = new DownloadPackageTask(
                 mContext, mParams, mParams.deviceAdminDownloadInfo, this);
         addTasks(downloadTask,
-                new VerifyPackageTask(
+                new VerifyAdminPackageTask(
                         downloadTask, mContext, mParams, mParams.deviceAdminDownloadInfo, this),
                 new InstallPackageTask(downloadTask, mContext, mParams, this));
 
