@@ -24,6 +24,7 @@ import android.os.Bundle;
 
 import com.android.managedprovisioning.ManagedProvisioningBaseApplication;
 import com.android.managedprovisioning.ManagedProvisioningScreens;
+import com.android.managedprovisioning.common.DefaultFeatureFlagChecker;
 import com.android.managedprovisioning.common.DefaultPackageInstallChecker;
 import com.android.managedprovisioning.common.DeviceManagementRoleHolderHelper;
 import com.android.managedprovisioning.common.DeviceManagementRoleHolderHelper.DefaultResolveIntentChecker;
@@ -105,9 +106,10 @@ public class FinalizationForwarderActivity extends Activity implements
     private FinalizationForwarderController createFinalizationController() {
         DeviceManagementRoleHolderHelper roleHolderHelper = new DeviceManagementRoleHolderHelper(
                 RoleHolderProvider.DEFAULT.getPackageName(this),
-                new DefaultPackageInstallChecker(new Utils()),
+                new DefaultPackageInstallChecker(getPackageManager(), new Utils()),
                 new DefaultResolveIntentChecker(),
-                new DefaultRoleHolderStubChecker());
+                new DefaultRoleHolderStubChecker(),
+                new DefaultFeatureFlagChecker(getContentResolver()));
         SharedPreferences sharedPreferences =
                 new ManagedProvisioningSharedPreferences(getApplicationContext());
         return new FinalizationForwarderController(

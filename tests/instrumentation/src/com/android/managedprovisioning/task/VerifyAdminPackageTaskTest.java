@@ -1,11 +1,11 @@
 /*
- * Copyright 2016, The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+
 package com.android.managedprovisioning.task;
 
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 
-import static com.android.managedprovisioning.task.VerifyPackageTask.ERROR_DEVICE_ADMIN_MISSING;
-import static com.android.managedprovisioning.task.VerifyPackageTask.ERROR_HASH_MISMATCH;
+import static com.android.managedprovisioning.task.VerifyAdminPackageTask.ERROR_DEVICE_ADMIN_MISSING;
+import static com.android.managedprovisioning.task.VerifyAdminPackageTask.ERROR_HASH_MISMATCH;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -50,11 +51,11 @@ import org.mockito.MockitoAnnotations;
 import java.io.File;
 
 /**
- * Unit tests for {@link VerifyPackageTask}.
+ * Unit tests for {@link VerifyAdminPackageTask}.
  */
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class VerifyPackageTaskTest {
+public class VerifyAdminPackageTaskTest {
 
     private static final String TEST_PACKAGE_NAME = "sample.package.name";
     private static final String TEST_ADMIN_NAME = TEST_PACKAGE_NAME + ".DeviceAdmin";
@@ -74,6 +75,8 @@ public class VerifyPackageTaskTest {
     @Mock private PackageManager mPackageManager;
     @Mock private Utils mUtils;
     @Mock private PackageInfo mPackageInfo;
+
+    private ChecksumUtils mChecksumUtils;
 
     private AbstractProvisioningTask mTask;
 
@@ -95,6 +98,8 @@ public class VerifyPackageTaskTest {
 
         when(mUtils.findDeviceAdminInPackageInfo(TEST_PACKAGE_NAME, null, mPackageInfo))
                 .thenReturn(new ComponentName(TEST_PACKAGE_NAME, TEST_ADMIN_NAME));
+
+        mChecksumUtils = new ChecksumUtils(mUtils);
     }
 
     @Test
@@ -120,7 +125,7 @@ public class VerifyPackageTaskTest {
         runWithDownloadInfo(TEST_PACKAGE_CHECKSUM_HASH, EMPTY_BYTE_ARRAY);
 
         // THEN an error should be reported
-        verify(mCallback).onError(mTask, ERROR_DEVICE_ADMIN_MISSING);
+        verify(mCallback).onError(mTask, ERROR_DEVICE_ADMIN_MISSING, /* errorMessage= */ null);
         verifyNoMoreInteractions(mCallback);
     }
 
@@ -162,7 +167,7 @@ public class VerifyPackageTaskTest {
         runWithDownloadInfo(EMPTY_BYTE_ARRAY, TEST_SIGNATURE_HASH);
 
         // THEN hash mismatch error should be called
-        verify(mCallback).onError(mTask, ERROR_HASH_MISMATCH);
+        verify(mCallback).onError(mTask, ERROR_HASH_MISMATCH, /* errorMessage= */ null);
         verifyNoMoreInteractions(mCallback);
     }
 
@@ -175,7 +180,7 @@ public class VerifyPackageTaskTest {
         runWithDownloadInfo(EMPTY_BYTE_ARRAY, TEST_SIGNATURE_HASH);
 
         // THEN hash mismatch error should be called
-        verify(mCallback).onError(mTask, ERROR_HASH_MISMATCH);
+        verify(mCallback).onError(mTask, ERROR_HASH_MISMATCH, /* errorMessage= */ null);
         verifyNoMoreInteractions(mCallback);
     }
 
@@ -188,7 +193,7 @@ public class VerifyPackageTaskTest {
         runWithDownloadInfo(EMPTY_BYTE_ARRAY, TEST_SIGNATURE_HASH);
 
         // THEN hash mismatch error should be called
-        verify(mCallback).onError(mTask, ERROR_HASH_MISMATCH);
+        verify(mCallback).onError(mTask, ERROR_HASH_MISMATCH, /* errorMessage= */ null);
         verifyNoMoreInteractions(mCallback);
     }
 
@@ -203,8 +208,9 @@ public class VerifyPackageTaskTest {
                 .setDeviceAdminPackageName(TEST_PACKAGE_NAME)
                 .setDeviceAdminDownloadInfo(downloadInfo)
                 .build();
-        mTask = new VerifyPackageTask(mUtils, mDownloadPackageTask, mContext, params, mCallback,
-                mock(ProvisioningAnalyticsTracker.class));
+        mTask = new VerifyAdminPackageTask(mUtils, mDownloadPackageTask, mContext, params,
+                downloadInfo, mCallback, mock(ProvisioningAnalyticsTracker.class),
+                mChecksumUtils);
         mTask.run(TEST_USER_ID);
     }
 }

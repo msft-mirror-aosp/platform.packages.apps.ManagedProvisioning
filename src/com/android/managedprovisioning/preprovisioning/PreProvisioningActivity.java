@@ -16,12 +16,21 @@
 
 package com.android.managedprovisioning.preprovisioning;
 
-import static android.app.admin.DevicePolicyManager.RESULT_UPDATE_DEVICE_MANAGEMENT_ROLE_HOLDER_RECOVERABLE_ERROR;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_TRIGGER;
+import static android.app.admin.DevicePolicyManager.EXTRA_RESULT_LAUNCH_INTENT;
+import static android.app.admin.DevicePolicyManager.EXTRA_ROLE_HOLDER_UPDATE_RESULT_CODE;
+import static android.app.admin.DevicePolicyManager.PROVISIONING_TRIGGER_UNSPECIFIED;
+import static android.app.admin.DevicePolicyManager.RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_PROVISIONING_DISABLED;
+import static android.app.admin.DevicePolicyManager.RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_RECOVERABLE_ERROR;
+import static android.app.admin.DevicePolicyManager.RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_UNRECOVERABLE_ERROR;
 import static android.app.admin.DevicePolicyManager.RESULT_UPDATE_ROLE_HOLDER;
 import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 
 import static com.android.managedprovisioning.ManagedProvisioningScreens.RETRY_LAUNCH;
+import static com.android.managedprovisioning.common.ErrorDialogUtils.EXTRA_DIALOG_TITLE_ID;
+import static com.android.managedprovisioning.common.ErrorDialogUtils.EXTRA_ERROR_MESSAGE_RES_ID;
+import static com.android.managedprovisioning.common.ErrorDialogUtils.EXTRA_FACTORY_RESET_REQUIRED;
 import static com.android.managedprovisioning.common.RetryLaunchActivity.EXTRA_INTENT_TO_LAUNCH;
 import static com.android.managedprovisioning.model.ProvisioningParams.FLOW_TYPE_LEGACY;
 import static com.android.managedprovisioning.preprovisioning.PreProvisioningViewModel.STATE_PREPROVISIONING_INITIALIZING;
@@ -32,6 +41,7 @@ import static com.google.android.setupcompat.util.WizardManagerHelper.EXTRA_IS_S
 
 import static java.util.Objects.requireNonNull;
 
+import android.annotation.NonNull;
 import android.app.Activity;
 import android.app.BackgroundServiceStartNotAllowedException;
 import android.app.DialogFragment;
@@ -40,6 +50,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
@@ -47,11 +58,14 @@ import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 
+import com.android.managedprovisioning.ManagedProvisioningBaseApplication;
 import com.android.managedprovisioning.ManagedProvisioningScreens;
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.AccessibilityContextMenuMaker;
+import com.android.managedprovisioning.common.DefaultFeatureFlagChecker;
+import com.android.managedprovisioning.common.DefaultIntentResolverChecker;
 import com.android.managedprovisioning.common.DefaultPackageInstallChecker;
 import com.android.managedprovisioning.common.DeviceManagementRoleHolderUpdaterHelper;
 import com.android.managedprovisioning.common.GetProvisioningModeUtils;
@@ -86,8 +100,10 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     private static final int GET_PROVISIONING_MODE_REQUEST_CODE = 6;
     private static final int FINANCED_DEVICE_PREPARE_REQUEST_CODE = 7;
     private static final int ADMIN_INTEGRATED_FLOW_PREPARE_REQUEST_CODE = 8;
-    private static final int START_DEVICE_MANAGEMENT_ROLE_HOLDER_UPDATER_REQUEST_CODE = 9;
+    private static final int START_PLATFORM_REQUESTED_ROLE_HOLDER_UPDATE_REQUEST_CODE = 9;
     private static final int START_DEVICE_MANAGEMENT_ROLE_HOLDER_PROVISIONING_REQUEST_CODE = 10;
+    private static final int DOWNLOAD_DEVICE_MANAGEMENT_ROLE_HOLDER_FROM_PLATFORM_REQUEST_CODE = 11;
+    private static final int START_ROLE_HOLDER_REQUESTED_UPDATE_REQUEST_CODE = 12;
 
     // Note: must match the constant defined in HomeSettings
     private static final String EXTRA_SUPPORT_MANAGED_PROFILES = "support_managed_profiles";
@@ -308,30 +324,222 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                     getTransitionHelper().finishActivity(this);
                 }
                 break;
-            case START_DEVICE_MANAGEMENT_ROLE_HOLDER_UPDATER_REQUEST_CODE:
-                if (resultCode == RESULT_UPDATE_DEVICE_MANAGEMENT_ROLE_HOLDER_RECOVERABLE_ERROR
-                        && mController.canRetryRoleHolderUpdate()) {
-                    mController.startRoleHolderUpdaterWithLastState();
-                    mController.incrementRoleHolderUpdateRetryCount();
-                } else {
-                    mController.startAppropriateProvisioning(getIntent());
-                }
+            case START_PLATFORM_REQUESTED_ROLE_HOLDER_UPDATE_REQUEST_CODE:
+                handlePlatformRequestedUpdateResult(resultCode);
+                break;
+            case START_ROLE_HOLDER_REQUESTED_UPDATE_REQUEST_CODE:
+                handleRoleHolderRequestedUpdateResult(resultCode);
                 break;
             case START_DEVICE_MANAGEMENT_ROLE_HOLDER_PROVISIONING_REQUEST_CODE:
                 ProvisionLogger.logw("Role holder returned result code " + resultCode);
                 if (resultCode == RESULT_UPDATE_ROLE_HOLDER) {
+                    if (handleUpdateRequestedWithNoRoleHolderUpdater(resultCode)) {
+                        return;
+                    }
+                    if (handleUpdateRequestedWithWrongStateType(data)) {
+                        return;
+                    }
                     PersistableBundle roleHolderState =
                             data.getParcelableExtra(DevicePolicyManager.EXTRA_ROLE_HOLDER_STATE);
                     mController.resetRoleHolderUpdateRetryCount();
-                    mController.startRoleHolderUpdater(roleHolderState);
+                    mController.startRoleHolderUpdater(
+                            /* isRoleHolderRequestedUpdate= */ true, roleHolderState);
                 } else {
-                    setResult(resultCode);
+                    maybeHandleLaunchIntent(resultCode, data);
                     getTransitionHelper().finishActivity(this);
+                }
+                break;
+            case DOWNLOAD_DEVICE_MANAGEMENT_ROLE_HOLDER_FROM_PLATFORM_REQUEST_CODE:
+                if (resultCode == RESULT_OK
+                        || mController.getParams().allowOffline) {
+                    boolean isProvisioningStarted = mController.startAppropriateProvisioning(
+                            getIntent(),
+                            new Bundle(),
+                            getCallingPackage());
+                    if (!isProvisioningStarted) {
+                        ProvisionLogger.loge("Provisioning could not be started following "
+                                + "platform-side role holder download.");
+                        showRoleHolderDownloadFailedDialog(new Intent());
+                    }
+                } else if (data != null && data.hasExtra(EXTRA_ERROR_MESSAGE_RES_ID)) {
+                    ProvisionLogger.loge("Role holder download failed and offline provisioning is "
+                            + "not allowed.");
+                    showRoleHolderDownloadFailedDialog(data);
+                } else {
+                    ProvisionLogger.loge("Role holder download failed and offline provisioning is "
+                            + "not allowed.");
+                    showRoleHolderDownloadFailedDialog(new Intent());
                 }
                 break;
             default:
                 ProvisionLogger.logw("Unknown result code :" + resultCode);
                 break;
+        }
+    }
+
+    private boolean handleUpdateRequestedWithWrongStateType(Intent data) {
+        if (!(data.getParcelableExtra(DevicePolicyManager.EXTRA_ROLE_HOLDER_STATE)
+                instanceof PersistableBundle)) {
+            ProvisionLogger.loge("Failed to process role holder state result.");
+            if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
+                showFactoryResetDialog(R.string.cant_set_up_device,
+                        R.string.contact_your_admin_for_help);
+            } else {
+                showErrorAndClose(
+                        R.string.cant_set_up_device,
+                        R.string.contact_your_admin_for_help,
+                        "Failed to process role holder state result.");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleUpdateRequestedWithNoRoleHolderUpdater(int resultCode) {
+        if (TextUtils.isEmpty(
+                mRoleHolderUpdaterProvider.getPackageName(this))) {
+            ProvisionLogger.logw("Role holder requested update, but there is no role "
+                            + "holder updater present. Restarting the role holder.");
+            boolean isProvisioningStarted = mController.startAppropriateProvisioning(
+                    getIntent(),
+                    createRoleHolderAdditionalExtras(resultCode),
+                    getCallingPackage());
+            if (!isProvisioningStarted) {
+                failRoleHolderUpdate();
+                ProvisionLogger.loge("Failed to start provisioning after a "
+                        + "role holder-requested role holder update and no updater "
+                        + "present. Result is " + resultCode + " and allow offline "
+                        + "provisioning is " + mController.getParams().allowOffline);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private Bundle createRoleHolderAdditionalExtras(int resultCode) {
+        Bundle additionalExtras = new Bundle();
+        additionalExtras.putInt(EXTRA_ROLE_HOLDER_UPDATE_RESULT_CODE, resultCode);
+        return additionalExtras;
+    }
+
+    private void handlePlatformRequestedUpdateResult(int resultCode) {
+        if ((resultCode
+                == RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_RECOVERABLE_ERROR
+                || resultCode == RESULT_CANCELED)
+                && mController.canRetryRoleHolderUpdate()) {
+            mController.startRoleHolderUpdaterWithLastState(
+                    /* isRoleHolderRequestedUpdate= */ false);
+            mController.incrementRoleHolderUpdateRetryCount();
+        } else if (resultCode
+                == RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_PROVISIONING_DISABLED
+        ) {
+            mController.performPlatformProvidedProvisioning();
+        } else if (resultCode
+                != RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_UNRECOVERABLE_ERROR
+                || mController.getParams().allowOffline) {
+            mController.resetRoleHolderUpdateRetryCount();
+            boolean isProvisioningStarted = mController.startAppropriateProvisioning(
+                    getIntent(),
+                    createRoleHolderAdditionalExtras(resultCode),
+                    getCallingPackage());
+            if (!isProvisioningStarted) {
+                failRoleHolderUpdate();
+                ProvisionLogger.loge("Failed to start provisioning after a "
+                        + "platform-requested role holder update. Result is " + resultCode
+                        + " and allow offline provisioning is "
+                        + mController.getParams().allowOffline);
+            }
+        } else {
+            failRoleHolderUpdate();
+            ProvisionLogger.loge("Failed to perform a platform-requested role holder "
+                    + "update. Result is " + resultCode + " and allow offline provisioning"
+                    + " is " + mController.getParams().allowOffline);
+        }
+    }
+
+    private void handleRoleHolderRequestedUpdateResult(int resultCode) {
+        if ((resultCode
+                == RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_RECOVERABLE_ERROR
+                || resultCode == RESULT_CANCELED)
+                && mController.canRetryRoleHolderUpdate()) {
+            mController.startRoleHolderUpdaterWithLastState(
+                    /* isRoleHolderRequestedUpdate= */ true);
+            mController.incrementRoleHolderUpdateRetryCount();
+        } else if (resultCode
+                == RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_PROVISIONING_DISABLED) {
+            mController.performPlatformProvidedProvisioning();
+        } else if (resultCode
+                != RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_UNRECOVERABLE_ERROR) {
+            boolean isProvisioningStarted = mController.startAppropriateProvisioning(
+                    getIntent(),
+                    createRoleHolderAdditionalExtras(resultCode),
+                    getCallingPackage());
+            if (!isProvisioningStarted) {
+                failRoleHolderUpdate();
+                ProvisionLogger.loge("Failed to start provisioning after a "
+                        + "role holder-requested role holder update. Result is "
+                        + resultCode + " and allow offline provisioning is "
+                        + mController.getParams().allowOffline);
+            }
+        } else if (mController.getParams().allowOffline) {
+            mController.performPlatformProvidedProvisioning();
+        } else {
+            failRoleHolderUpdate();
+            ProvisionLogger.loge("Failed to perform a role holder-requested role holder "
+                    + "update. Result is " + resultCode + " and allow offline provisioning"
+                    + " is " + mController.getParams().allowOffline);
+        }
+    }
+
+    private void maybeHandleLaunchIntent(int resultCode, Intent data) {
+        if (data == null || !data.hasExtra(EXTRA_RESULT_LAUNCH_INTENT)) {
+            setResult(resultCode);
+            return;
+        }
+
+        Intent launchIntent = data.getParcelableExtra(EXTRA_RESULT_LAUNCH_INTENT, Intent.class);
+        ProvisionLogger.logi("Role holder returned result intent: " + launchIntent);
+
+        if (!mController.getParams().provisioningShouldLaunchResultIntent) {
+            ProvisionLogger.logi("Role Holder result intent to be launched by "
+                    + "provisioning initiator");
+            setResult(resultCode, launchIntent);
+            return;
+        }
+
+        ProvisionLogger.logi("Role Holder result intent launched by platform");
+        startActivity(launchIntent);
+    }
+
+    private void failRoleHolderUpdate() {
+        ProvisionLogger.loge("Update failed and offline provisioning is not allowed.");
+        if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
+            showFactoryResetDialog(R.string.cant_set_up_device,
+                    R.string.contact_your_admin_for_help);
+        } else {
+            showErrorAndClose(
+                    R.string.cant_set_up_device,
+                    R.string.contact_your_admin_for_help,
+                    "Failed to provision personally-owned device.");
+        }
+    }
+
+    private void showRoleHolderDownloadFailedDialog(@NonNull Intent data) {
+        int dialogTitleResId = data.getIntExtra(
+                EXTRA_DIALOG_TITLE_ID,
+                R.string.cant_set_up_device);
+        int dialogMessageResId = data.getIntExtra(
+                EXTRA_ERROR_MESSAGE_RES_ID,
+                R.string.contact_your_admin_for_help);
+        if (data.getBooleanExtra(EXTRA_FACTORY_RESET_REQUIRED, /* defaultValue= */ false)) {
+            showFactoryResetDialog(
+                    dialogTitleResId,
+                    dialogMessageResId);
+        } else {
+            showErrorAndClose(
+                    dialogTitleResId,
+                    dialogMessageResId,
+                    "Failed to provision personally-owned device.");
         }
     }
 
@@ -458,20 +666,28 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     }
 
     @Override
-    public void startRoleHolderUpdater() {
+    public void startRoleHolderUpdater(boolean isRoleHolderRequestedUpdate) {
         DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
                 new DeviceManagementRoleHolderUpdaterHelper(
                         mRoleHolderUpdaterProvider.getPackageName(this),
                         RoleHolderProvider.DEFAULT.getPackageName(this),
-                        new DefaultPackageInstallChecker(mUtils));
+                        new DefaultPackageInstallChecker(getPackageManager(), mUtils),
+                        new DefaultIntentResolverChecker(getPackageManager()),
+                        new DefaultFeatureFlagChecker(getContentResolver()));
         Intent intent = new Intent(this, getActivityForScreen(RETRY_LAUNCH));
         intent.putExtra(
                 EXTRA_INTENT_TO_LAUNCH,
-                roleHolderUpdaterHelper.createRoleHolderUpdaterIntent(getIntent()));
+                roleHolderUpdaterHelper.createRoleHolderUpdaterIntent(
+                        getIntent(),
+                        getIntent().getIntExtra(
+                                EXTRA_PROVISIONING_TRIGGER, PROVISIONING_TRIGGER_UNSPECIFIED),
+                        isRoleHolderRequestedUpdate));
         getTransitionHelper().startActivityForResultWithTransition(
                  this,
                 intent,
-                 START_DEVICE_MANAGEMENT_ROLE_HOLDER_UPDATER_REQUEST_CODE);
+                isRoleHolderRequestedUpdate
+                        ? START_ROLE_HOLDER_REQUESTED_UPDATE_REQUEST_CODE
+                        : START_PLATFORM_REQUESTED_ROLE_HOLDER_UPDATE_REQUEST_CODE);
     }
 
     @Override
@@ -482,6 +698,27 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                 /* activity= */ this,
                 retryLaunchIntent,
                 START_DEVICE_MANAGEMENT_ROLE_HOLDER_PROVISIONING_REQUEST_CODE);
+    }
+
+    @Override
+    public void onParamsValidated(ProvisioningParams params) {
+        if (params.keepScreenOn) {
+            ManagedProvisioningBaseApplication application =
+                    (ManagedProvisioningBaseApplication) getApplication();
+            application.markKeepScreenOn();
+            application.maybeKeepScreenOn(this);
+        }
+    }
+
+    @Override
+    public void startRoleHolderDownload() {
+        Intent intent = new Intent(this,
+                getActivityForScreen(ManagedProvisioningScreens.DOWNLOAD_ROLE_HOLDER));
+        WizardManagerHelper.copyWizardManagerExtras(getIntent(), intent);
+        intent.putExtra(ProvisioningParams.EXTRA_PROVISIONING_PARAMS,
+                mController.getParams());
+        getTransitionHelper().startActivityForResultWithTransition(
+                this, intent, DOWNLOAD_DEVICE_MANAGEMENT_ROLE_HOLDER_FROM_PLATFORM_REQUEST_CODE);
     }
 
     private void requestLauncherPick() {
