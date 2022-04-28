@@ -94,6 +94,7 @@ import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.analytics.MetricsWriterFactory;
 import com.android.managedprovisioning.analytics.ProvisioningAnalyticsTracker;
 import com.android.managedprovisioning.common.DefaultFeatureFlagChecker;
+import com.android.managedprovisioning.common.DefaultIntentResolverChecker;
 import com.android.managedprovisioning.common.DefaultPackageInstallChecker;
 import com.android.managedprovisioning.common.DeviceManagementRoleHolderHelper;
 import com.android.managedprovisioning.common.DeviceManagementRoleHolderHelper.DefaultResolveIntentChecker;
@@ -160,12 +161,13 @@ public class PreProvisioningActivityController {
                         activity,
                         new PreProvisioningViewModelFactory(
                                 (ManagedProvisioningBaseApplication) activity.getApplication(),
-                                new DefaultConfig()))
+                                new DefaultConfig(),
+                                new Utils()))
                                         .get(PreProvisioningViewModel.class),
                 DisclaimersParserImpl::new,
                 new DeviceManagementRoleHolderHelper(
                         RoleHolderProvider.DEFAULT.getPackageName(activity),
-                        new DefaultPackageInstallChecker(new Utils()),
+                        new DefaultPackageInstallChecker(activity.getPackageManager(), new Utils()),
                         new DefaultResolveIntentChecker(),
                         new DefaultRoleHolderStubChecker(),
                         new DefaultFeatureFlagChecker(activity.getContentResolver())
@@ -173,7 +175,8 @@ public class PreProvisioningActivityController {
                 new DeviceManagementRoleHolderUpdaterHelper(
                         RoleHolderUpdaterProvider.DEFAULT.getPackageName(activity),
                         RoleHolderProvider.DEFAULT.getPackageName(activity),
-                        new DefaultPackageInstallChecker(new Utils()),
+                        new DefaultPackageInstallChecker(activity.getPackageManager(), new Utils()),
+                        new DefaultIntentResolverChecker(activity.getPackageManager()),
                         new DefaultFeatureFlagChecker(activity.getContentResolver())));
     }
     @VisibleForTesting
@@ -215,11 +218,15 @@ public class PreProvisioningActivityController {
     }
 
     /**
-     * Starts provisioning via the role holder if possible, or falls back to AOSP
-     * ManagedProvisioning provisioning otherwise.
+     * Starts provisioning via the role holder if possible, or if offline provisioning is allowed,
+     * falls back to AOSP ManagedProvisioning provisioning.
+     *
+     * @return {@code true} if any form of provisioning was started (either role holder or
+     * platform).
      */
-    public void startAppropriateProvisioning(
+    boolean startAppropriateProvisioning(
             Intent managedProvisioningIntent,
+            Bundle roleHolderAdditionalExtras,
             String callingPackage) {
         boolean isRoleHolderReadyForProvisioning = mRoleHolderHelper
                 .isRoleHolderReadyForProvisioning(mContext, managedProvisioningIntent);
@@ -228,14 +235,21 @@ public class PreProvisioningActivityController {
             Intent roleHolderProvisioningIntent =
                     mRoleHolderHelper.createRoleHolderProvisioningIntent(
                             managedProvisioningIntent,
-                            mViewModel.getRoleHolderState(),
-                            callingPackage);
+                            roleHolderAdditionalExtras, callingPackage, mViewModel.getRoleHolderState()
+                    );
             mSharedPreferences.setIsProvisioningFlowDelegatedToRoleHolder(true);
             mViewModel.onRoleHolderProvisioningInitiated();
             mUi.startRoleHolderProvisioning(roleHolderProvisioningIntent);
-        } else {
+            return true;
+        } else if (getParams().allowOffline
+                || !mRoleHolderHelper.isRoleHolderProvisioningEnabled()) {
+            ProvisionLogger.logw("Provisioning via platform.");
             performPlatformProvidedProvisioning();
+            return true;
         }
+        ProvisionLogger.logw("Role holder is configured, can't provision via role holder and "
+                + "PROVISIONING_ALLOW_OFFLINE is false.");
+        return false;
     }
 
     /**
@@ -245,10 +259,11 @@ public class PreProvisioningActivityController {
      * @see DevicePolicyManager#EXTRA_ROLE_HOLDER_STATE
      * @param roleHolderState
      */
-    public void startRoleHolderUpdater(@Nullable PersistableBundle roleHolderState) {
+    public void startRoleHolderUpdater(
+            boolean isRoleHolderRequestedUpdate, @Nullable PersistableBundle roleHolderState) {
         mViewModel.onRoleHolderUpdateInitiated();
         mViewModel.setRoleHolderState(roleHolderState);
-        mUi.startRoleHolderUpdater();
+        mUi.startRoleHolderUpdater(isRoleHolderRequestedUpdate);
     }
 
     /**
@@ -256,8 +271,8 @@ public class PreProvisioningActivityController {
      *
      * <p>This can be useful in update retry cases.
      */
-    public void startRoleHolderUpdaterWithLastState() {
-        startRoleHolderUpdater(mViewModel.getRoleHolderState());
+    public void startRoleHolderUpdaterWithLastState(boolean isRoleHolderRequestedUpdate) {
+        startRoleHolderUpdater(isRoleHolderRequestedUpdate, mViewModel.getRoleHolderState());
     }
 
     interface Ui {
@@ -307,7 +322,7 @@ public class PreProvisioningActivityController {
 
         void prepareAdminIntegratedFlow(ProvisioningParams params);
 
-        void startRoleHolderUpdater();
+        void startRoleHolderUpdater(boolean isRoleHolderRequestedUpdate);
 
         void startRoleHolderProvisioning(Intent intent);
 
@@ -347,6 +362,8 @@ public class PreProvisioningActivityController {
         mSharedPreferences.writeProvisioningStartedTimestamp(SystemClock.elapsedRealtime());
         mSharedPreferences.setIsProvisioningFlowDelegatedToRoleHolder(false);
         mProvisioningAnalyticsTracker.logProvisioningSessionStarted(mContext);
+
+        logProvisioningExtras(intent);
 
         if (!tryParseParameters(intent)) {
             return;
@@ -413,10 +430,31 @@ public class PreProvisioningActivityController {
         } else if (mRoleHolderUpdaterHelper
                 .shouldStartRoleHolderUpdater(mContext, intent, params)) {
             resetRoleHolderUpdateRetryCount();
-            startRoleHolderUpdater(/* roleHolderState= */ null);
+            startRoleHolderUpdater(
+                    /* isRoleHolderRequestedUpdate= */ false, /* roleHolderState= */ null);
         } else {
-            startAppropriateProvisioning(intent, callingPackage);
+            boolean isProvisioningStarted =
+                    startAppropriateProvisioning(intent, new Bundle(), callingPackage);
+            if (!isProvisioningStarted) {
+                mUi.showErrorAndClose(
+                        R.string.cant_set_up_device,
+                        R.string.contact_your_admin_for_help,
+                        "Could not start provisioning.");
+            }
         }
+    }
+
+    private void logProvisioningExtras(Intent intent) {
+        Bundle extras = intent.getExtras();
+        if (extras == null) {
+            ProvisionLogger.logi("No extras have been passed.");
+            return;
+        }
+        ProvisionLogger.logi("Start logging provisioning extras");
+        for (String key : extras.keySet()) {
+            ProvisionLogger.logi("Extra key: " + key + ", extra value: " + extras.get(key));
+        }
+        ProvisionLogger.logi("Finish logging provisioning extras");
     }
 
     void performPlatformProvidedProvisioning() {
