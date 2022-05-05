@@ -161,7 +161,8 @@ public class PreProvisioningActivityController {
                         activity,
                         new PreProvisioningViewModelFactory(
                                 (ManagedProvisioningBaseApplication) activity.getApplication(),
-                                new DefaultConfig()))
+                                new DefaultConfig(),
+                                new Utils()))
                                         .get(PreProvisioningViewModel.class),
                 DisclaimersParserImpl::new,
                 new DeviceManagementRoleHolderHelper(
@@ -362,6 +363,8 @@ public class PreProvisioningActivityController {
         mSharedPreferences.setIsProvisioningFlowDelegatedToRoleHolder(false);
         mProvisioningAnalyticsTracker.logProvisioningSessionStarted(mContext);
 
+        logProvisioningExtras(intent);
+
         if (!tryParseParameters(intent)) {
             return;
         }
@@ -441,6 +444,19 @@ public class PreProvisioningActivityController {
         }
     }
 
+    private void logProvisioningExtras(Intent intent) {
+        Bundle extras = intent.getExtras();
+        if (extras == null) {
+            ProvisionLogger.logi("No extras have been passed.");
+            return;
+        }
+        ProvisionLogger.logi("Start logging provisioning extras");
+        for (String key : extras.keySet()) {
+            ProvisionLogger.logi("Extra key: " + key + ", extra value: " + extras.get(key));
+        }
+        ProvisionLogger.logi("Finish logging provisioning extras");
+    }
+
     void performPlatformProvidedProvisioning() {
         ProvisionLogger.logw("Provisioning via platform-provided provisioning");
         ProvisioningParams params = mViewModel.getParams();
@@ -486,6 +502,9 @@ public class PreProvisioningActivityController {
     }
 
     private boolean shouldShowWifiPicker(Intent intent) {
+        if (mSharedPreferences.isEstablishNetworkConnectionRun()) {
+            return false;
+        }
         ProvisioningParams params = mViewModel.getParams();
         if (params.wifiInfo != null) {
             return false;
