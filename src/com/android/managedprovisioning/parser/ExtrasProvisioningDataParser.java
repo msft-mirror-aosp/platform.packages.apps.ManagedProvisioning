@@ -16,6 +16,7 @@
 
 package com.android.managedprovisioning.parser;
 
+import static android.app.admin.DevicePolicyManager.ACTION_ESTABLISH_NETWORK_CONNECTION;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_FINANCED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE;
@@ -40,7 +41,11 @@ import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LOCALE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LOCAL_TIME;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ORGANIZATION_NAME;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_RETURN_BEFORE_POLICY_COMPLIANCE;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_COOKIE_HEADER;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_LOCATION;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ROLE_HOLDER_SIGNATURE_CHECKSUM;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SENSORS_PERMISSION_GRANT_OPT_OUT;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_EDUCATION_SCREENS;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SUPPORTED_MODES;
@@ -369,6 +374,8 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
         } else if (PROVISIONING_ACTIONS_SUPPORT_ALL_PROVISIONING_DATA.contains(
                 provisioningAction)) {
             return parseAllSupportedProvisioningData(provisioningIntent, mContext);
+        } else if (ACTION_ESTABLISH_NETWORK_CONNECTION.equals(provisioningAction)) {
+            return parseNetworkProvisioningData(provisioningIntent);
         } else {
             throw new IllegalProvisioningArgumentException("Unsupported provisioning action: "
                     + provisioningAction);
@@ -583,7 +590,10 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
                     .setAllowOffline(getBooleanExtraFromLongName(
                             intent,
                             EXTRA_PROVISIONING_ALLOW_OFFLINE,
-                            ProvisioningParams.DEFAULT_EXTRA_ALLOW_OFFLINE));
+                            ProvisioningParams.DEFAULT_EXTRA_ALLOW_OFFLINE))
+                    .setRoleHolderDownloadInfo(parseRoleHolderDownloadInfoFromExtras(intent))
+                    .setProvisioningShouldLaunchResultIntent(
+                            getProvisioningShouldLaunchResultIntent(intent));
         } catch (ClassCastException e) {
             throw new IllegalProvisioningArgumentException("Extra has invalid type", e);
         } catch (IllegalArgumentException e) {
@@ -591,6 +601,17 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
         } catch (NullPointerException e) {
             throw new IllegalProvisioningArgumentException("Compulsory parameter not found!", e);
         }
+    }
+
+    private boolean getProvisioningShouldLaunchResultIntent(Intent intent) {
+        if (!intent.getAction().equals(ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE)
+                && !intent.getAction().equals(ACTION_PROVISION_MANAGED_PROFILE)) {
+            return ProvisioningParams.DEFAULT_EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT;
+        }
+        return getBooleanExtraFromLongName(
+                intent,
+                EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT,
+                ProvisioningParams.DEFAULT_EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT);
     }
 
     private boolean getSkipOwnershipDisclaimer(Intent intent) {
@@ -701,6 +722,31 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
     }
 
     /**
+     * Parses an intent and return a corresponding {@link ProvisioningParams} object.
+     *
+     * @param intent intent to be parsed.
+     */
+    private ProvisioningParams parseNetworkProvisioningData(Intent intent)
+            throws IllegalProvisioningArgumentException {
+        try {
+            ProvisionLogger.logi("Processing network-related extras intent: " + intent.getAction());
+            return ProvisioningParams.Builder.builder(/* skipValidation= */ true)
+                    .setUseMobileData(
+                            getBooleanExtraFromLongName(
+                                    intent, EXTRA_PROVISIONING_USE_MOBILE_DATA,
+                                    DEFAULT_EXTRA_PROVISIONING_USE_MOBILE_DATA))
+                    .setWifiInfo(parseWifiInfoFromExtras(intent))
+                    .build();
+        }  catch (IllegalArgumentException e) {
+            throw new IllegalProvisioningArgumentException("Invalid parameter found!", e);
+        }  catch (IllformedLocaleException e) {
+            throw new IllegalProvisioningArgumentException("Invalid locale format!", e);
+        }  catch (NullPointerException e) {
+            throw new IllegalProvisioningArgumentException("Compulsory parameter not found!", e);
+        }
+    }
+
+    /**
      * Parses Wifi configuration from an Intent and returns the result in {@link WifiInfo}.
      */
     @Nullable
@@ -767,6 +813,44 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
         if (sigHash != null) {
             downloadInfoBuilder.setSignatureChecksum(StoreUtils.stringToByteArray(sigHash));
         }
+        return downloadInfoBuilder.build();
+    }
+
+    /**
+     * Parses role holder package download info configuration from an Intent and returns the result
+     * in {@link PackageDownloadInfo}.
+     *
+     * @return the {@link PackageDownloadInfo} or {@code null} if not supplied alongside {@link
+     * DevicePolicyManager#ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE}, {@link
+     * DevicePolicyManager#EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_LOCATION} or
+     * {@link DevicePolicyManager#EXTRA_PROVISIONING_ROLE_HOLDER_SIGNATURE_CHECKSUM}.
+     */
+    @Nullable
+    private PackageDownloadInfo parseRoleHolderDownloadInfoFromExtras(Intent intent) {
+        if (!intent.getAction().equals(ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE)) {
+            ProvisionLogger.logi("Cannot parse role holder download info for non-trusted source "
+                    + "provisioning.");
+            return null;
+        }
+        String downloadLocation = getStringExtraFromLongName(
+                intent, EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_LOCATION);
+        if (downloadLocation == null) {
+            ProvisionLogger.logi("Cannot parse role holder download info, because it does not "
+                    + "include the download location extra.");
+            return null;
+        }
+        String sigHash = getStringExtraFromLongName(
+                intent, EXTRA_PROVISIONING_ROLE_HOLDER_SIGNATURE_CHECKSUM);
+        if (sigHash == null) {
+            ProvisionLogger.logi("Cannot parse role holder download info, because it does not "
+                    + "include the signature checksum extra.");
+            return null;
+        }
+        PackageDownloadInfo.Builder downloadInfoBuilder = PackageDownloadInfo.Builder.builder()
+                .setLocation(downloadLocation)
+                .setCookieHeader(getStringExtraFromLongName(
+                        intent, EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_COOKIE_HEADER));
+        downloadInfoBuilder.setSignatureChecksum(StoreUtils.stringToByteArray(sigHash));
         return downloadInfoBuilder.build();
     }
 }
