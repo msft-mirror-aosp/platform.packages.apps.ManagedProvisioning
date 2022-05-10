@@ -16,22 +16,29 @@
 
 package com.android.managedprovisioning.provisioning;
 
+import static java.util.Objects.requireNonNull;
+
 import android.content.Context;
 
 import com.android.managedprovisioning.R;
+import com.android.managedprovisioning.common.SettingsFacade;
+import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.task.AbstractProvisioningTask;
 import com.android.managedprovisioning.task.AddWifiNetworkTask;
 import com.android.managedprovisioning.task.ConnectMobileNetworkTask;
 import com.android.managedprovisioning.task.DownloadPackageTask;
 import com.android.managedprovisioning.task.InstallPackageTask;
-import com.android.managedprovisioning.task.VerifyPackageTask;
+import com.android.managedprovisioning.task.VerifyAdminPackageTask;
 
 /**
  * Controller for preparing admin integrated flow. This includes connecting to wi-fi and
  * mobile network, downloading, verifying and installing the admin app.
  */
 public class AdminIntegratedFlowPrepareController extends AbstractProvisioningController {
+
+    private final Utils mUtils;
+    private final SettingsFacade mSettingsFacade;
 
     /**
      * Instantiates a new {@link AdminIntegratedFlowPrepareController} instance and creates the
@@ -43,9 +50,12 @@ public class AdminIntegratedFlowPrepareController extends AbstractProvisioningCo
             Context context,
             ProvisioningParams params,
             int userId,
-            ProvisioningControllerCallback callback) {
+            ProvisioningControllerCallback callback,
+            Utils utils,
+            SettingsFacade settingsFacade) {
         AdminIntegratedFlowPrepareController controller =
-                new AdminIntegratedFlowPrepareController(context, params, userId, callback);
+                new AdminIntegratedFlowPrepareController(
+                        context, params, userId, callback, utils, settingsFacade);
         controller.setUpTasks();
         return controller;
     }
@@ -54,8 +64,12 @@ public class AdminIntegratedFlowPrepareController extends AbstractProvisioningCo
             Context context,
             ProvisioningParams params,
             int userId,
-            ProvisioningControllerCallback callback) {
+            ProvisioningControllerCallback callback,
+            Utils utils,
+            SettingsFacade settingsFacade) {
         super(context, params, userId, callback);
+        mUtils = requireNonNull(utils);
+        mSettingsFacade = requireNonNull(settingsFacade);
     }
 
     @Override
@@ -85,11 +99,11 @@ public class AdminIntegratedFlowPrepareController extends AbstractProvisioningCo
                 case DownloadPackageTask.ERROR_OTHER:
                     return R.string.cant_set_up_device;
             }
-        } else if (task instanceof VerifyPackageTask) {
+        } else if (task instanceof VerifyAdminPackageTask) {
             switch (errorCode) {
-                case VerifyPackageTask.ERROR_HASH_MISMATCH:
+                case VerifyAdminPackageTask.ERROR_HASH_MISMATCH:
                     return R.string.error_hash_mismatch;
-                case VerifyPackageTask.ERROR_DEVICE_ADMIN_MISSING:
+                case VerifyAdminPackageTask.ERROR_DEVICE_ADMIN_MISSING:
                     return R.string.error_package_invalid;
             }
         } else if (task instanceof InstallPackageTask) {
@@ -106,6 +120,8 @@ public class AdminIntegratedFlowPrepareController extends AbstractProvisioningCo
 
     @Override
     protected boolean getRequireFactoryReset(AbstractProvisioningTask task, int errorCode) {
-        return !(task instanceof AddWifiNetworkTask);
+        return !mSettingsFacade.isDeviceProvisioned(mContext)
+                && mUtils.isOrganizationOwnedAllowed(mParams)
+                && !(task instanceof AddWifiNetworkTask);
     }
 }
