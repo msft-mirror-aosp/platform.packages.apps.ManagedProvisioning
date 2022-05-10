@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.UserIdInt;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.ManagedProfileProvisioningParams;
+import android.app.admin.ProvisioningException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.UserHandle;
@@ -36,16 +37,12 @@ import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.ProvisioningParams;
-import com.android.managedprovisioning.task.interactacrossprofiles.CrossProfileAppsSnapshot;
-import com.android.managedprovisioning.task.nonrequiredapps.SystemAppsSnapshot;
 
 /**
  * Task to create and provision a managed profile.
  */
 public class CreateAndProvisionManagedProfileTask extends AbstractProvisioningTask {
     private final DevicePolicyManager mDpm;
-    private final SystemAppsSnapshot mSystemAppsSnapshot;
-    private final CrossProfileAppsSnapshot mCrossProfileAppsSnapshot;
     private final Utils mUtils;
     private int mProfileUserId;
 
@@ -56,8 +53,6 @@ public class CreateAndProvisionManagedProfileTask extends AbstractProvisioningTa
         this(
                 new Utils(),
                 context,
-                new SystemAppsSnapshot(context),
-                new CrossProfileAppsSnapshot(context),
                 params,
                 callback,
                 new ProvisioningAnalyticsTracker(
@@ -69,16 +64,12 @@ public class CreateAndProvisionManagedProfileTask extends AbstractProvisioningTa
     CreateAndProvisionManagedProfileTask(
             Utils utils,
             Context context,
-            SystemAppsSnapshot systemAppsSnapshot,
-            CrossProfileAppsSnapshot crossProfileAppsSnapshot,
             ProvisioningParams params,
             Callback callback,
             ProvisioningAnalyticsTracker provisioningAnalyticsTracker) {
         super(context, params, callback, provisioningAnalyticsTracker);
         mDpm = requireNonNull(context.getSystemService(DevicePolicyManager.class));
         mUtils = requireNonNull(utils);
-        mSystemAppsSnapshot = requireNonNull(systemAppsSnapshot);
-        mCrossProfileAppsSnapshot = requireNonNull(crossProfileAppsSnapshot);
     }
 
     @Override
@@ -98,6 +89,10 @@ public class CreateAndProvisionManagedProfileTask extends AbstractProvisioningTa
 
         try {
             profile = mDpm.createAndProvisionManagedProfile(params);
+        } catch (ProvisioningException provisioningException) {
+            ProvisionLogger.loge("Failure provisioning managed profile.", provisioningException);
+            error(/* resultCode= */ 0, provisioningException.getMessage());
+            return;
         } catch (Exception e) {
             // Catching all Exceptions to allow Managed Provisioning to handle any failure
             // during provisioning properly and perform any necessary cleanup.
@@ -114,9 +109,6 @@ public class CreateAndProvisionManagedProfileTask extends AbstractProvisioningTa
         }
         mProfileUserId = profile.getIdentifier();
 
-        // Take default cross profiles apps snapshot and system apps snapshot if required.
-        takeAppsSnapshots(userId, mProvisioningParams.leaveAllSystemAppsEnabled);
-
         stopTaskTimer();
         success();
     }
@@ -127,23 +119,16 @@ public class CreateAndProvisionManagedProfileTask extends AbstractProvisioningTa
         ComponentName adminComponent =
                 mProvisioningParams.inferDeviceAdminComponentName(mUtils, mContext, userId);
         return new ManagedProfileProvisioningParams.Builder(
-                        adminComponent,
-                        mContext.getString(R.string.default_managed_profile_name))
-                        .setProfileName(adminComponent.getPackageName())
-                        .setAccountToMigrate(mProvisioningParams.accountToMigrate)
-                        .setLeaveAllSystemAppsEnabled(
-                                mProvisioningParams.leaveAllSystemAppsEnabled)
-                        .setOrganizationOwnedProvisioning(
-                                mProvisioningParams.isOrganizationOwnedProvisioning)
-                        .setKeepAccountMigrated(mProvisioningParams.keepAccountMigrated)
-                        .build();
-    }
-
-    private void takeAppsSnapshots(@UserIdInt int parentUserId, boolean leaveAllSystemAppsEnabled) {
-        if (!leaveAllSystemAppsEnabled) {
-            mSystemAppsSnapshot.takeNewSnapshot(mProfileUserId);
-        }
-        mCrossProfileAppsSnapshot.takeNewSnapshot(parentUserId);
+                adminComponent, adminComponent.getPackageName())
+                .setProfileName(mContext.getString(R.string.default_managed_profile_name))
+                .setAccountToMigrate(mProvisioningParams.accountToMigrate)
+                .setLeaveAllSystemAppsEnabled(
+                        mProvisioningParams.leaveAllSystemAppsEnabled)
+                .setOrganizationOwnedProvisioning(
+                        mProvisioningParams.isOrganizationOwnedProvisioning)
+                .setKeepingAccountOnMigration(mProvisioningParams.keepAccountMigrated)
+                .setAdminExtras(mProvisioningParams.adminExtrasBundle)
+                .build();
     }
 
     public int getProfileUserId() {
