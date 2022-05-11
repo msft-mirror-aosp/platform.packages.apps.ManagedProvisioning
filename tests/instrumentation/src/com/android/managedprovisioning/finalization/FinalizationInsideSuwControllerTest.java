@@ -25,6 +25,7 @@ import static com.android.managedprovisioning.TestUtils.createTestAdminExtras;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
@@ -43,6 +44,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -50,6 +52,8 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
+
+import androidx.test.InstrumentationRegistry;
 
 import com.android.managedprovisioning.TestUtils;
 import com.android.managedprovisioning.analytics.DeferredMetricsReader;
@@ -87,9 +91,12 @@ public class FinalizationInsideSuwControllerTest extends AndroidTestCase {
     @Mock private DeferredMetricsReader mDeferredMetricsReader;
     @Mock private ProvisioningAnalyticsTracker mProvisioningAnalyticsTracker;
     @Mock private UserManager mUserManager;
+    @Mock private DevicePolicyManager mDevicePolicyManager;
+    @Mock private SharedPreferences mSharedPreferences;
 
     private PreFinalizationController mPreFinalizationController;
     private FinalizationController mFinalizationController;
+    private final Context mTargetContext = InstrumentationRegistry.getTargetContext();
     @Mock private TransitionHelper mTransitionHelper;
 
     @Override
@@ -97,6 +104,10 @@ public class FinalizationInsideSuwControllerTest extends AndroidTestCase {
         // this is necessary for mockito to work
         System.setProperty("dexmaker.dexcache", getContext().getCacheDir().toString());
         MockitoAnnotations.initMocks(this);
+        when(mActivity.getSystemService(Context.DEVICE_POLICY_SERVICE))
+                .thenReturn(mDevicePolicyManager);
+        when(mActivity.getSystemServiceName(DevicePolicyManager.class))
+                .thenReturn(Context.DEVICE_POLICY_SERVICE);
         when(mUtils.canResolveIntentAsUser(any(Context.class), any(Intent.class), anyInt()))
                 .thenReturn(true);
         when(mActivity.getFilesDir()).thenReturn(getContext().getFilesDir());
@@ -106,10 +117,14 @@ public class FinalizationInsideSuwControllerTest extends AndroidTestCase {
         when(mActivity.getSystemServiceName(UserManager.class))
                 .thenReturn(Context.USER_SERVICE);
         when(mActivity.getSystemService(Context.USER_SERVICE)).thenReturn(mUserManager);
+        when(mActivity.getSharedPreferences(anyString(), anyInt())).thenReturn(mSharedPreferences);
+        when(mActivity.getResources()).thenReturn(mTargetContext.getResources());
         when(mUserManager.isUserUnlocked(anyInt())).thenReturn(true);
         when(mUserManager.isUserUnlocked(any(UserHandle.class))).thenReturn(true);
 
-        final ProvisioningParamsUtils provisioningParamsUtils = new ProvisioningParamsUtils();
+        final ProvisioningParamsUtils provisioningParamsUtils =
+                new ProvisioningParamsUtils(
+                        ProvisioningParamsUtils.DEFAULT_PROVISIONING_PARAMS_FILE_PROVIDER);
         mPreFinalizationController = new PreFinalizationController(
                 mActivity, mUtils, mSettingsFacade, mHelper,
                 provisioningParamsUtils, new SendDpcBroadcastServiceUtils());
@@ -165,6 +180,9 @@ public class FinalizationInsideSuwControllerTest extends AndroidTestCase {
 
     @SmallTest
     public void testManagedProfileFinalizationDuringSuw() {
+        // GIVEN that the DPC is not available on the primary profile
+        when(mUtils.canResolveIntentAsUser(eq(mActivity), any(Intent.class),
+                eq(UserHandle.USER_SYSTEM))).thenReturn(false);
         // GIVEN that deviceManagementEstablished has never been called
         when(mHelper.isStateUnmanagedOrFinalized()).thenReturn(true);
         // GIVEN that we've provisioned a managed profile after SUW
@@ -351,13 +369,9 @@ public class FinalizationInsideSuwControllerTest extends AndroidTestCase {
         when(mUtils.getManagedProfile(mActivity))
                 .thenReturn(MANAGED_PROFILE_USER_HANDLE);
 
-        // Mock DPM for testing access to device IDs is granted.
-        final DevicePolicyManager mockDpm = mock(DevicePolicyManager.class);
-        when(mActivity.getSystemServiceName(DevicePolicyManager.class))
-                .thenReturn(Context.DEVICE_POLICY_SERVICE);
-        when(mActivity.getSystemService(DevicePolicyManager.class)).thenReturn(mockDpm);
         final int managedProfileUserId = MANAGED_PROFILE_USER_HANDLE.getIdentifier();
-        when(mockDpm.getProfileOwnerAsUser(managedProfileUserId)).thenReturn(TEST_MDM_ADMIN);
+        when(mDevicePolicyManager.getProfileOwnerAsUser(managedProfileUserId))
+                .thenReturn(TEST_MDM_ADMIN);
 
         // Actual Device IDs access is  granted to the DPM of the managed profile, in the context
         // of the managed profile.

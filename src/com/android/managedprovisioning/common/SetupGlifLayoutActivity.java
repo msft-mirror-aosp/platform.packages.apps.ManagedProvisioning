@@ -20,13 +20,13 @@ import android.annotation.Nullable;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextWatcher;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 
 import com.android.managedprovisioning.R;
-import com.android.managedprovisioning.model.CustomizationParams;
 
 import com.google.android.setupdesign.GlifLayout;
 
@@ -36,10 +36,7 @@ import com.google.android.setupdesign.GlifLayout;
  */
 public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
 
-    /**
-     * Number of characters in the header needed before adding an extra line of text.
-     */
-    private static final int CHAR_THRESHOLD_FOR_ADDITIONAL_LINE = 70;
+    private int mInitialHeaderMaxLines;
 
     public SetupGlifLayoutActivity() {
         super();
@@ -62,8 +59,8 @@ public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
         super.onApplyThemeResource(theme, resid, first);
     }
 
-    protected void initializeLayoutParams(int layoutResourceId, @Nullable Integer headerResourceId,
-            CustomizationParams params) {
+    protected void initializeLayoutParams(
+            int layoutResourceId, @Nullable Integer headerResourceId) {
         setContentView(layoutResourceId);
         GlifLayout layout = findViewById(R.id.setup_wizard_layout);
 
@@ -73,6 +70,7 @@ public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
 
         TextView header = findViewById(R.id.suc_layout_title);
         if (header != null) {
+            mInitialHeaderMaxLines = header.getMaxLines();
             header.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -84,24 +82,31 @@ public abstract class SetupGlifLayoutActivity extends SetupLayoutActivity {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    adjustHeaderMaxLines();
+                    increaseMaxLinesIfNecessary(header, mInitialHeaderMaxLines);
                 }
             });
 
-            adjustHeaderMaxLines();
+            increaseMaxLinesIfNecessary(header, mInitialHeaderMaxLines);
         }
 
-        layout.setIcon(LogoUtils.getOrganisationLogo(this, params.logoColor));
+        layout.setIcon(getDrawable(R.drawable.ic_enterprise_blue_24dp));
     }
 
-    private void adjustHeaderMaxLines() {
-        TextView header = findViewById(R.id.suc_layout_title);
-        int maxLines = 3;
-        if (header.getText().length() > CHAR_THRESHOLD_FOR_ADDITIONAL_LINE) {
-            maxLines++;
-        }
-        if (header.getMaxLines() != maxLines) {
-            header.setMaxLines(maxLines);
-        }
+    /**
+     * If the text takes more than its {@code textView}'s {@code initialMaxLines}, expand it one
+     * more line.
+     */
+    private void increaseMaxLinesIfNecessary(TextView textView, int initialMaxLines) {
+        textView.setMaxLines(initialMaxLines);
+        textView.post(() -> {
+            Layout layout = textView.getLayout();
+            if (layout == null) {
+                return;
+            }
+            int lineCount = layout.getLineCount();
+            if (lineCount > 0 && layout.getEllipsisCount(lineCount - 1) > 0) {
+                textView.setMaxLines(initialMaxLines + 1);
+            }
+        });
     }
 }

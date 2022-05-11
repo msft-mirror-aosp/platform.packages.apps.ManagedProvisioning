@@ -16,13 +16,13 @@
 
 package com.android.managedprovisioning.provisioning;
 
-import static com.google.android.setupdesign.util.ThemeHelper.shouldApplyExtendedPartnerConfig;
+import static com.google.android.setupdesign.util.ThemeHelper.shouldApplyMaterialYouStyle;
 
 import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Space;
 import android.widget.TextView;
 
 import androidx.annotation.StringRes;
@@ -31,9 +31,9 @@ import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.common.InitializeLayoutConsumerHandler;
 import com.android.managedprovisioning.common.StylerHelper;
 import com.android.managedprovisioning.common.Utils;
-import com.android.managedprovisioning.model.CustomizationParams;
 import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.provisioning.ProvisioningActivity.ProvisioningMode;
+import com.android.managedprovisioning.provisioning.ProvisioningModeWrapperProvider.ProvisioningModeWrapper;
 import com.android.managedprovisioning.provisioning.TransitionAnimationHelper.AnimationComponents;
 import com.android.managedprovisioning.provisioning.TransitionAnimationHelper.TransitionAnimationCallback;
 import com.android.managedprovisioning.provisioning.TransitionAnimationHelper.TransitionAnimationStateManager;
@@ -72,10 +72,8 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
                 ? R.layout.empty_loading_layout
                 : R.layout.provisioning_progress;
 
-        CustomizationParams customizationParams =
-                CustomizationParams.createInstance(getParams(), activity, getUtils());
         getInitializeLayoutParamsConsumer().initializeLayoutParams(
-                layoutResId, /* headerResId */ null, customizationParams);
+                layoutResId, /* headerResId */ null);
         activity.setTitle(titleResId);
 
         GlifLayout layout = activity.findViewById(R.id.setup_wizard_layout);
@@ -171,16 +169,22 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
         ViewGroup item2 = layout.findViewById(R.id.item2);
         LottieAnimationView drawable = layout.findViewById(R.id.animation);
         ViewGroup drawableContainer = layout.findViewById(R.id.animation_container);
+        Space space1 = layout.findViewById(R.id.space1);
+        Space space2 = layout.findViewById(R.id.space2);
         AnimationComponents animationComponents =
                 new AnimationComponents(
-                        header, description, item1, item2, drawable, drawableContainer);
-        mTransitionAnimationHelper = new TransitionAnimationHelper(getProvisioningMode(),
-                /* adminCanGrantSensorsPermissions= */
-                !getParams().deviceOwnerPermissionGrantOptOut,
+                        header, description, item1, item2, drawable, drawableContainer,
+                        space1, space2);
+
+        ProvisioningModeWrapperProvider provider = new ProvisioningModeWrapperProvider(getParams());
+        ProvisioningModeWrapper provisioningModeWrapper = provider
+                .getProvisioningModeWrapper(getProvisioningMode());
+        mTransitionAnimationHelper = new TransitionAnimationHelper(
                 animationComponents,
                 callback,
                 getStateManager(),
-                new StylerHelper());
+                new StylerHelper(),
+                provisioningModeWrapper);
     }
 
     private void setupEducationViews(
@@ -215,7 +219,7 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
         TextView progressLabel = getRelevantProgressLabel(activity);
         DescriptionStyler.applyPartnerCustomizationHeavyStyle(progressLabel);
         progressLabel.setTextColor(
-                shouldApplyExtendedPartnerConfig(activity)
+                shouldApplyMaterialYouStyle(activity)
                         ? getUtils().getTextSecondaryColor(activity)
                         : getUtils().getAccentColor(activity));
         progressLabel.setText(progressLabelResId);

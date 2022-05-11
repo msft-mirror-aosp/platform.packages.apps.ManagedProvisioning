@@ -91,7 +91,7 @@ public class ProvisioningManager implements ProvisioningControllerCallback,
         mFactory = requireNonNull(factory);
         mProvisioningAnalyticsTracker = requireNonNull(analyticsTracker);
         mTimeLogger = requireNonNull(timeLogger);
-        mHelper = new ProvisioningManagerHelper(context);
+        mHelper = new ProvisioningManagerHelper();
     }
 
     /**
@@ -178,6 +178,11 @@ public class ProvisioningManager implements ProvisioningControllerCallback,
     @Override
     public void error(int titleId, int messageId, boolean factoryResetRequired) {
         mHelper.error(titleId, messageId, factoryResetRequired);
+    }
+
+    @Override
+    public void error(int titleId, String errorMessage, boolean factoryResetRequired) {
+        mHelper.error(titleId, errorMessage, factoryResetRequired);
     }
 
     void saveTransitionAnimationState(TransitionAnimationState transitionAnimationState) {
