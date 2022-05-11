@@ -122,7 +122,9 @@ public class FinalizationInsideSuwControllerTest extends AndroidTestCase {
         when(mUserManager.isUserUnlocked(anyInt())).thenReturn(true);
         when(mUserManager.isUserUnlocked(any(UserHandle.class))).thenReturn(true);
 
-        final ProvisioningParamsUtils provisioningParamsUtils = new ProvisioningParamsUtils();
+        final ProvisioningParamsUtils provisioningParamsUtils =
+                new ProvisioningParamsUtils(
+                        ProvisioningParamsUtils.DEFAULT_PROVISIONING_PARAMS_FILE_PROVIDER);
         mPreFinalizationController = new PreFinalizationController(
                 mActivity, mUtils, mSettingsFacade, mHelper,
                 provisioningParamsUtils, new SendDpcBroadcastServiceUtils());
@@ -178,6 +180,9 @@ public class FinalizationInsideSuwControllerTest extends AndroidTestCase {
 
     @SmallTest
     public void testManagedProfileFinalizationDuringSuw() {
+        // GIVEN that the DPC is not available on the primary profile
+        when(mUtils.canResolveIntentAsUser(eq(mActivity), any(Intent.class),
+                eq(UserHandle.USER_SYSTEM))).thenReturn(false);
         // GIVEN that deviceManagementEstablished has never been called
         when(mHelper.isStateUnmanagedOrFinalized()).thenReturn(true);
         // GIVEN that we've provisioned a managed profile after SUW
