@@ -34,7 +34,6 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.view.WindowManager;
 
-import com.android.managedprovisioning.ManagedProvisioningBaseApplication;
 import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.TransitionHelper;
 
@@ -55,6 +54,7 @@ public abstract class FinalizationActivityBase extends Activity {
     private final TransitionHelper mTransitionHelper;
     private FinalizationController mFinalizationController;
     private boolean mIsReceiverRegistered;
+    private boolean mRestoring;
 
     private final BroadcastReceiver mUserUnlockedReceiver = new BroadcastReceiver() {
         @Override
@@ -88,14 +88,8 @@ public abstract class FinalizationActivityBase extends Activity {
 
         mFinalizationController = createFinalizationController();
 
-        if (mFinalizationController.shouldKeepScreenOn()) {
-            ManagedProvisioningBaseApplication application =
-                    (ManagedProvisioningBaseApplication) getApplication();
-            application.markKeepScreenOn();
-            application.maybeKeepScreenOn(this);
-        }
-
-        if (savedInstanceState != null) {
+        mRestoring = savedInstanceState != null;
+        if (mRestoring) {
             final Bundle controllerState = savedInstanceState.getBundle(CONTROLLER_STATE_KEY);
             if (controllerState != null) {
                 mFinalizationController.restoreInstanceState(controllerState);
@@ -106,8 +100,6 @@ public abstract class FinalizationActivityBase extends Activity {
             // can execute an onActivityResult() callback before finishing this activity.
             return;
         }
-
-        tryFinalizeProvisioning();
     }
 
     @Override
@@ -117,6 +109,9 @@ public abstract class FinalizationActivityBase extends Activity {
             getApplicationContext().startService(PROVISIONING_SERVICE_INTENT);
         } catch (BackgroundServiceStartNotAllowedException e) {
             ProvisionLogger.loge(e);
+        }
+        if (!mRestoring) {
+            tryFinalizeProvisioning();
         }
     }
 
