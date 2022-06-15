@@ -16,7 +16,6 @@
 
 package com.android.managedprovisioning.parser;
 
-import static android.app.admin.DevicePolicyManager.ACTION_ESTABLISH_NETWORK_CONNECTION;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_FINANCED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE;
@@ -129,8 +128,6 @@ public class ParserUtils {
                 return settingsFacade.isDuringSetupWizard(context)
                         ? ACTION_PROVISION_MANAGED_DEVICE
                         : ACTION_PROVISION_MANAGED_PROFILE;
-            case ACTION_ESTABLISH_NETWORK_CONNECTION:
-                return ACTION_ESTABLISH_NETWORK_CONNECTION;
             default:
                 throw new IllegalProvisioningArgumentException("Unknown intent action "
                         + intent.getAction());

@@ -84,14 +84,12 @@ public class InstallPackageTask extends AbstractProvisioningTask {
             PackageLocationProvider packageLocationProvider,
             Context context,
             ProvisioningParams params,
-            Callback callback,
-            String packageName) {
+            Callback callback) {
         this(packageLocationProvider, context, params, callback,
                 new ProvisioningAnalyticsTracker(
                         MetricsWriterFactory.getMetricsWriter(context, new SettingsFacade()),
                         new ManagedProvisioningSharedPreferences(context)),
-                new Utils(),
-                packageName);
+                new Utils());
     }
 
     @VisibleForTesting
@@ -101,14 +99,13 @@ public class InstallPackageTask extends AbstractProvisioningTask {
             ProvisioningParams params,
             Callback callback,
             ProvisioningAnalyticsTracker provisioningAnalyticsTracker,
-            Utils utils,
-            String packageName) {
+            Utils utils) {
         super(context, params, callback, provisioningAnalyticsTracker);
 
         mPm = context.getPackageManager();
         mDpm = context.getSystemService(DevicePolicyManager.class);
         mPackageLocationProvider = requireNonNull(packageLocationProvider);
-        mPackageName = requireNonNull(packageName);
+        mPackageName = requireNonNull(mProvisioningParams.inferDeviceAdminPackageName());
         mUtils = requireNonNull(utils);
     }
 

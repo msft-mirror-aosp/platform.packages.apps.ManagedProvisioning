@@ -22,8 +22,8 @@ import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PRO
 import static com.android.internal.util.Preconditions.checkNotNull;
 
 import android.annotation.IntDef;
+import android.app.Activity;
 import android.app.NotificationManager;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.UserManager;
 
@@ -51,7 +51,6 @@ public final class FinalizationController {
     static final int PROVISIONING_FINALIZED_RESULT_CHILD_ACTIVITY_LAUNCHED = 2;
     static final int PROVISIONING_FINALIZED_RESULT_SKIPPED = 3;
     static final int PROVISIONING_FINALIZED_RESULT_WAIT_FOR_WORK_PROFILE_AVAILABLE = 4;
-
     @IntDef({
             PROVISIONING_FINALIZED_RESULT_NO_CHILD_ACTIVITY_LAUNCHED,
             PROVISIONING_FINALIZED_RESULT_CHILD_ACTIVITY_LAUNCHED,
@@ -63,7 +62,7 @@ public final class FinalizationController {
     private static final int FINAL_SCREEN_REQUEST_CODE = 2;
 
     private final FinalizationControllerLogic mFinalizationControllerLogic;
-    private final Context mContext;
+    private final Activity mActivity;
     private final Utils mUtils;
     private final SettingsFacade mSettingsFacade;
     private final UserProvisioningStateHelper mUserProvisioningStateHelper;
@@ -73,39 +72,37 @@ public final class FinalizationController {
     private @ProvisioningFinalizedResult int mProvisioningFinalizedResult;
     private ProvisioningParamsUtils mProvisioningParamsUtils;
 
-    public FinalizationController(Context context,
+    public FinalizationController(Activity activity,
             FinalizationControllerLogic finalizationControllerLogic,
             UserProvisioningStateHelper userProvisioningStateHelper) {
         this(
-                context,
+                activity,
                 finalizationControllerLogic,
                 new Utils(),
                 new SettingsFacade(),
                 userProvisioningStateHelper,
-                new NotificationHelper(context),
+                new NotificationHelper(activity),
                 new DeferredMetricsReader(
-                        Constants.getDeferredMetricsFile(context)),
-                new ProvisioningParamsUtils(
-                        ProvisioningParamsUtils.DEFAULT_PROVISIONING_PARAMS_FILE_PROVIDER));
+                        Constants.getDeferredMetricsFile(activity)),
+                new ProvisioningParamsUtils());
     }
 
-    public FinalizationController(Context context,
+    public FinalizationController(Activity activity,
             FinalizationControllerLogic finalizationControllerLogic) {
         this(
-                context,
+                activity,
                 finalizationControllerLogic,
                 new Utils(),
                 new SettingsFacade(),
-                new UserProvisioningStateHelper(context),
-                new NotificationHelper(context),
+                new UserProvisioningStateHelper(activity),
+                new NotificationHelper(activity),
                 new DeferredMetricsReader(
-                        Constants.getDeferredMetricsFile(context)),
-                new ProvisioningParamsUtils(
-                        ProvisioningParamsUtils.DEFAULT_PROVISIONING_PARAMS_FILE_PROVIDER));
+                        Constants.getDeferredMetricsFile(activity)),
+                new ProvisioningParamsUtils());
     }
 
     @VisibleForTesting
-    FinalizationController(Context context,
+    FinalizationController(Activity activity,
             FinalizationControllerLogic finalizationControllerLogic,
             Utils utils,
             SettingsFacade settingsFacade,
@@ -113,7 +110,7 @@ public final class FinalizationController {
             NotificationHelper notificationHelper,
             DeferredMetricsReader deferredMetricsReader,
             ProvisioningParamsUtils provisioningParamsUtils) {
-        mContext = checkNotNull(context);
+        mActivity = checkNotNull(activity);
         mFinalizationControllerLogic = checkNotNull(finalizationControllerLogic);
         mUtils = checkNotNull(utils);
         mSettingsFacade = checkNotNull(settingsFacade);
@@ -125,10 +122,10 @@ public final class FinalizationController {
     }
 
     @VisibleForTesting
-    PrimaryProfileFinalizationHelper getPrimaryProfileFinalizationHelper(
+    final PrimaryProfileFinalizationHelper getPrimaryProfileFinalizationHelper(
             ProvisioningParams params) {
         return new PrimaryProfileFinalizationHelper(params.accountToMigrate,
-                mUtils.getManagedProfile(mContext), params.inferDeviceAdminPackageName());
+                mUtils.getManagedProfile(mActivity), params.inferDeviceAdminPackageName());
     }
 
     /**
@@ -147,7 +144,7 @@ public final class FinalizationController {
      * called after the final call to this method.  If this method is called again after that, it
      * will return immediately without taking any action.
      */
-    void provisioningFinalized() {
+    final void provisioningFinalized() {
         mProvisioningFinalizedResult = PROVISIONING_FINALIZED_RESULT_SKIPPED;
 
         if (mUserProvisioningStateHelper.isStateUnmanagedOrFinalized()) {
@@ -164,8 +161,8 @@ public final class FinalizationController {
 
         mProvisioningFinalizedResult = PROVISIONING_FINALIZED_RESULT_NO_CHILD_ACTIVITY_LAUNCHED;
         if (params.provisioningAction.equals(ACTION_PROVISION_MANAGED_PROFILE)) {
-            UserManager userManager = mContext.getSystemService(UserManager.class);
-            if (!userManager.isUserUnlocked(mUtils.getManagedProfile(mContext))) {
+            UserManager userManager = mActivity.getSystemService(UserManager.class);
+            if (!userManager.isUserUnlocked(mUtils.getManagedProfile(mActivity))) {
                 mProvisioningFinalizedResult =
                         PROVISIONING_FINALIZED_RESULT_WAIT_FOR_WORK_PROFILE_AVAILABLE;
             } else {
@@ -183,7 +180,7 @@ public final class FinalizationController {
     /**
      * @throws IllegalStateException if {@link #provisioningFinalized()} was not called before.
      */
-    @ProvisioningFinalizedResult int getProvisioningFinalizedResult() {
+    final @ProvisioningFinalizedResult int getProvisioningFinalizedResult() {
         if (mProvisioningFinalizedResult == 0) {
             throw new IllegalStateException("provisioningFinalized() has not been called.");
         }
@@ -191,16 +188,17 @@ public final class FinalizationController {
     }
 
     @VisibleForTesting
-    void clearParamsFile() {
-        final File file = mProvisioningParamsUtils.getProvisioningParamsFile(mContext);
+    final void clearParamsFile() {
+        final File file = mProvisioningParamsUtils.getProvisioningParamsFile(mActivity);
         if (file != null) {
             file.delete();
         }
     }
 
     private ProvisioningParams loadProvisioningParams() {
-        final File file = mProvisioningParamsUtils.getProvisioningParamsFile(mContext);
-        return ProvisioningParams.load(file);
+        final File file = mProvisioningParamsUtils.getProvisioningParamsFile(mActivity);
+        final ProvisioningParams params = ProvisioningParams.load(file);
+        return params;
     }
 
     /**
@@ -210,16 +208,16 @@ public final class FinalizationController {
     private void commitFinalizedState(ProvisioningParams params) {
         if (ACTION_PROVISION_MANAGED_DEVICE.equals(params.provisioningAction)) {
             mNotificationHelper.showPrivacyReminderNotification(
-                    mContext, NotificationManager.IMPORTANCE_DEFAULT);
+                    mActivity, NotificationManager.IMPORTANCE_DEFAULT);
         } else if (ACTION_PROVISION_MANAGED_PROFILE.equals(params.provisioningAction)
                 && mFinalizationControllerLogic.shouldFinalizePrimaryProfile(params)) {
             getPrimaryProfileFinalizationHelper(params)
-                    .finalizeProvisioningInPrimaryProfile(mContext, null);
+                    .finalizeProvisioningInPrimaryProfile(mActivity, null);
         }
 
         mUserProvisioningStateHelper.markUserProvisioningStateFinalized(params);
 
-        mDeferredMetricsReader.scheduleDumpMetrics(mContext);
+        mDeferredMetricsReader.scheduleDumpMetrics(mActivity);
         clearParamsFile();
     }
 
@@ -228,7 +226,7 @@ public final class FinalizationController {
      * After this is called, any further calls to {@link #provisioningFinalized()} will return
      * immediately without taking any action.
      */
-    void commitFinalizedState() {
+    final void commitFinalizedState() {
         final ProvisioningParams params = loadProvisioningParams();
         if (params == null) {
             ProvisionLogger.logw(
@@ -241,7 +239,7 @@ public final class FinalizationController {
     /**
      * This method is called when onSaveInstanceState() executes on the finalization activity.
      */
-    void saveInstanceState(Bundle outState) {
+    final void saveInstanceState(Bundle outState) {
         mFinalizationControllerLogic.saveInstanceState(outState);
     }
 
@@ -249,7 +247,7 @@ public final class FinalizationController {
      * When saved instance state is passed to the finalization activity in its onCreate() method,
      * that state is passed to the FinalizationControllerLogic object here so it can be restored.
      */
-    void restoreInstanceState(Bundle savedInstanceState) {
+    final void restoreInstanceState(Bundle savedInstanceState) {
         mFinalizationControllerLogic.restoreInstanceState(savedInstanceState,
                 loadProvisioningParams());
     }
@@ -258,7 +256,7 @@ public final class FinalizationController {
      * Cleanup that must happen when the finalization activity is destroyed, even if we haven't yet
      * called {@link #commitFinalizedState()} to finalize the system's provisioning state.
      */
-    void activityDestroyed(boolean isFinishing) {
+    final void activityDestroyed(boolean isFinishing) {
         mFinalizationControllerLogic.activityDestroyed(isFinishing);
     }
 }

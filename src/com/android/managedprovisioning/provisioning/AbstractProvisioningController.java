@@ -38,7 +38,7 @@ import com.android.managedprovisioning.task.AbstractProvisioningTask;
 import com.android.managedprovisioning.task.DownloadPackageTask;
 import com.android.managedprovisioning.task.InstallExistingPackageTask;
 import com.android.managedprovisioning.task.InstallPackageTask;
-import com.android.managedprovisioning.task.VerifyAdminPackageTask;
+import com.android.managedprovisioning.task.VerifyPackageTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +78,7 @@ public abstract class AbstractProvisioningController implements AbstractProvisio
 
     protected int mCurrentTaskIndex;
 
-    public AbstractProvisioningController(
+    AbstractProvisioningController(
             Context context,
             ProvisioningParams params,
             int userId,
@@ -169,18 +169,12 @@ public abstract class AbstractProvisioningController implements AbstractProvisio
 
     @Override
     // Note that this callback might come on the main thread
-    public synchronized void onError(AbstractProvisioningTask task, int errorCode,
-            String errorMessage) {
+    public synchronized void onError(AbstractProvisioningTask task, int errorCode) {
         mStatus = STATUS_ERROR;
         cleanup(STATUS_ERROR);
         mProvisioningAnalyticsTracker.logProvisioningError(mContext, task, errorCode);
-        if (errorMessage == null) {
-            mCallback.error(getErrorTitle(), getErrorMsgId(task, errorCode),
-                    getRequireFactoryReset(task, errorCode));
-        } else {
-            mCallback.error(
-                    getErrorTitle(), errorMessage, getRequireFactoryReset(task, errorCode));
-        }
+        mCallback.error(getErrorTitle(), getErrorMsgId(task, errorCode),
+                getRequireFactoryReset(task, errorCode));
     }
 
     private void cleanup(final int newStatus) {
@@ -191,24 +185,19 @@ public abstract class AbstractProvisioningController implements AbstractProvisio
     }
 
     protected final void addDownloadAndInstallDeviceOwnerPackageTasks() {
-        if (mParams.deviceAdminDownloadInfo == null) {
-            return;
-        }
+        if (mParams.deviceAdminDownloadInfo == null) return;
 
-        DownloadPackageTask downloadTask = new DownloadPackageTask(
-                mContext, mParams, mParams.deviceAdminDownloadInfo, this);
+        DownloadPackageTask downloadTask = new DownloadPackageTask(mContext, mParams, this);
         addTasks(downloadTask,
-                new VerifyAdminPackageTask(
-                        downloadTask, mContext, mParams, mParams.deviceAdminDownloadInfo, this),
-                new InstallPackageTask(downloadTask, mContext, mParams, this,
-                        mParams.inferDeviceAdminPackageName()));
+                new VerifyPackageTask(downloadTask, mContext, mParams, this),
+                new InstallPackageTask(downloadTask, mContext, mParams, this));
 
         // TODO(b/170333009): add unit test for headless system user mode
         if (UserManager.isHeadlessSystemUserMode() && mUserId != UserHandle.USER_SYSTEM) {
             ProvisionLogger.logd("Adding InstallExistingPackageTask for system user on "
                       + "headless system user mode");
-            addTasks(new InstallExistingPackageTask(mParams.inferDeviceAdminPackageName(), mContext,
-                    mParams, /* callback= */ this, UserHandle.USER_SYSTEM));
+            addTasks(new InstallExistingPackageTask(mParams.inferDeviceAdminPackageName(),
+                    mContext, mParams, this, UserHandle.USER_SYSTEM));
         }
     }
 

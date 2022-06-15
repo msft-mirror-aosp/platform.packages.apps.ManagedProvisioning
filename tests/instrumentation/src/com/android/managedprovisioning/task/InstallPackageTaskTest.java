@@ -61,7 +61,7 @@ public class InstallPackageTaskTest {
     private static final PackageLocationProvider FILE_NULL_PATH_PROVIDER = () -> null;
     private static final PackageLocationProvider FILE_INVALID_PATH_PROVIDER =
             () -> new File("invalid/path");
-    private static final String TEST_APP = "com.android.bedstead.testapp.EmptyTestApp";
+    private static final String TEST_APP = "android.EmptyTestApp";
 
     private InstallPackageBlockingCallback mInstallPackageBlockingCallback;
 
@@ -79,8 +79,7 @@ public class InstallPackageTaskTest {
                 () -> appToInstallFile,
                 sContext,
                 createProvisioningParams(testApp.packageName()),
-                mInstallPackageBlockingCallback,
-                testApp.packageName());
+                mInstallPackageBlockingCallback);
         int resultCode;
 
         try {
@@ -100,8 +99,7 @@ public class InstallPackageTaskTest {
                 FILE_NULL_PATH_PROVIDER,
                 sContext,
                 createProvisioningParams(TEST_PACKAGE_NAME),
-                mInstallPackageBlockingCallback,
-                TEST_PACKAGE_NAME);
+                mInstallPackageBlockingCallback);
 
         task.run(USER_ID);
         int resultCode = mInstallPackageBlockingCallback.await();
@@ -115,8 +113,7 @@ public class InstallPackageTaskTest {
                 FILE_INVALID_PATH_PROVIDER,
                 sContext,
                 createProvisioningParams(TEST_PACKAGE_NAME),
-                mInstallPackageBlockingCallback,
-                TEST_PACKAGE_NAME);
+                mInstallPackageBlockingCallback);
 
         sInstrumentation.runOnMainSync(() -> task.run(USER_ID));
         int resultCode = mInstallPackageBlockingCallback.await();
@@ -135,8 +132,7 @@ public class InstallPackageTaskTest {
                 () -> appToInstallFile,
                 sContext,
                 createProvisioningParams(testApp.packageName()),
-                mInstallPackageBlockingCallback,
-                testApp.packageName());
+                mInstallPackageBlockingCallback);
         int resultCode;
 
         try {
@@ -159,8 +155,7 @@ public class InstallPackageTaskTest {
                 () -> appToInstallFile,
                 sContext,
                 createProvisioningParams(TEST_PACKAGE_NAME),
-                mInstallPackageBlockingCallback,
-                TEST_PACKAGE_NAME);
+                mInstallPackageBlockingCallback);
         int resultCode;
 
         sInstrumentation.runOnMainSync(() -> task.run(USER_ID));
@@ -216,8 +211,7 @@ public class InstallPackageTaskTest {
         }
 
         @Override
-        public void onError(
-                AbstractProvisioningTask task, int errorCode, String errorMessage) {
+        public void onError(AbstractProvisioningTask task, int errorCode) {
             callbackTriggered(errorCode);
         }
     }

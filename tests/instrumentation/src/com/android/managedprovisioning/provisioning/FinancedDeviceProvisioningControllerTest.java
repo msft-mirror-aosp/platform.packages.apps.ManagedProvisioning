@@ -30,7 +30,7 @@ import com.android.managedprovisioning.task.DeviceOwnerInitializeProvisioningTas
 import com.android.managedprovisioning.task.DisallowAddUserTask;
 import com.android.managedprovisioning.task.DownloadPackageTask;
 import com.android.managedprovisioning.task.SetDeviceOwnerPolicyTask;
-import com.android.managedprovisioning.task.VerifyAdminPackageTask;
+import com.android.managedprovisioning.task.VerifyPackageTask;
 
 import org.mockito.Mock;
 
@@ -68,7 +68,7 @@ public class FinancedDeviceProvisioningControllerTest extends ProvisioningContro
         taskSucceeded(DownloadPackageTask.class);
 
         // THEN the verify package task should be run
-        taskSucceeded(VerifyAdminPackageTask.class);
+        taskSucceeded(VerifyPackageTask.class);
 
         // THEN the install package tasks should be run
         tasksDownloadAndInstallDeviceOwnerPackageSucceeded(TEST_USER_ID);

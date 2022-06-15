@@ -16,14 +16,12 @@
 
 package com.android.managedprovisioning.parser;
 
-import static android.app.admin.DevicePolicyManager.ACTION_ESTABLISH_NETWORK_CONNECTION;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_FINANCED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE;
-import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_MINIMUM_VERSION_CODE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_CHECKSUM;
@@ -35,17 +33,13 @@ import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DISCLAIME
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DISCLAIMER_CONTENT;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DISCLAIMER_HEADER;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION;
-import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_KEEP_SCREEN_ON;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LOCALE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LOCAL_TIME;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LOGO_URI;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ORGANIZATION_NAME;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_RETURN_BEFORE_POLICY_COMPLIANCE;
-import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_COOKIE_HEADER;
-import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_LOCATION;
-import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ROLE_HOLDER_SIGNATURE_CHECKSUM;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SENSORS_PERMISSION_GRANT_OPT_OUT;
-import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_EDUCATION_SCREENS;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SUPPORTED_MODES;
@@ -82,6 +76,7 @@ import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.UserHandle;
@@ -90,6 +85,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.managedprovisioning.common.IllegalProvisioningArgumentException;
+import com.android.managedprovisioning.common.LogoUtils;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.SettingsFacade;
@@ -223,6 +219,9 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
     static final String EXTRA_PROVISIONING_SKIP_ENCRYPTION_SHORT = "a.a.e.PSE";
 
     @VisibleForTesting
+    static final String EXTRA_PROVISIONING_LOGO_URI_SHORT = "a.a.e.PLU";
+
+    @VisibleForTesting
     static final String EXTRA_PROVISIONING_DISCLAIMERS_SHORT = "a.a.e.PD";
 
     @VisibleForTesting
@@ -324,6 +323,8 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
         shorterExtras.put(
                 EXTRA_PROVISIONING_DISCLAIMERS, EXTRA_PROVISIONING_DISCLAIMERS_SHORT);
         shorterExtras.put(
+                EXTRA_PROVISIONING_LOGO_URI, EXTRA_PROVISIONING_LOGO_URI_SHORT);
+        shorterExtras.put(
                 EXTRA_PROVISIONING_DISCLAIMER_HEADER, EXTRA_PROVISIONING_DISCLAIMER_HEADER_SHORT);
         shorterExtras.put(
                 EXTRA_PROVISIONING_DISCLAIMER_CONTENT, EXTRA_PROVISIONING_DISCLAIMER_CONTENT_SHORT);
@@ -374,8 +375,6 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
         } else if (PROVISIONING_ACTIONS_SUPPORT_ALL_PROVISIONING_DATA.contains(
                 provisioningAction)) {
             return parseAllSupportedProvisioningData(provisioningIntent, mContext);
-        } else if (ACTION_ESTABLISH_NETWORK_CONNECTION.equals(provisioningAction)) {
-            return parseNetworkProvisioningData(provisioningIntent);
         } else {
             throw new IllegalProvisioningArgumentException("Unsupported provisioning action: "
                     + provisioningAction);
@@ -474,6 +473,7 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
      *         {@link EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME} only in
      *         {@link ACTION_PROVISION_MANAGED_PROFILE}.
      *     </li>
+     *     <li>{@link EXTRA_PROVISIONING_LOGO_URI}</li>
      *     <li>{@link EXTRA_PROVISIONING_SKIP_ENCRYPTION}</li>
      *     <li>{@link EXTRA_PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED}</li>
      *     <li>{@link EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE}</li>
@@ -528,7 +528,14 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
                                 ProvisioningParams
                                         .DEFAULT_EXTRA_PROVISIONING_KEEP_ACCOUNT_MIGRATED);
 
-            DisclaimersParam disclaimersParam = new DisclaimersParserImpl(context, provisioningId)
+            // Parse organization's logo. This is not supported in managed device
+            // from trusted source provisioning because, currently, there is no way to send
+            // organization logo to the device at this stage.
+            if (!isProvisionManagedDeviceFromTrustedSourceIntent) {
+                parseOrganizationLogoUrlFromExtras(context, intent);
+            }
+
+            DisclaimersParam disclaimersParam = new DisclaimersParser(context, provisioningId)
                     .parse(getParcelableArrayExtraFromLongName(
                             intent, EXTRA_PROVISIONING_DISCLAIMERS));
 
@@ -582,18 +589,7 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
                     .setSkipOwnershipDisclaimer(getSkipOwnershipDisclaimer(intent))
                     .setReturnBeforePolicyCompliance(getReturnBeforePolicyCompliance(intent))
                     .setDeviceOwnerPermissionGrantOptOut(
-                            adminOptedOutOfSensorsPermissionGrants)
-                    .setKeepScreenOn(getBooleanExtraFromLongName(
-                            intent,
-                            EXTRA_PROVISIONING_KEEP_SCREEN_ON,
-                            ProvisioningParams.DEFAULT_EXTRA_PROVISIONING_KEEP_SCREEN_ON))
-                    .setAllowOffline(getBooleanExtraFromLongName(
-                            intent,
-                            EXTRA_PROVISIONING_ALLOW_OFFLINE,
-                            ProvisioningParams.DEFAULT_EXTRA_ALLOW_OFFLINE))
-                    .setRoleHolderDownloadInfo(parseRoleHolderDownloadInfoFromExtras(intent))
-                    .setProvisioningShouldLaunchResultIntent(
-                            getProvisioningShouldLaunchResultIntent(intent));
+                            adminOptedOutOfSensorsPermissionGrants);
         } catch (ClassCastException e) {
             throw new IllegalProvisioningArgumentException("Extra has invalid type", e);
         } catch (IllegalArgumentException e) {
@@ -601,17 +597,6 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
         } catch (NullPointerException e) {
             throw new IllegalProvisioningArgumentException("Compulsory parameter not found!", e);
         }
-    }
-
-    private boolean getProvisioningShouldLaunchResultIntent(Intent intent) {
-        if (!intent.getAction().equals(ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE)
-                && !intent.getAction().equals(ACTION_PROVISION_MANAGED_PROFILE)) {
-            return ProvisioningParams.DEFAULT_EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT;
-        }
-        return getBooleanExtraFromLongName(
-                intent,
-                EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT,
-                ProvisioningParams.DEFAULT_EXTRA_PROVISIONING_SHOULD_LAUNCH_RESULT_INTENT);
     }
 
     private boolean getSkipOwnershipDisclaimer(Intent intent) {
@@ -722,31 +707,6 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
     }
 
     /**
-     * Parses an intent and return a corresponding {@link ProvisioningParams} object.
-     *
-     * @param intent intent to be parsed.
-     */
-    private ProvisioningParams parseNetworkProvisioningData(Intent intent)
-            throws IllegalProvisioningArgumentException {
-        try {
-            ProvisionLogger.logi("Processing network-related extras intent: " + intent.getAction());
-            return ProvisioningParams.Builder.builder(/* skipValidation= */ true)
-                    .setUseMobileData(
-                            getBooleanExtraFromLongName(
-                                    intent, EXTRA_PROVISIONING_USE_MOBILE_DATA,
-                                    DEFAULT_EXTRA_PROVISIONING_USE_MOBILE_DATA))
-                    .setWifiInfo(parseWifiInfoFromExtras(intent))
-                    .build();
-        }  catch (IllegalArgumentException e) {
-            throw new IllegalProvisioningArgumentException("Invalid parameter found!", e);
-        }  catch (IllformedLocaleException e) {
-            throw new IllegalProvisioningArgumentException("Invalid locale format!", e);
-        }  catch (NullPointerException e) {
-            throw new IllegalProvisioningArgumentException("Compulsory parameter not found!", e);
-        }
-    }
-
-    /**
      * Parses Wifi configuration from an Intent and returns the result in {@link WifiInfo}.
      */
     @Nullable
@@ -817,40 +777,14 @@ public class ExtrasProvisioningDataParser implements ProvisioningDataParser {
     }
 
     /**
-     * Parses role holder package download info configuration from an Intent and returns the result
-     * in {@link PackageDownloadInfo}.
-     *
-     * @return the {@link PackageDownloadInfo} or {@code null} if not supplied alongside {@link
-     * DevicePolicyManager#ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE}, {@link
-     * DevicePolicyManager#EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_LOCATION} or
-     * {@link DevicePolicyManager#EXTRA_PROVISIONING_ROLE_HOLDER_SIGNATURE_CHECKSUM}.
+     * Parses the organization logo url from intent.
      */
-    @Nullable
-    private PackageDownloadInfo parseRoleHolderDownloadInfoFromExtras(Intent intent) {
-        if (!intent.getAction().equals(ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE)) {
-            ProvisionLogger.logi("Cannot parse role holder download info for non-trusted source "
-                    + "provisioning.");
-            return null;
+    private void parseOrganizationLogoUrlFromExtras(Context context, Intent intent) {
+        Uri logoUri = getParcelableExtraFromLongName(intent, EXTRA_PROVISIONING_LOGO_URI);
+        if (logoUri != null) {
+            // If we go through encryption, and if the uri is a content uri:
+            // We'll lose the grant to this uri. So we need to save it to a local file.
+            LogoUtils.saveOrganisationLogo(context, logoUri);
         }
-        String downloadLocation = getStringExtraFromLongName(
-                intent, EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_LOCATION);
-        if (downloadLocation == null) {
-            ProvisionLogger.logi("Cannot parse role holder download info, because it does not "
-                    + "include the download location extra.");
-            return null;
-        }
-        String sigHash = getStringExtraFromLongName(
-                intent, EXTRA_PROVISIONING_ROLE_HOLDER_SIGNATURE_CHECKSUM);
-        if (sigHash == null) {
-            ProvisionLogger.logi("Cannot parse role holder download info, because it does not "
-                    + "include the signature checksum extra.");
-            return null;
-        }
-        PackageDownloadInfo.Builder downloadInfoBuilder = PackageDownloadInfo.Builder.builder()
-                .setLocation(downloadLocation)
-                .setCookieHeader(getStringExtraFromLongName(
-                        intent, EXTRA_PROVISIONING_ROLE_HOLDER_PACKAGE_DOWNLOAD_COOKIE_HEADER));
-        downloadInfoBuilder.setSignatureChecksum(StoreUtils.stringToByteArray(sigHash));
-        return downloadInfoBuilder.build();
     }
 }

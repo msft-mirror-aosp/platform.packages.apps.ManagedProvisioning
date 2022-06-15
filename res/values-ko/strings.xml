@@ -28,7 +28,9 @@
     <string name="the_following_is_your_mdm_for_device" msgid="6717973404364414816">"내 기기를 관리하는 앱:"</string>
     <string name="next" msgid="1004321437324424398">"다음"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"직장 프로필 설정 중..."</string>
-    <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"IT 관리자는 이 프로필과 연결된 설정, 회사 액세스, 앱, 권한, 데이터, 네트워크 활동뿐 아니라 통화 기록과 연락처 검색 기록을 모니터링하고 관리할 수 있습니다. 추가 정보와 조직의 개인정보처리방침에 관한 자세한 내용은 IT 관리자에게 문의하세요."</string>
+    <string name="admin_has_ability_to_monitor_profile" msgid="7051310668406162979">"IT 관리자는 설정, 기업 액세스, 앱, 권한과 사용자의 네트워크 활동, 기기 위치, 통화 기록, 연락처 검색 기록 등 이 프로필과 연결된 데이터를 모니터링하고 관리할 수 있습니다.<xliff:g id="LINE_BREAK">
+
+</xliff:g>조직의 개인정보처리방침을 포함한 자세한 내용을 알아보려면 IT 관리자에게 문의하세요."</string>
     <string name="admin_has_ability_to_monitor_device" msgid="6303112630697870695">"IT 관리자는 설정, 기업 액세스, 앱, 권한과 사용자의 네트워크 활동, 기기 위치, 통화 기록, 연락처 검색 기록 등 이 기기와 연결된 데이터를 모니터링하고 관리할 수 있습니다.<xliff:g id="LINE_BREAK">
 
 </xliff:g>조직의 개인정보처리방침을 포함한 자세한 내용을 알아보려면 IT 관리자에게 문의하세요."</string>
@@ -192,8 +194,4 @@
     <string name="financed_make_payments_subheader_description" msgid="1222254084091306375">"사용자가 기기 값을 결제할 수 있도록 <xliff:g id="CREDITOR_NAME_0">%1$s</xliff:g>에서 <xliff:g id="CREDITOR_NAME_1">%2$s</xliff:g> 앱을 설치할 수 있습니다."</string>
     <string name="financed_restrict_device_subheader_title" msgid="2138828664816418195">"이 기기가 제한될 수 있습니다."</string>
     <string name="financed_restrict_device_subheader_description" msgid="5683975693718163300">"결제하지 않으면 <xliff:g id="CREDITOR_NAME">%1$s</xliff:g>에서 이 기기에 대한 액세스를 제한할 수 있습니다."</string>
-    <string name="error_role_holder_hash_mismatch" msgid="6201584198247885437">"기기를 설정할 수 없습니다. IT 관리자에게 연락하여 \'잘못된 체크섬\'을 언급하세요."</string>
-    <string name="error_role_holder_download_install_failed" msgid="8151968372180693228">"나중에 다시 시도하거나 IT 관리자에게 도움을 요청하세요."</string>
-    <string name="error_role_holder_package_invalid" msgid="2631207759497988833">"기기를 설정할 수 없습니다. IT 관리자에게 연락하여 \'구성요소 누락 또는 손상\'을 언급하세요."</string>
-    <string name="setting_up" msgid="1478847967385506664">"설정 중…"</string>
 </resources>

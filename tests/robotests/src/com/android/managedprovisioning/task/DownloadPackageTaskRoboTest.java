@@ -59,8 +59,7 @@ public class DownloadPackageTaskRoboTest {
     public void run_doesSetManagedProvisioningDpcDownloaded() {
         final ProvisioningParams params = createDefaultProvisioningParamsBuilder().build();
         final DownloadPackageTask mDownloadPackageTask =
-                new DownloadPackageTask(
-                        mContext, params, params.deviceAdminDownloadInfo, mCallback);
+                new DownloadPackageTask(mContext, params, mCallback);
 
         mDownloadPackageTask.run(USER_ID);
 
@@ -79,8 +78,7 @@ public class DownloadPackageTaskRoboTest {
                 .build();
         installTestPackage();
         final DownloadPackageTask mDownloadPackageTask =
-                new DownloadPackageTask(
-                        mContext, params, params.deviceAdminDownloadInfo, mCallback);
+                new DownloadPackageTask(mContext, params, mCallback);
 
         mDownloadPackageTask.run(USER_ID);
 
@@ -99,8 +97,7 @@ public class DownloadPackageTaskRoboTest {
                 .build();
         installTestPackage();
         final DownloadPackageTask mDownloadPackageTask =
-                new DownloadPackageTask(
-                        mContext, params, params.deviceAdminDownloadInfo, mCallback);
+                new DownloadPackageTask(mContext, params, mCallback);
 
         mDownloadPackageTask.run(USER_ID);
 
@@ -112,8 +109,7 @@ public class DownloadPackageTaskRoboTest {
         setNotConnected();
         final ProvisioningParams params = createDefaultProvisioningParamsBuilder().build();
         final DownloadPackageTask mDownloadPackageTask =
-                new DownloadPackageTask(
-                        mContext, params, params.deviceAdminDownloadInfo, mCallback);
+                new DownloadPackageTask(mContext, params, mCallback);
 
         mDownloadPackageTask.run(USER_ID);
 
