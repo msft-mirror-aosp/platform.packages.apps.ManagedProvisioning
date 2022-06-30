@@ -16,6 +16,9 @@
 
 package com.android.managedprovisioning.common;
 
+import static android.app.admin.DevicePolicyManager.EXTRA_FORCE_UPDATE_ROLE_HOLDER;
+import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_TRIGGER;
+
 import static com.android.managedprovisioning.TestUtils.assertIntentsEqual;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -23,11 +26,15 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
+
+import com.android.managedprovisioning.model.PackageDownloadInfo;
+import com.android.managedprovisioning.model.ProvisioningParams;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -45,9 +52,18 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
     private static final String ROLE_HOLDER_UPDATER_NULL_PACKAGE_NAME = null;
     private static final String ROLE_HOLDER_EMPTY_PACKAGE_NAME = "";
     private static final String ROLE_HOLDER_NULL_PACKAGE_NAME = null;
+    private static final int TEST_PROVISIONING_TRIGGER =
+            DevicePolicyManager.PROVISIONING_TRIGGER_QR_CODE;
     private static final Intent ROLE_HOLDER_UPDATER_INTENT =
-            new Intent(DevicePolicyManager.ACTION_UPDATE_DEVICE_MANAGEMENT_ROLE_HOLDER)
-                    .setPackage(ROLE_HOLDER_UPDATER_PACKAGE_NAME);
+            new Intent(DevicePolicyManager.ACTION_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER)
+                    .setPackage(ROLE_HOLDER_UPDATER_PACKAGE_NAME)
+                    .putExtra(EXTRA_PROVISIONING_TRIGGER, TEST_PROVISIONING_TRIGGER)
+                    .putExtra(EXTRA_FORCE_UPDATE_ROLE_HOLDER, false);
+    private static final Intent ROLE_HOLDER_UPDATER_INTENT_WITH_FORCE_UPDATE =
+            new Intent(DevicePolicyManager.ACTION_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER)
+                    .setPackage(ROLE_HOLDER_UPDATER_PACKAGE_NAME)
+                    .putExtra(EXTRA_FORCE_UPDATE_ROLE_HOLDER, true)
+                    .putExtra(EXTRA_PROVISIONING_TRIGGER, TEST_PROVISIONING_TRIGGER);
     public static final String TEST_EXTRA_KEY = "test_extra_key";
     public static final String TEST_EXTRA_VALUE = "test_extra_value";
     private static final Intent MANAGED_PROFILE_INTENT =
@@ -60,6 +76,28 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
             new Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE)
                     .putExtra(TEST_EXTRA_KEY, TEST_EXTRA_VALUE);
     private static final Intent MANAGED_PROVISIONING_INTENT = MANAGED_PROFILE_INTENT;
+    private static final ComponentName ADMIN = new ComponentName("com.test.admin", ".Receiver");
+    private static final ProvisioningParams PARAMS = ProvisioningParams.Builder.builder()
+            .setProvisioningAction(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
+            .setDeviceAdminComponentName(ADMIN)
+            .build();
+    private static final String TEST_DOWNLOAD_LOCATION =
+            "http://example/dpc.apk";
+    private static final String TEST_COOKIE_HEADER =
+            "Set-Cookie: sessionToken=foobar; Expires=Thu, 18 Feb 2016 23:59:59 GMT";
+    private static final byte[] TEST_SIGNATURE_CHECKSUM = new byte[] { '5', '4', '3', '2', '1' };
+    private static final PackageDownloadInfo ROLE_HOLDER_DOWNLOAD_INFO =
+            PackageDownloadInfo.Builder.builder()
+                    .setLocation(TEST_DOWNLOAD_LOCATION)
+                    .setSignatureChecksum(TEST_SIGNATURE_CHECKSUM)
+                    .setCookieHeader(TEST_COOKIE_HEADER)
+                    .build();
+    private static final ProvisioningParams PARAMS_WITH_ROLE_HOLDER_DOWNLOAD_INFO =
+            ProvisioningParams.Builder.builder()
+                    .setProvisioningAction(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
+                    .setDeviceAdminComponentName(ADMIN)
+                    .setRoleHolderDownloadInfo(ROLE_HOLDER_DOWNLOAD_INFO)
+                    .build();
 
     private final Context mContext = ApplicationProvider.getApplicationContext();
     private boolean mCanDelegateProvisioningToRoleHolder;
@@ -85,7 +123,7 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                 createRoleHolderUpdaterHelper();
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, MANAGED_PROVISIONING_INTENT)).isTrue();
+                mContext, MANAGED_PROVISIONING_INTENT, PARAMS)).isTrue();
     }
 
     @Test
@@ -94,7 +132,7 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                 createRoleHolderUpdaterHelper();
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, MANAGED_PROFILE_INTENT)).isTrue();
+                mContext, MANAGED_PROFILE_INTENT, PARAMS)).isTrue();
     }
 
     @Test
@@ -103,7 +141,7 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                 createRoleHolderUpdaterHelper();
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, PROVISION_TRUSTED_SOURCE_INTENT)).isTrue();
+                mContext, PROVISION_TRUSTED_SOURCE_INTENT, PARAMS)).isTrue();
     }
 
     @Test
@@ -112,7 +150,7 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                 createRoleHolderUpdaterHelper();
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, FINANCED_DEVICE_INTENT)).isFalse();
+                mContext, FINANCED_DEVICE_INTENT, PARAMS)).isFalse();
     }
 
     @Test
@@ -122,7 +160,7 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                         ROLE_HOLDER_NULL_PACKAGE_NAME);
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, MANAGED_PROVISIONING_INTENT)).isFalse();
+                mContext, MANAGED_PROVISIONING_INTENT, PARAMS)).isFalse();
     }
 
     @Test
@@ -132,7 +170,7 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                         ROLE_HOLDER_EMPTY_PACKAGE_NAME);
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, MANAGED_PROVISIONING_INTENT)).isFalse();
+                mContext, MANAGED_PROVISIONING_INTENT, PARAMS)).isFalse();
     }
 
     @Test
@@ -142,7 +180,7 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                         ROLE_HOLDER_UPDATER_NULL_PACKAGE_NAME);
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, MANAGED_PROVISIONING_INTENT)).isFalse();
+                mContext, MANAGED_PROVISIONING_INTENT, PARAMS)).isFalse();
     }
 
     @Test
@@ -152,7 +190,7 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                         ROLE_HOLDER_UPDATER_EMPTY_PACKAGE_NAME);
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, MANAGED_PROVISIONING_INTENT)).isFalse();
+                mContext, MANAGED_PROVISIONING_INTENT, PARAMS)).isFalse();
     }
 
     @Test
@@ -162,7 +200,7 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                 createRoleHolderUpdaterHelper();
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, MANAGED_PROVISIONING_INTENT)).isFalse();
+                mContext, MANAGED_PROVISIONING_INTENT, PARAMS)).isFalse();
     }
 
     @Test
@@ -172,7 +210,27 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
                 createRoleHolderUpdaterHelperWithUpdaterNotInstalled();
 
         assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
-                mContext, MANAGED_PROVISIONING_INTENT)).isFalse();
+                mContext, MANAGED_PROVISIONING_INTENT, PARAMS)).isFalse();
+    }
+
+    @Test
+    public void shouldStartRoleHolderUpdater_roleHolderUpdaterNotResolvable_returnsFalse() {
+        disableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelperWithUpdaterNotResolvable();
+
+        assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
+                mContext, MANAGED_PROVISIONING_INTENT, PARAMS)).isFalse();
+    }
+
+    @Test
+    public void shouldStartRoleHolderUpdater_withRoleHolderDownloadInfo_returnsFalse() {
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelper();
+
+        assertThat(roleHolderUpdaterHelper.shouldStartRoleHolderUpdater(
+                mContext, PROVISION_TRUSTED_SOURCE_INTENT,
+                PARAMS_WITH_ROLE_HOLDER_DOWNLOAD_INFO)).isFalse();
     }
 
     @Test
@@ -182,8 +240,23 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
 
         assertIntentsEqual(
                 roleHolderUpdaterHelper.createRoleHolderUpdaterIntent(
-                        /* parentActivityIntent= */ null),
+                        /* parentActivityIntent= */ null,
+                        TEST_PROVISIONING_TRIGGER,
+                        /* isRoleHolderRequestedUpdate= */ false),
                 ROLE_HOLDER_UPDATER_INTENT);
+    }
+
+    @Test
+    public void createRoleHolderUpdaterIntent_withForceUpdate_works() {
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelper();
+
+        assertIntentsEqual(
+                roleHolderUpdaterHelper.createRoleHolderUpdaterIntent(
+                        /* parentActivityIntent= */ null,
+                        TEST_PROVISIONING_TRIGGER,
+                        /* isRoleHolderRequestedUpdate= */ true),
+                ROLE_HOLDER_UPDATER_INTENT_WITH_FORCE_UPDATE);
     }
 
     @Test
@@ -194,7 +267,9 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
 
         assertThrows(IllegalStateException.class,
                 () -> roleHolderUpdaterHelper.createRoleHolderUpdaterIntent(
-                        /* parentActivityIntent= */ null));
+                        /* parentActivityIntent= */ null,
+                        TEST_PROVISIONING_TRIGGER,
+                        /* isRoleHolderRequestedUpdate= */ false));
     }
 
     @Test
@@ -205,7 +280,113 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
 
         assertThrows(IllegalStateException.class,
                 () -> roleHolderUpdaterHelper.createRoleHolderUpdaterIntent(
-                        /* parentActivityIntent= */ null));
+                        /* parentActivityIntent= */ null,
+                        TEST_PROVISIONING_TRIGGER,
+                        /* isRoleHolderRequestedUpdate= */ false));
+    }
+
+    @Test
+    public void shouldPlatformDownloadRoleHolder_works() {
+        enableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelper();
+
+        assertThat(roleHolderUpdaterHelper
+                .shouldPlatformDownloadRoleHolder(
+                        PROVISION_TRUSTED_SOURCE_INTENT,
+                        PARAMS_WITH_ROLE_HOLDER_DOWNLOAD_INFO)).isTrue();
+    }
+
+    @Test
+    public void shouldPlatformDownloadRoleHolder_noRoleHolderDownloadInfoSupplied_returnsFalse() {
+        enableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelper();
+
+        assertThat(roleHolderUpdaterHelper
+                .shouldPlatformDownloadRoleHolder(PROVISION_TRUSTED_SOURCE_INTENT, PARAMS))
+                        .isFalse();
+    }
+
+    @Test
+    public void shouldPlatformDownloadRoleHolder_managedProfileIntent_returnsFalse() {
+        enableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelper();
+
+        assertThat(roleHolderUpdaterHelper
+                .shouldPlatformDownloadRoleHolder(
+                        MANAGED_PROFILE_INTENT,
+                        PARAMS_WITH_ROLE_HOLDER_DOWNLOAD_INFO)).isFalse();
+    }
+
+    @Test
+    public void shouldPlatformDownloadRoleHolder_financedDeviceIntent_returnsFalse() {
+        enableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelper();
+
+        assertThat(roleHolderUpdaterHelper
+                .shouldPlatformDownloadRoleHolder(
+                        FINANCED_DEVICE_INTENT,
+                        PARAMS_WITH_ROLE_HOLDER_DOWNLOAD_INFO)).isFalse();
+    }
+
+    @Test
+    public void shouldPlatformDownloadRoleHolder_featureFlagDisabled_returnsFalse() {
+        disableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelper();
+
+        assertThat(roleHolderUpdaterHelper
+                .shouldPlatformDownloadRoleHolder(
+                        PROVISION_TRUSTED_SOURCE_INTENT,
+                        PARAMS_WITH_ROLE_HOLDER_DOWNLOAD_INFO)).isFalse();
+    }
+
+    @Test
+    public void shouldPlatformDownloadRoleHolder_emptyRoleHolderPackage_returnsFalse() {
+        disableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelperWithRoleHolderPackageName(
+                        ROLE_HOLDER_EMPTY_PACKAGE_NAME);
+
+        assertThat(roleHolderUpdaterHelper
+                .shouldPlatformDownloadRoleHolder(
+                        PROVISION_TRUSTED_SOURCE_INTENT,
+                        PARAMS_WITH_ROLE_HOLDER_DOWNLOAD_INFO)).isFalse();
+    }
+
+    @Test
+    public void shouldPlatformDownloadRoleHolder_nullRoleHolderPackage_returnsFalse() {
+        disableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelperWithRoleHolderPackageName(
+                        ROLE_HOLDER_NULL_PACKAGE_NAME);
+
+        assertThat(roleHolderUpdaterHelper
+                .shouldPlatformDownloadRoleHolder(
+                        PROVISION_TRUSTED_SOURCE_INTENT,
+                        PARAMS_WITH_ROLE_HOLDER_DOWNLOAD_INFO)).isFalse();
+    }
+
+    @Test
+    public void isRoleHolderUpdaterDefined_actuallyDefined_returnsTrue() {
+        enableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelper();
+
+        assertThat(roleHolderUpdaterHelper.isRoleHolderUpdaterDefined()).isTrue();
+    }
+
+    @Test
+    public void isRoleHolderUpdaterDefined_actuallyNotDefined_returnsFalse() {
+        enableRoleHolderDelegation();
+        DeviceManagementRoleHolderUpdaterHelper roleHolderUpdaterHelper =
+                createRoleHolderUpdaterHelperWithUpdaterPackageName(
+                        ROLE_HOLDER_UPDATER_EMPTY_PACKAGE_NAME);
+
+        assertThat(roleHolderUpdaterHelper.isRoleHolderUpdaterDefined()).isFalse();
     }
 
     private FeatureFlagChecker createFeatureFlagChecker() {
@@ -218,7 +399,8 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
         return new DeviceManagementRoleHolderUpdaterHelper(
                 packageName,
                 ROLE_HOLDER_PACKAGE_NAME,
-                /* packageInstallChecker= */ (roleHolderPackageName, packageManager) -> true,
+                /* packageInstallChecker= */ (roleHolderPackageName) -> true,
+                /* intentResolverChecker= */ (intent) -> true,
                 createFeatureFlagChecker());
     }
 
@@ -228,7 +410,8 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
         return new DeviceManagementRoleHolderUpdaterHelper(
                 ROLE_HOLDER_UPDATER_PACKAGE_NAME,
                 roleHolderPackageName,
-                /* packageInstallChecker= */ (packageName, packageManager) -> true,
+                /* packageInstallChecker= */ (packageName) -> true,
+                /* intentResolverChecker= */ (intent) -> true,
                 createFeatureFlagChecker());
     }
 
@@ -236,7 +419,8 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
         return new DeviceManagementRoleHolderUpdaterHelper(
                 ROLE_HOLDER_UPDATER_PACKAGE_NAME,
                 ROLE_HOLDER_PACKAGE_NAME,
-                /* packageInstallChecker= */ (roleHolderPackageName, packageManager) -> true,
+                /* packageInstallChecker= */ (roleHolderPackageName) -> true,
+                /* intentResolverChecker= */ (intent) -> true,
                 createFeatureFlagChecker());
     }
 
@@ -245,7 +429,18 @@ public class DeviceManagementRoleHolderUpdaterHelperTest {
         return new DeviceManagementRoleHolderUpdaterHelper(
                 ROLE_HOLDER_UPDATER_PACKAGE_NAME,
                 ROLE_HOLDER_PACKAGE_NAME,
-                /* packageInstallChecker= */ (roleHolderPackageName, packageManager) -> false,
+                /* packageInstallChecker= */ (roleHolderPackageName) -> false,
+                /* intentResolverChecker= */ (intent) -> true,
+                createFeatureFlagChecker());
+    }
+
+    private DeviceManagementRoleHolderUpdaterHelper
+            createRoleHolderUpdaterHelperWithUpdaterNotResolvable() {
+        return new DeviceManagementRoleHolderUpdaterHelper(
+                ROLE_HOLDER_UPDATER_PACKAGE_NAME,
+                ROLE_HOLDER_PACKAGE_NAME,
+                /* packageInstallChecker= */ (roleHolderPackageName) -> true,
+                /* intentResolverChecker= */ (intent) -> false,
                 createFeatureFlagChecker());
     }
 
