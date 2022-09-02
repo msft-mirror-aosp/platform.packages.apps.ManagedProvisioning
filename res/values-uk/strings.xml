@@ -28,9 +28,7 @@
     <string name="the_following_is_your_mdm_for_device" msgid="6717973404364414816">"Вашим пристроєм керуватиме цей додаток:"</string>
     <string name="next" msgid="1004321437324424398">"Далі"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"Налаштування робочого профілю…"</string>
-    <string name="admin_has_ability_to_monitor_profile" msgid="7051310668406162979">"Ваш ІТ-адміністратор може керувати налаштуваннями, корпоративним доступом, додатками, дозволами й даними, пов’язаними з цим профілем, зокрема активністю в мережі, геоданими пристрою, історією викликів і пошуку контактів.<xliff:g id="LINE_BREAK">
-
-</xliff:g>Щоб дізнатися більше, зокрема про політику конфіденційності організації, зверніться до ІТ-адміністратора."</string>
+    <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"Ваш системний адміністратор може керувати налаштуваннями, корпоративним доступом, активністю в мережі, додатками, дозволами й даними, пов’язаними з цим профілем, а також історією викликів і пошуку контактів. Щоб дізнатися більше про політику конфіденційності вашої організації тощо, зверніться до ІТ-адміністратора."</string>
     <string name="admin_has_ability_to_monitor_device" msgid="6303112630697870695">"Ваш ІТ-адміністратор може керувати налаштуваннями, корпоративним доступом, додатками, дозволами й даними, пов’язаними з цим пристроєм, зокрема активністю в мережі, геоданими пристрою, історією викликів і пошуку контактів.<xliff:g id="LINE_BREAK">
 
 </xliff:g>Щоб дізнатися більше про політику конфіденційності організації тощо, зверніться до ІТ-адміністратора."</string>
@@ -41,6 +39,7 @@
     <string name="ok_setup" msgid="4593707675416137504">"ОК"</string>
     <string name="user_consent_msg" msgid="8820951802130353584">"Дозволити"</string>
     <string name="url_error" msgid="5958494012986243186">"Посилання не відображається."</string>
+    <string name="navigation_button_description" msgid="6106309408994461239">"Перейти назад"</string>
     <string name="terms" msgid="8295436105384703903">"Умови"</string>
     <string name="work_profile_info" msgid="5433388376309583996">"Інформація про робочий профіль"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"Інформація про керований пристрій"</string>
@@ -106,7 +105,7 @@
     <string name="device_owner_info" msgid="3716661456037934467">"Адміністратор організації <xliff:g id="YOUR_ORGANIZATION">%1$s</xliff:g> керуватиме цим пристроєм і дбатиме про його безпеку. Застосовуватимуться умови. <xliff:g id="VIEW_TERMS">%2$s</xliff:g>"</string>
     <string name="device_owner_info_with_terms_headers" msgid="1254243288669282977">"Адміністратор організації <xliff:g id="YOUR_ORGANIZATION">%1$s</xliff:g> керуватиме цим пристроєм і дбатиме про його безпеку. Застосовуватимуться умови компаній <xliff:g id="TERMS_HEADERS">%2$s</xliff:g>. <xliff:g id="VIEW_TERMS">%3$s</xliff:g>"</string>
     <string name="link_isnt_secure_and_cant_be_opened_until_device_setup_finished" msgid="1604497932637832657">"Це посилання ненадійне. Щоб відкрити його, спершу потрібно налаштувати пристрій: <xliff:g id="LINK_RAW_TEST">%1$s</xliff:g>"</string>
-    <string name="contact_device_provider" msgid="2843488903902493030">"Щоб дізнатися більше, зв’яжіться з постачальником (<xliff:g id="IT_ADMIN">%1$s</xliff:g>)."</string>
+    <string name="contact_device_provider" msgid="2843488903902493030">"<xliff:g id="IT_ADMIN">%1$s</xliff:g> допоможе відповісти на ваші запитання."</string>
     <string name="if_questions_contact_admin" msgid="3509427015901582047">"Якщо у вас виникли запитання, зверніться до ІТ-адміністратора"</string>
     <string name="setup_isnt_finished_contact_admin" msgid="8849644190723875952">"Налаштування не завершено. Зверніться по допомогу до ІТ-адміністратора."</string>
     <string name="for_help_contact_admin" msgid="5922538077702487859">"Зверніться по допомогу до ІТ-адміністратора"</string>
@@ -158,9 +157,9 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Налаштування додатка адміністратора"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"Цей пристрій належить вашій організації"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"За допомогою цього додатка ви зможете керувати телефоном і відстежувати його"</string>
-    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Ваш обліковий запис під керуванням"</string>
-    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Ваш ІТ-адміністратор забезпечує дотримання правил безпеки за допомогою керування мобільними пристроями"</string>
-    <string name="downloading_administrator_header" msgid="8660294318893902915">"Підготовка до налаштування для роботи…"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Вашим обліковим записом керує адміністратор"</string>
+    <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Ваш ІТ-адміністратор використовує систему керування мобільними пристроями, щоб забезпечити дотримання правил безпеки"</string>
+    <string name="downloading_administrator_header" msgid="8660294318893902915">"Підготовка до налаштування робочого профілю…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Спершу налаштуймо ваш робочий профіль"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Робочі додатки зберігаються в робочому профілі"</string>
     <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"Призупиняйте робочі додатки, коли потрібно"</string>
@@ -170,7 +169,7 @@
     <string name="fully_managed_device_provisioning_accept_header" msgid="2944032660440403130">"Налаштуймо ваш робочий пристрій"</string>
     <string name="fully_managed_device_provisioning_step_1_header" msgid="6396274703116708592">"Робочі додатки у вас під рукою"</string>
     <string name="fully_managed_device_provisioning_step_2_header" msgid="7165472083121590030">"Цей пристрій не є особистим"</string>
-    <string name="fully_managed_device_provisioning_step_2_subheader" msgid="2848998570491578119">"ІТ-адміністратор може бачити ваші дані й активність на цьому пристрої."</string>
+    <string name="fully_managed_device_provisioning_step_2_subheader" msgid="2848998570491578119">"Ваш системний адміністратор може бачити ваші дані й дії на цьому пристрої."</string>
     <string name="fully_managed_device_provisioning_permissions_header" msgid="2852101532084770993">"Ваші дії й дані"</string>
     <string name="fully_managed_device_provisioning_permissions_secondary_header" msgid="4419374850927705136">"Дозволи для додатків"</string>
     <string name="fully_managed_device_provisioning_permissions_secondary_subheader" msgid="8328298923037335068">"Ваш системний адміністратор може надавати додаткам на цьому пристрої дозволи на доступ, наприклад, до мікрофона, камери й геоданих."</string>
@@ -189,8 +188,12 @@
     <string name="fully_managed_device_provisioning_privacy_title" msgid="4017627906103556021">"Нагадування про конфіденційність"</string>
     <string name="fully_managed_device_provisioning_privacy_body" msgid="2219074604343348608">"ІТ-адміністратор може бачити ваші дані й активність на цьому пристрої"</string>
     <string name="financed_device_screen_header" msgid="6875169548352717124">"Цей пристрій надано компанією \"<xliff:g id="CREDITOR_NAME">%s</xliff:g>\""</string>
-    <string name="financed_make_payments_subheader_title" msgid="7517793486744056995">"Робіть платежі в додатку <xliff:g id="CREDITOR_NAME">%s</xliff:g>"</string>
+    <string name="financed_make_payments_subheader_title" msgid="7880606710044254210">"Здійснюйте платежі на цьому пристрої"</string>
     <string name="financed_make_payments_subheader_description" msgid="1222254084091306375">"Компанія <xliff:g id="CREDITOR_NAME_0">%1$s</xliff:g> може встановити додаток <xliff:g id="CREDITOR_NAME_1">%2$s</xliff:g>, де ви зможете вносити платежі за цей пристрій."</string>
-    <string name="financed_restrict_device_subheader_title" msgid="5218186267108559679">"<xliff:g id="CREDITOR_NAME">%s</xliff:g> може обмежити доступ до цього пристрою"</string>
+    <string name="financed_restrict_device_subheader_title" msgid="2138828664816418195">"Доступ до пристрою можна обмежити"</string>
     <string name="financed_restrict_device_subheader_description" msgid="5683975693718163300">"Якщо ви не вноситиме платежів, <xliff:g id="CREDITOR_NAME">%1$s</xliff:g> може обмежити доступ до цього пристрою."</string>
+    <string name="error_role_holder_hash_mismatch" msgid="6201584198247885437">"Не вдається налаштувати пристрій. Зверніться до системного адміністратора, указавши причину помилки \"Недійсна контрольна сума\"."</string>
+    <string name="error_role_holder_download_install_failed" msgid="8151968372180693228">"Повторіть спробу пізніше або зверніться по допомогу до системного адміністратора"</string>
+    <string name="error_role_holder_package_invalid" msgid="2631207759497988833">"Не вдається налаштувати пристрій. Зверніться до системного адміністратора, указавши причину помилки \"Відсутні або пошкоджені компоненти\"."</string>
+    <string name="setting_up" msgid="1478847967385506664">"Налаштування…"</string>
 </resources>

@@ -28,9 +28,7 @@
     <string name="the_following_is_your_mdm_for_device" msgid="6717973404364414816">"შემდეგი აპი მართავს თქვენს მოწყობილობას:"</string>
     <string name="next" msgid="1004321437324424398">"შემდეგი"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"სამსახურის პროფილი იქმნება…"</string>
-    <string name="admin_has_ability_to_monitor_profile" msgid="7051310668406162979">"თქვენს IT ადმინისტრატორს შეუძლია ამ პროფილთან დაკავშირებული პარამეტრების, კორპორაციული წვდომის, აპების, ნებართვებისა და მონაცემების (მათ შორის, თქვენი ქსელის აქტივობის, მოწყობილობის მდებარეობის, საუბრის ისტორიისა და კონტაქტების ძიების ისტორიის) მონიტორინგი და მართვა.<xliff:g id="LINE_BREAK">
-
-</xliff:g>დამატებითი ინფორმაციისთვის (მათ შორის, თქვენი ორგანიზაციის კონფიდენციალურობის დებულებების შესახებ) დაუკავშირდით თქვენს IT ადმინისტრატორს."</string>
+    <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"თქვენს IT ადმინისტრატორს შეუძლია ამ პროფილთან დაკავშრებული პარამეტრების, კორპორაციული წვდომის, აპების, ნებართვების, მონაცემების და ქსელის აქტოვობის, ასევე თქვენი საუბრების ისტორიის და კონტაქტების ძიების ისტორიის მონიტორინგი და მართვა. დამატებითი ინფორმაციისა და თქვენი ორგანიზაციის კონფიდენციალურობის დებულების შესახებ დამატებითი ინფორმაციისთვის დაუკავშირდით თქვენს IT ადმინისტრატორს."</string>
     <string name="admin_has_ability_to_monitor_device" msgid="6303112630697870695">"თქვენს IT ადმინისტრატორს შეუძლია ამ მოწყობილობასთან დაკავშირებული პარამეტრების, კორპორაციული წვდომის, აპების, ნებართვებისა და მონაცემების (მათ შორის, თქვენი ქსელის აქტივობის, მოწყობილობის მდებარეობის, საუბრის ისტორიისა და კონტაქტების ძიების ისტორიის) მონიტორინგი და მართვა.<xliff:g id="LINE_BREAK">
 
 </xliff:g>დამატებითი ინფორმაციისთვის (მათ შორის, თქვენი ორგანიზაციის კონფიდენციალურობის დებულებების შესახებ) დაუკავშირდით თქვენს IT ადმინისტრატორს."</string>
@@ -41,6 +39,7 @@
     <string name="ok_setup" msgid="4593707675416137504">"კარგი"</string>
     <string name="user_consent_msg" msgid="8820951802130353584">"ვეთანხმები"</string>
     <string name="url_error" msgid="5958494012986243186">"ამ ბმულის ჩვენება ვერ ხერხდება."</string>
+    <string name="navigation_button_description" msgid="6106309408994461239">"ნავიგაცია ზემოთ"</string>
     <string name="terms" msgid="8295436105384703903">"პირობები"</string>
     <string name="work_profile_info" msgid="5433388376309583996">"სამსახურის პროფილის ინფორმაცია"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"მართული მოწყობილობის ინფორმაცია"</string>
@@ -189,8 +188,12 @@
     <string name="fully_managed_device_provisioning_privacy_title" msgid="4017627906103556021">"კონფიდენციალურობის შესახებ შეხსენება"</string>
     <string name="fully_managed_device_provisioning_privacy_body" msgid="2219074604343348608">"თქვენი IT ადმინისტრატორი შეიძლება ხედავდეს თქვენს მონაცემებს და აქტივობას ამ მოწყობილობაზე"</string>
     <string name="financed_device_screen_header" msgid="6875169548352717124">"ამ მოწყობილობის მომწოდებელია <xliff:g id="CREDITOR_NAME">%s</xliff:g>"</string>
-    <string name="financed_make_payments_subheader_title" msgid="7517793486744056995">"გადახდების წარმოება <xliff:g id="CREDITOR_NAME">%s</xliff:g> აპით"</string>
+    <string name="financed_make_payments_subheader_title" msgid="7880606710044254210">"აწარმოეთ გადახდები ამ მოწყობილობისთვის"</string>
     <string name="financed_make_payments_subheader_description" msgid="1222254084091306375">"<xliff:g id="CREDITOR_NAME_0">%1$s</xliff:g>-ს შეუძლია <xliff:g id="CREDITOR_NAME_1">%2$s</xliff:g> აპის ინსტალაცია, რომ გადახდები აწარმოოთ ამ მოწყობილობისთვის."</string>
-    <string name="financed_restrict_device_subheader_title" msgid="5218186267108559679">"<xliff:g id="CREDITOR_NAME">%s</xliff:g>-ს შეუძლია ამ მოწყობილობის შეზღუდვა"</string>
+    <string name="financed_restrict_device_subheader_title" msgid="2138828664816418195">"ამ მოწყობილობისთვის შეიძლება დაწესდეს შეზღუდვა"</string>
     <string name="financed_restrict_device_subheader_description" msgid="5683975693718163300">"<xliff:g id="CREDITOR_NAME">%1$s</xliff:g>-ს შეუძლია ამ მოწყობილობაზე წვდომის შეზღუდვა, გადაუხდელობის შემთხვევაში"</string>
+    <string name="error_role_holder_hash_mismatch" msgid="6201584198247885437">"მოწყობილობის დაყენება ვერ ხერხდება. დაუკავშირდით IT ადმინისტრატორს და მიუთითეთ „არასწორი საკონტროლო ჯამი“."</string>
+    <string name="error_role_holder_download_install_failed" msgid="8151968372180693228">"ცადეთ მოგვიანებით ან დაუკავშირდით თქვენს IT ადმინისტრატორს დახმარებისთვის"</string>
+    <string name="error_role_holder_package_invalid" msgid="2631207759497988833">"მოწყობილობის დაყენება ვერ ხერხდება. დაუკავშირდით IT ადმინისტრატორს და მიუთითეთ „ნაკლული ან დაზიანებული კომპონენტები“."</string>
+    <string name="setting_up" msgid="1478847967385506664">"მიმდინარეობს დაყენება…"</string>
 </resources>

@@ -28,9 +28,7 @@
     <string name="the_following_is_your_mdm_for_device" msgid="6717973404364414816">"የሚከተለው መተግበሪያ መሣሪያዎን ያስተዳድረዋል፦"</string>
     <string name="next" msgid="1004321437324424398">"ቀጣይ"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"የሥራ መገለጫን በማቀናበር ላይ…"</string>
-    <string name="admin_has_ability_to_monitor_profile" msgid="7051310668406162979">"የእርስዎ አስተዳዳሪ የአውታረ መረብ እንቅስቃሴዎንና እንዲሁም የመሣሪያዎን አካባቢ፣ የጥሪ ታሪክና የእውቂያ ፍለጋ ታሪክ ጨምሮ ከዚህ መገለጫ ጋር የተጎዳኙ ቅንብሮችን፣ የኮርፖሬት መዳረሻ፣ መተግበሪያዎችን፣ ፈቃዶችን እና ውሂብን የመከታተል እና የማቀናበር ችሎታ አላቸው።<xliff:g id="LINE_BREAK">
-
-</xliff:g>ስለድርጅትዎ ግላዊነት መመሪያዎች ጨምሮ ተጨማሪ መረጃ ለማግኘት የአይቲ አስተዳዳሪዎን ያነጋግሩ።"</string>
+    <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"የእርስዎ የአይቲ አስተዳዳሪ ከዚህ መገለጫ ጋር የተያያዙ ቅንብሮችን፣ የድርጅት መዳረሻን፣ መተግበሪያዎችን፣ ፈቃዶችን፣ ውሂብን እና የአውታረ መረብ እንቅስቃሴንና እንዲሁም የጥሪ ታሪክዎን እና የእውቂያ ፍለጋ ታሪክዎን መከታተል እና ማቀናበር ይችላሉ። ተጨማሪ መረጃ ለማግኘት እና ስለድርጅትዎ የግላዊነት መመሪያዎች የበለጠ ለመረዳት አይቲ አስተዳዳሪዎን ያነግጋሩ።"</string>
     <string name="admin_has_ability_to_monitor_device" msgid="6303112630697870695">"የእርስዎ አስተዳዳሪ የአውታረ መረብ እንቅስቃሴዎንና እንዲሁም የመሣሪያዎን አካባቢ፣ የጥሪ ታሪክና የእውቂያ ፍለጋ ታሪክ ጨምሮ ከዚህ መሣሪያ ጋር የተጎዳኙ ቅንብሮችን፣ የኮርፖሬት መዳረሻ፣ መተግበሪያዎችን፣ ፈቃዶችን እና ውሂብን የመከታተል እና የማቀናበር ችሎታ አላቸው።<xliff:g id="LINE_BREAK">
 
 </xliff:g>ስለድርጅትዎ ግላዊነት መመሪያዎች ጨምሮ ተጨማሪ መረጃ ለማግኘት የእርስዎን አይቲ አስተዳዳሪ ያነጋግሩ።"</string>
@@ -41,6 +39,7 @@
     <string name="ok_setup" msgid="4593707675416137504">"እሺ"</string>
     <string name="user_consent_msg" msgid="8820951802130353584">"ፍቃዴን ሰጥቼያለሁ"</string>
     <string name="url_error" msgid="5958494012986243186">"ይህን አገናኝ ማሳየት አይቻልም።"</string>
+    <string name="navigation_button_description" msgid="6106309408994461239">"ወደ ላይ ያስሱ"</string>
     <string name="terms" msgid="8295436105384703903">"ውሎች"</string>
     <string name="work_profile_info" msgid="5433388376309583996">"የሥራ መገለጫ መረጃ"</string>
     <string name="managed_device_info" msgid="1529447646526616811">"የሚተዳደር መሣሪያ መረጃ"</string>
@@ -189,8 +188,12 @@
     <string name="fully_managed_device_provisioning_privacy_title" msgid="4017627906103556021">"የግላዊነት አስታዋሽ"</string>
     <string name="fully_managed_device_provisioning_privacy_body" msgid="2219074604343348608">"የእርስዎ አይቲ አስተዳዳሪ የእርስዎን ውሂብ እና እንቅስቃሴ በዚህ መሣሪያ ላይ ሊመለከት ይችላል"</string>
     <string name="financed_device_screen_header" msgid="6875169548352717124">"ይህ መሣሪያ በ<xliff:g id="CREDITOR_NAME">%s</xliff:g> የሚቀርብ ነው"</string>
-    <string name="financed_make_payments_subheader_title" msgid="7517793486744056995">"በ<xliff:g id="CREDITOR_NAME">%s</xliff:g> መተግበሪያ አማካኝነት ክፍያዎችን ያድርጉ"</string>
+    <string name="financed_make_payments_subheader_title" msgid="7880606710044254210">"ለዚህ መሣሪያ ክፍያዎችን ይፈጽሙ"</string>
     <string name="financed_make_payments_subheader_description" msgid="1222254084091306375">"<xliff:g id="CREDITOR_NAME_0">%1$s</xliff:g> ለዚህ መሣሪያ ግዢዎችን መፈጸም እንዲችሉ የ<xliff:g id="CREDITOR_NAME_1">%2$s</xliff:g> መተግበሪያውን ይጫኑት።"</string>
-    <string name="financed_restrict_device_subheader_title" msgid="5218186267108559679">"<xliff:g id="CREDITOR_NAME">%s</xliff:g> ይህንን መሣሪያ ሊገድብ ይችላል"</string>
+    <string name="financed_restrict_device_subheader_title" msgid="2138828664816418195">"ይህ መሣሪያ ሊገደብ ይችላል"</string>
     <string name="financed_restrict_device_subheader_description" msgid="5683975693718163300">"ክፍያዎችን የማይፈጽሙ ከሆነ <xliff:g id="CREDITOR_NAME">%1$s</xliff:g> የዚህ መሣሪያ መዳረሻን ሊገድብ ይችላል።"</string>
+    <string name="error_role_holder_hash_mismatch" msgid="6201584198247885437">"መሣሪያን ማዋቀር አይቻልም። የእርስዎን የአይቲ አስተዳዳሪ ያነጋግሩ እና «ልክ ያልሆነ የፍተሻ ክፍያ»ን ያጣቅሱ።"</string>
+    <string name="error_role_holder_download_install_failed" msgid="8151968372180693228">"ቆይተው እንደገና ይሞክሩ ወይም የአይቲ አስተዳዳሪዎን ለእገዛ ይጠይቁ"</string>
+    <string name="error_role_holder_package_invalid" msgid="2631207759497988833">"መሣሪያን ማዋቀር አይቻልም። የእርስዎን የአይቲ አስተዳዳሪ ያነጋግሩ እና «የጎደሉ ወይም የተበላሹ ክፍለ-አካላት»ን ያጣቅሱ።"</string>
+    <string name="setting_up" msgid="1478847967385506664">"በማዋቀር ላይ…"</string>
 </resources>
