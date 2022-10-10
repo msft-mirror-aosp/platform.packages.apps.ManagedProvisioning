@@ -161,7 +161,7 @@
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Telefono hau kudeatzeko eta kontrolatzeko erabiliko da aplikazioa"</string>
     <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Kudeatuta dago kontua"</string>
     <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"Gailu mugikorren kudeaketa erabiltzen du IKT saileko administratzaileak segurtasun-gidalerroak aplikatzeko"</string>
-    <string name="downloading_administrator_header" msgid="8660294318893902915">"Laneko konfigurazioa gauzatzeko prestatzen…"</string>
+    <string name="downloading_administrator_header" msgid="8660294318893902915">"Laneko konfigurazio-prozesua prestatzen…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Konfigura dezagun laneko profila"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Laneko profilean gordetzen dira laneko aplikazioak"</string>
     <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"Laneguna amaitzean, pausatu laneko aplikazioak"</string>
@@ -172,7 +172,7 @@
     <string name="fully_managed_device_provisioning_step_1_header" msgid="6396274703116708592">"Izan laneko aplikazioak eskura"</string>
     <string name="fully_managed_device_provisioning_step_2_header" msgid="7165472083121590030">"Gailu hau ez da pribatua"</string>
     <string name="fully_managed_device_provisioning_step_2_subheader" msgid="2848998570491578119">"Baliteke IKT saileko administratzaileak gailu honetan dituzun datuak eta egiten dituzun jarduerak ikusi ahal izatea."</string>
-    <string name="fully_managed_device_provisioning_permissions_header" msgid="2852101532084770993">"Zure jarduera eta datuak"</string>
+    <string name="fully_managed_device_provisioning_permissions_header" msgid="2852101532084770993">"Zure jarduerak eta datuak"</string>
     <string name="fully_managed_device_provisioning_permissions_secondary_header" msgid="4419374850927705136">"Aplikazio-baimenak"</string>
     <string name="fully_managed_device_provisioning_permissions_secondary_subheader" msgid="8328298923037335068">"IKT saileko administratzaileak gailu honetako aplikazioen baimenak ezar ditzake; besteak beste, mikrofonoaren, kameraren eta kokapenaren baimenak."</string>
     <string name="fully_managed_device_provisioning_progress_label" msgid="3925516135130021966">"Gailua konfiguratzen…"</string>
