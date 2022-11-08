@@ -63,8 +63,7 @@ public class BlockingBroadcastReceiver extends BroadcastReceiver {
     }
 
     public void register() {
-        mContext.registerReceiver(this, new IntentFilter(mExpectedAction),
-                Context.RECEIVER_EXPORTED/*UNAUDITED*/);
+        mContext.registerReceiver(this, new IntentFilter(mExpectedAction));
     }
 
     /**
