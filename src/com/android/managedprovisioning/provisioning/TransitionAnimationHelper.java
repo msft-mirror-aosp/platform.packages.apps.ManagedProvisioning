@@ -17,10 +17,10 @@ package com.android.managedprovisioning.provisioning;
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.StringRes;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -245,7 +245,7 @@ class TransitionAnimationHelper {
     }
 
     private void setupDescriptionText(TransitionScreenWrapper transition) {
-        if (transition.description != 0) {
+        if (!TextUtils.isEmpty(transition.description)) {
             mAnimationComponents.mDescription.setText(transition.description);
             mAnimationComponents.mDescription.setVisibility(View.VISIBLE);
             triggerTextToSpeechIfFocused(mAnimationComponents.mDescription);
@@ -254,7 +254,7 @@ class TransitionAnimationHelper {
         }
     }
 
-    private void updateItemValues(ViewGroup item, int icon, int subHeaderTitle, int subHeader,
+    private void updateItemValues(ViewGroup item, int icon, int subHeaderTitle, String subHeader,
             boolean isTextBasedEduScreen) {
         if (isTextBasedEduScreen) {
             ((ImageView) item.findViewById(R.id.sud_items_icon)).setImageResource(icon);
@@ -286,9 +286,9 @@ class TransitionAnimationHelper {
         return context.getResources().getBoolean(R.bool.show_edu_animations);
     }
 
-    private void applyContentDescription(View view, @StringRes int summaryRes) {
+    private void applyContentDescription(View view, String summaryRes) {
         Context context = view.getContext();
-        view.setContentDescription(context.getString(summaryRes));
+        view.setContentDescription(summaryRes);
     }
 
     static final class AnimationComponents {

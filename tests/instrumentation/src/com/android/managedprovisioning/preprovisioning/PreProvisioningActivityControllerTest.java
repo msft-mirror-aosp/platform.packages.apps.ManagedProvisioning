@@ -28,7 +28,6 @@ import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DISCLAIME
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DISCLAIMER_HEADER;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_IMEI;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION;
-import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_KEEP_SCREEN_ON;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LOCALE;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LOCAL_TIME;
@@ -59,17 +58,21 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 import static org.testng.Assert.assertThrows;
 
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
+import android.content.ContentInterface;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -92,6 +95,7 @@ import android.telephony.TelephonyManager;
 import android.test.AndroidTestCase;
 import android.text.TextUtils;
 
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -125,10 +129,11 @@ import java.util.Locale;
 public class PreProvisioningActivityControllerTest extends AndroidTestCase {
     private static final String TEST_MDM_PACKAGE = "com.test.mdm";
     private static final String TEST_MDM_PACKAGE_LABEL = "Test MDM";
+    private static final CharSequence DEFAULT_DEVICE_NAME = "device";
     private static final ComponentName TEST_MDM_COMPONENT_NAME = new ComponentName(TEST_MDM_PACKAGE,
             "com.test.mdm.DeviceAdmin");
     private static final String TEST_BOGUS_PACKAGE = "com.test.bogus";
-    private static final String TEST_WIFI_SSID = "TestNet";
+    private static final String TEST_WIFI_SSID = "\"TestNet\"";
     private static final String MP_PACKAGE_NAME = "com.android.managedprovisioning";
     private static final int TEST_USER_ID = 10;
     private static final PackageDownloadInfo PACKAGE_DOWNLOAD_INFO =
@@ -237,6 +242,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
     private static final Bundle ADDITIONAL_EXTRAS_DEFAULT = new Bundle();
     private static final Bundle ADDITIONAL_EXTRAS_SUCCESSFUL_UPDATE =
             createSuccessfulUpdateAdditionalExtras();
+    private static final Bundle GET_DEVICE_NAME_BUNDLE = new Bundle();
+    private final Context stringContext = ApplicationProvider.getApplicationContext();
 
     @Mock
     private Context mContext;
@@ -272,9 +279,12 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
     private ManagedProvisioningSharedPreferences mSharedPreferences;
     @Mock
     private TelephonyManager mTelephonyManager;
+    @Mock
+    private ContentInterface mContentInterface;
 
     private ProvisioningParams mParams;
     private PreProvisioningViewModel mViewModel;
+    private ContentResolver mContentResolver;
 
     private PreProvisioningActivityController mController;
     public static final PersistableBundle TEST_ADMIN_BUNDLE = new PersistableBundle();
@@ -288,6 +298,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
     @Override
     public void setUp() throws PackageManager.NameNotFoundException {
         // this is necessary for mockito to work
+        mContentResolver = mock(ContentResolver.class,
+                withSettings().useConstructor(mContext, mContentInterface));
         System.setProperty("dexmaker.dexcache", getContext().getCacheDir().toString());
 
         MockitoAnnotations.initMocks(this);
@@ -721,11 +733,17 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         when(mDevicePolicyManager.checkProvisioningPrecondition(
                 ACTION_PROVISION_MANAGED_PROFILE, TEST_MDM_PACKAGE))
                 .thenReturn(STATUS_MANAGED_USERS_NOT_SUPPORTED);
+        when(mContext.getContentResolver()).thenReturn(mContentResolver);
+        when(mContentInterface.call(anyString(), anyString(), any(), any()))
+                .thenReturn(GET_DEVICE_NAME_BUNDLE);
         // WHEN initiating provisioning
         mController.initiateProvisioning(mIntent, TEST_MDM_PACKAGE);
         // THEN show an error dialog
-        verify(mUi).showErrorAndClose(eq(R.string.cant_add_work_profile),
-                eq(R.string.work_profile_cant_be_added_contact_admin), any());
+        verify(mUi).showErrorAndClose(
+                eq(R.string.cant_add_work_profile),
+                eq(stringContext.getString(
+                        R.string.work_profile_cant_be_added_contact_admin, DEFAULT_DEVICE_NAME)),
+                any());
         verifyNoMoreInteractions(mUi);
     }
 
@@ -823,11 +841,17 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         when(mSettingsFacade.isDeviceProvisioned(mContext)).thenReturn(false);
         // setting the data block size to any number greater than 0 should invoke FRP.
         when(mPdbManager.getDataBlockSize()).thenReturn(4);
+        when(mContext.getContentResolver()).thenReturn(mContentResolver);
+        when(mContentInterface.call(anyString(), anyString(), any(), any()))
+                .thenReturn(GET_DEVICE_NAME_BUNDLE);
         // WHEN initiating managed profile provisioning
         mController.initiateProvisioning(mIntent, TEST_MDM_PACKAGE);
         // THEN show an error dialog and do not continue
-        verify(mUi).showErrorAndClose(eq(R.string.cant_set_up_device),
-                eq(R.string.device_has_reset_protection_contact_admin), any());
+        verify(mUi).showErrorAndClose(
+                eq(R.string.cant_set_up_device),
+                eq(stringContext.getString(R.string.device_has_reset_protection_contact_admin,
+                        DEFAULT_DEVICE_NAME)),
+                any());
         verifyNoMoreInteractions(mUi);
     }
 
@@ -885,6 +909,9 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         when(mUtils.isEncryptionRequired()).thenReturn(true);
         when(mDevicePolicyManager.getStorageEncryptionStatus())
                 .thenReturn(DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED);
+        when(mContext.getContentResolver()).thenReturn(mContentResolver);
+        when(mContentInterface.call(anyString(), anyString(), any(), any()))
+                .thenReturn(GET_DEVICE_NAME_BUNDLE);
         // WHEN initiating provisioning
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() ->
                 mController.initiateProvisioning(mIntent, TEST_MDM_PACKAGE));
@@ -894,8 +921,11 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         // THEN the UI elements should be updated accordingly
         verifyInitiateProfileOwnerUi();
         // THEN show an error indicating that this device does not support encryption
-        verify(mUi).showErrorAndClose(eq(R.string.cant_set_up_device),
-                eq(R.string.device_doesnt_allow_encryption_contact_admin), any());
+        verify(mUi).showErrorAndClose(
+                eq(R.string.cant_set_up_device),
+                eq(stringContext.getString(R.string.device_doesnt_allow_encryption_contact_admin,
+                        DEFAULT_DEVICE_NAME)),
+                any());
         verifyNoMoreInteractions(mUi);
     }
 
@@ -1884,55 +1914,6 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mUi).abortProvisioning();
         verifyNoMoreInteractions(mUi);
     }
-
-    public void testUpdateProvisioningParamsFromIntent_keepScreenOnWorkProfile_works() {
-        Intent resultIntent = createResultIntentWithManagedProfile()
-                .putExtra(EXTRA_PROVISIONING_KEEP_SCREEN_ON, /* value= */ true);
-        ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
-                .build();
-        initiateProvisioning(params);
-
-        mController.updateProvisioningParamsFromIntent(resultIntent);
-
-        assertThat(mController.getParams().keepScreenOn).isTrue();
-    }
-
-    public void testUpdateProvisioningParamsFromIntent_keepScreenOnManagedDevice_works() {
-        Intent resultIntent = createResultIntentWithFullyManagedDevice()
-                .putExtra(EXTRA_PROVISIONING_KEEP_SCREEN_ON, /* value= */ true);
-        ProvisioningParams params = createProvisioningParamsBuilderForFullyManagedDevice()
-                .build();
-        initiateProvisioning(params);
-
-        mController.updateProvisioningParamsFromIntent(resultIntent);
-
-        assertThat(mController.getParams().keepScreenOn).isTrue();
-    }
-
-    public void testUpdateProvisioningParamsFromIntent_noKeepScreenOnSet_isFalse() {
-        Intent resultIntent = createResultIntentWithManagedProfile();
-        ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
-                .build();
-        initiateProvisioning(params);
-
-        mController.updateProvisioningParamsFromIntent(resultIntent);
-
-        assertThat(mController.getParams().keepScreenOn).isFalse();
-    }
-
-    public void testUpdateProvisioningParamsFromIntent_withPreExistingKeepScreenOn_replaced() {
-        Intent resultIntent = createResultIntentWithFullyManagedDevice()
-                .putExtra(EXTRA_PROVISIONING_KEEP_SCREEN_ON, /* value= */ true);
-        ProvisioningParams params = createProvisioningParamsBuilderForFullyManagedDevice()
-                .setKeepScreenOn(false)
-                .build();
-        initiateProvisioning(params);
-
-        mController.updateProvisioningParamsFromIntent(resultIntent);
-
-        assertThat(mController.getParams().keepScreenOn).isTrue();
-    }
-
     private static Parcelable[] createDisclaimersExtra() {
         Bundle disclaimer = new Bundle();
         disclaimer.putString(
