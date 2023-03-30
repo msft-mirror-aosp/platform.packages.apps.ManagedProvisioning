@@ -25,6 +25,6 @@ import com.android.managedprovisioning.model.DisclaimersParam;
  *
  * @see android.app.admin.DevicePolicyManager#EXTRA_PROVISIONING_DISCLAIMERS
  */
-interface DisclaimerParser {
-    fun parse(disclaimers: Array<Parcelable>?): DisclaimersParam?
+public interface DisclaimerParser {
+    DisclaimersParam parse(Parcelable[] disclaimers);
 }

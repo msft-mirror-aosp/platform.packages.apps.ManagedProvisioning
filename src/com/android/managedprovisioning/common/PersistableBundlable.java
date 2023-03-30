@@ -18,10 +18,8 @@ package com.android.managedprovisioning.common;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
-
+import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,7 +42,7 @@ public abstract class PersistableBundlable implements Parcelable {
     @Override
     public int hashCode() {
         // Concatenated sorted keys should be good enough as a hash
-        List<String> keys = new ArrayList<>(toPersistableBundle().keySet());
+        List<String> keys = new ArrayList(toPersistableBundle().keySet());
         Collections.sort(keys);
         return TextUtils.join(",", keys).hashCode();
     }

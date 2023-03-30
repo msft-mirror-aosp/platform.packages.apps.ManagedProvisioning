@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -33,7 +34,6 @@ import com.android.managedprovisioning.common.CrossFadeHelper;
 import com.android.managedprovisioning.common.CrossFadeHelper.Callback;
 import com.android.managedprovisioning.common.StylerHelper;
 import com.android.managedprovisioning.provisioning.ProvisioningModeWrapperProvider.ProvisioningModeWrapper;
-import com.android.managedprovisioning.util.LazyStringResource;
 
 import com.airbnb.lottie.LottieAnimationView;
 
@@ -74,8 +74,7 @@ class TransitionAnimationHelper {
     private TransitionAnimationState mTransitionAnimationState;
     private final StylerHelper mStylerHelper;
 
-    TransitionAnimationHelper(
-            AnimationComponents animationComponents,
+    TransitionAnimationHelper(AnimationComponents animationComponents,
             TransitionAnimationCallback callback,
             TransitionAnimationStateManager stateManager,
             StylerHelper stylerHelper,
@@ -89,12 +88,13 @@ class TransitionAnimationHelper {
         mStylerHelper = requireNonNull(stylerHelper);
 
         applyContentDescription(
-                mAnimationComponents.mAnimationView, mProvisioningModeWrapper.mSummary);
+                mAnimationComponents.mAnimationView,
+                mProvisioningModeWrapper.summary);
     }
 
     boolean areAllTransitionsShown() {
         return mTransitionAnimationState.mAnimationIndex
-                == mProvisioningModeWrapper.mTransitions.size() - 1;
+                == mProvisioningModeWrapper.transitions.length - 1;
     }
 
     void start() {
@@ -169,7 +169,7 @@ class TransitionAnimationHelper {
     @VisibleForTesting
     void startNextAnimation() {
         if (mTransitionAnimationState.mAnimationIndex
-                >= mProvisioningModeWrapper.mTransitions.size() - 1) {
+                >= mProvisioningModeWrapper.transitions.length - 1) {
             if (mCallback != null) {
                 mCallback.onAllTransitionsShown();
             }
@@ -224,8 +224,7 @@ class TransitionAnimationHelper {
     }
 
     private void setupHeaderText(TransitionScreenWrapper transition) {
-        var context = mAnimationComponents.mHeader.getContext();
-        mAnimationComponents.mHeader.setText(transition.header.value(context));
+        mAnimationComponents.mHeader.setText(transition.header);
         triggerTextToSpeechIfFocused(mAnimationComponents.mHeader);
     }
 
@@ -246,9 +245,8 @@ class TransitionAnimationHelper {
     }
 
     private void setupDescriptionText(TransitionScreenWrapper transition) {
-        var context = mAnimationComponents.mDescription.getContext();
-        if (transition.description.isBlank(context)) {
-            mAnimationComponents.mDescription.setText(transition.description.value(context));
+        if (!TextUtils.isEmpty(transition.description)) {
+            mAnimationComponents.mDescription.setText(transition.description);
             mAnimationComponents.mDescription.setVisibility(View.VISIBLE);
             triggerTextToSpeechIfFocused(mAnimationComponents.mDescription);
         } else {
@@ -256,19 +254,12 @@ class TransitionAnimationHelper {
         }
     }
 
-    private void updateItemValues(
-            ViewGroup item,
-            int icon,
-            LazyStringResource subHeaderTitle,
-            LazyStringResource subHeader,
+    private void updateItemValues(ViewGroup item, int icon, int subHeaderTitle, String subHeader,
             boolean isTextBasedEduScreen) {
-        var context = item.getContext();
         if (isTextBasedEduScreen) {
             ((ImageView) item.findViewById(R.id.sud_items_icon)).setImageResource(icon);
-            ((TextView) item.findViewById(R.id.sud_items_title)).setText(
-                    subHeaderTitle.value(context));
-            ((TextView) item.findViewById(R.id.sud_items_summary)).setText(
-                    subHeader.value(context));
+            ((TextView) item.findViewById(R.id.sud_items_title)).setText(subHeaderTitle);
+            ((TextView) item.findViewById(R.id.sud_items_summary)).setText(subHeader);
             mStylerHelper.applyListItemStyling(
                     item, new LinearLayout.LayoutParams(item.getLayoutParams()));
             item.setVisibility(View.VISIBLE);
@@ -286,8 +277,8 @@ class TransitionAnimationHelper {
     }
 
     private TransitionScreenWrapper getTransitionForIndex(int currentTransitionIndex) {
-        var transitions = mProvisioningModeWrapper.mTransitions;
-        return transitions.get(currentTransitionIndex % transitions.size());
+        TransitionScreenWrapper[] transitions = mProvisioningModeWrapper.transitions;
+        return transitions[currentTransitionIndex % transitions.length];
     }
 
     private boolean shouldShowAnimations() {
@@ -295,8 +286,9 @@ class TransitionAnimationHelper {
         return context.getResources().getBoolean(R.bool.show_edu_animations);
     }
 
-    private void applyContentDescription(View view, LazyStringResource summaryRes) {
-        view.setContentDescription(summaryRes.value(view.getContext()));
+    private void applyContentDescription(View view, String summaryRes) {
+        Context context = view.getContext();
+        view.setContentDescription(summaryRes);
     }
 
     static final class AnimationComponents {

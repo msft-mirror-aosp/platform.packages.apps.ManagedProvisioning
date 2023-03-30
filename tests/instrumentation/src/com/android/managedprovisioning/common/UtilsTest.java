@@ -136,8 +136,7 @@ public class UtilsTest extends AndroidTestCase {
         verify(mockIPackageManager).setComponentEnabledSetting(eq(TEST_COMPONENT_NAME),
                 eq(PackageManager.COMPONENT_ENABLED_STATE_DISABLED),
                 eq(PackageManager.DONT_KILL_APP),
-                eq(TEST_USER_ID),
-                eq("managedprovisioning"));
+                eq(TEST_USER_ID));
         verifyNoMoreInteractions(mockIPackageManager);
     }
 

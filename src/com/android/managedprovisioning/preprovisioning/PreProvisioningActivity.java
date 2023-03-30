@@ -89,7 +89,6 @@ import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.preprovisioning.PreProvisioningActivityController.UiParams;
 import com.android.managedprovisioning.provisioning.AdminIntegratedFlowPrepareActivity;
 import com.android.managedprovisioning.provisioning.ProvisioningActivity;
-import com.android.managedprovisioning.util.LazyStringResource;
 
 import com.google.android.setupcompat.logging.ScreenKey;
 import com.google.android.setupcompat.logging.SetupMetric;
@@ -646,27 +645,35 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     }
 
     @Override
-    public void showErrorAndClose(Integer titleId, int messageId, String logMessage) {
-        showErrorAndClose(LazyStringResource.of(titleId), LazyStringResource.of(messageId),
-                logMessage);
+    public void showErrorAndClose(Integer titleId, int messageId, String logText) {
+        SimpleDialog.Builder dialogBuilder = new SimpleDialog.Builder(this)
+                .setTitle(titleId)
+                .setMessage(messageId);
+        setShowErrorAndCloseParams(dialogBuilder, logText);
     }
 
     @Override
-    public void showErrorAndClose(
-            LazyStringResource title, LazyStringResource message, String logMessage) {
-        SimpleDialog.Builder dialogBuilder =
-                new SimpleDialog.Builder().setTitle(title).setMessage(message);
-        setShowErrorAndCloseParams(dialogBuilder, logMessage);
+    public void showErrorAndClose(Integer titleId, String message, String logText) {
+        SimpleDialog.Builder dialogBuilder = new SimpleDialog.Builder(this)
+                .setTitle(titleId)
+                .setMessage(message);
+        setShowErrorAndCloseParams(dialogBuilder, logText);
+    }
+
+    @Override
+    public void showErrorAndClose(String title, String message, String logText) {
+        SimpleDialog.Builder dialogBuilder = new SimpleDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message);
+        setShowErrorAndCloseParams(dialogBuilder, logText);
     }
 
     private void setShowErrorAndCloseParams(SimpleDialog.Builder dialogBuilder, String logText) {
         ProvisionLogger.loge(logText);
 
-        SimpleDialog.Builder builder =
-                dialogBuilder
-                        .setCancelable(false)
-                        .setPositiveButtonMessage(R.string.device_owner_error_ok);
-        showDialog(builder, ERROR_AND_CLOSE_DIALOG);
+        dialogBuilder.setCancelable(false)
+                .setPositiveButtonMessage(R.string.device_owner_error_ok);
+        showDialog(dialogBuilder, ERROR_AND_CLOSE_DIALOG);
     }
 
     @Override
@@ -734,7 +741,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
 
     @Override
     public void showCurrentLauncherInvalid() {
-        SimpleDialog.Builder dialogBuilder = new SimpleDialog.Builder()
+        SimpleDialog.Builder dialogBuilder = new SimpleDialog.Builder(this)
                 .setCancelable(false)
                 .setTitle(R.string.change_device_launcher)
                 .setMessage(R.string.launcher_app_cant_be_used_by_work_profile)
@@ -828,7 +835,6 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     /**
      * Starts {@link ProvisioningActivity}.
      */
-    @Override
     public void startProvisioning(ProvisioningParams params) {
         Intent intent = new Intent(this,
                 getActivityForScreen(ManagedProvisioningScreens.PROVISIONING));
@@ -888,7 +894,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
 
     @Override
     public void showFactoryResetDialog(Integer titleId, int messageId) {
-        SimpleDialog.Builder dialogBuilder = new SimpleDialog.Builder()
+        SimpleDialog.Builder dialogBuilder = new SimpleDialog.Builder(this)
                 .setTitle(titleId)
                 .setMessage(messageId)
                 .setCancelable(false)
@@ -933,10 +939,10 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     @Override
     public void onBackPressed() {
         if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
-            showDialog(mUtils.createCancelProvisioningResetDialogBuilder(getApplicationContext()),
+            showDialog(mUtils.createCancelProvisioningResetDialogBuilder(this),
                     BACK_PRESSED_DIALOG_RESET);
         } else {
-            showDialog(mUtils.createCancelProvisioningDialogBuilder(),
+            showDialog(mUtils.createCancelProvisioningDialogBuilder(this),
                     BACK_PRESSED_DIALOG_CLOSE_ACTIVITY);
         }
     }

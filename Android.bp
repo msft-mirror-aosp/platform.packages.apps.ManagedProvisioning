@@ -41,17 +41,14 @@ android_library {
         "managedprovisioning_protoslite",
         "androidx.webkit_webkit-nodeps",
         "setupdesign-lottie-loading-layout",
-        "lottie",
-        "guava"
+        "lottie"
     ],
 
     plugins: ["auto_value_plugin"],
 
     srcs: [
         "src/**/*.java",
-        "src/**/*.kt",
-        "src/**/I*.aidl"
-    ],
+        "src/**/I*.aidl"],
 
     resource_dirs: ["res"],
 
@@ -75,15 +72,13 @@ android_app {
         "managedprovisioning_protoslite",
         "androidx.webkit_webkit-nodeps",
         "setupdesign-lottie-loading-layout",
-        "lottie",
-        "guava"
+        "lottie"
     ],
 
     plugins: ["auto_value_plugin"],
 
     srcs: [
         "src/**/*.java",
-        "src/**/*.kt",
         "src/**/I*.aidl",
     ],
 

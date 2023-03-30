@@ -19,71 +19,38 @@ package com.android.managedprovisioning.provisioning;
 import android.annotation.DrawableRes;
 import android.annotation.RawRes;
 import android.annotation.StringRes;
-
-import com.android.managedprovisioning.util.LazyStringResource;
-import com.android.managedprovisioning.util.LazyStringResource.Empty;
+import android.content.Context;
 
 /**
  * A wrapper describing the contents of an education screen.
  */
 final class TransitionScreenWrapper {
-    public final LazyStringResource header;
-    public final LazyStringResource description;
+    public final String header;
+    public final String description;
     public final @RawRes int drawable;
-    public final LazyStringResource subHeaderTitle;
-    public final LazyStringResource subHeader;
+    public final @StringRes int subHeaderTitle;
+    public final String subHeader;
     public final @DrawableRes int subHeaderIcon;
     public final boolean shouldLoop;
-    public final LazyStringResource secondarySubHeaderTitle;
-    public final LazyStringResource secondarySubHeader;
+    public final @StringRes int secondarySubHeaderTitle;
+    public final String secondarySubHeader;
     public final @DrawableRes int secondarySubHeaderIcon;
+    public final Context context;
 
-    TransitionScreenWrapper(LazyStringResource header, @RawRes int drawable) {
-        this(header, /* description= */ Empty.INSTANCE, drawable, /* shouldLoop= */ true);
+    TransitionScreenWrapper(@StringRes int header, @RawRes int drawable, Context context) {
+        this(header, /* description= */ "", drawable, /* shouldLoop */ true, context);
     }
 
-    TransitionScreenWrapper(@StringRes int headerId, @RawRes int drawable) {
-        this(LazyStringResource.of(headerId), drawable);
+    TransitionScreenWrapper(@StringRes int header, String description,
+            @RawRes int drawable, boolean shouldLoop, Context context) {
+        this(context.getString(header), /* description= */ description, drawable, 0, "",
+                0, shouldLoop, 0, "", 0, context);
     }
 
-    TransitionScreenWrapper(
-            LazyStringResource header,
-            LazyStringResource description,
-            @RawRes int drawable,
-            boolean shouldLoop) {
-        this(
-                header,
-                description,
-                drawable,
-                /* subHeaderTitle= */ Empty.INSTANCE,
-                /* subHeader= */ Empty.INSTANCE,
-                /* subHeaderIcon= */ 0,
-                shouldLoop,
-                /* secondarySubHeaderTitle= */ Empty.INSTANCE,
-                /* secondarySubHeader= */ Empty.INSTANCE,
-                /* secondarySubHeaderIcon= */ 0);
-    }
-
-    TransitionScreenWrapper(
-            @StringRes int headerId,
-            @StringRes int descriptionId,
-            @RawRes int drawable,
-            boolean shouldLoop) {
-        this(LazyStringResource.of(headerId), LazyStringResource.of(descriptionId),
-                drawable, shouldLoop);
-    }
-
-    private TransitionScreenWrapper(
-            LazyStringResource header,
-            LazyStringResource description,
-            int drawable,
-            LazyStringResource subHeaderTitle,
-            LazyStringResource subHeader,
-            int subHeaderIcon,
-            boolean shouldLoop,
-            LazyStringResource secondarySubHeaderTitle,
-            LazyStringResource secondarySubHeader,
-            int secondarySubHeaderIcon) {
+    private TransitionScreenWrapper(String header, String description, int drawable,
+            int subHeaderTitle, String subHeader, int subHeaderIcon, boolean shouldLoop,
+            int secondarySubHeaderTitle, String secondarySubHeader, int secondarySubHeaderIcon,
+            Context context) {
         this.header = header;
         this.description = description;
         this.drawable = drawable;
@@ -94,127 +61,115 @@ final class TransitionScreenWrapper {
         this.secondarySubHeaderTitle = secondarySubHeaderTitle;
         this.secondarySubHeader = secondarySubHeader;
         this.secondarySubHeaderIcon = secondarySubHeaderIcon;
-
+        this.context = context;
         validateFields();
     }
 
     private void validateFields() {
         final boolean isItemProvided =
-                !(subHeader instanceof Empty)
+                subHeader != null && !subHeader.isEmpty()
                         || subHeaderIcon != 0
-                        || !(subHeaderTitle instanceof Empty)
-                        || !(secondarySubHeader instanceof Empty)
+                        || subHeaderTitle != 0
+                        || secondarySubHeader != null && !secondarySubHeader.isEmpty()
                         || secondarySubHeaderIcon != 0
-                        || !(secondarySubHeaderTitle instanceof Empty);
+                        || secondarySubHeaderTitle != 0;
         if (isItemProvided && drawable != 0) {
-            throw new IllegalArgumentException("Cannot show items and animation at the same time.");
-        }
-        if (header instanceof Empty) {
-            throw new IllegalArgumentException("Header resource id must be a positive number.");
+            throw new IllegalArgumentException(
+                    "Cannot show items and animation at the same time.");
         }
     }
 
     public static final class Builder {
-        private LazyStringResource mHeader = Empty.INSTANCE;
-        private LazyStringResource mDescription = Empty.INSTANCE;
-        @RawRes
-        private int mDrawable;
-        private LazyStringResource mSubHeaderTitle = Empty.INSTANCE;
-        private LazyStringResource mSubHeader = Empty.INSTANCE;
-        @DrawableRes
-        private int mSubHeaderIcon;
-        private boolean mShouldLoop;
-        private LazyStringResource mSecondarySubHeaderTitle = Empty.INSTANCE;
-        private LazyStringResource mSecondarySubHeader = Empty.INSTANCE;
-        @DrawableRes
-        private int mSecondarySubHeaderIcon;
+        String mHeader;
+        String mDescription;
+        @RawRes int mDrawable;
+        @StringRes private int mSubHeaderTitle;
+        String mSubHeader;
+        @DrawableRes int mSubHeaderIcon;
+        boolean mShouldLoop;
+        @StringRes int mSecondarySubHeaderTitle;
+        String mSecondarySubHeader;
+        @DrawableRes int mSecondarySubHeaderIcon;
+        Context mContext;
 
-        public Builder setHeader(LazyStringResource header) {
-            this.mHeader = header;
+        Builder (Context context) {
+            mContext = context;
+        }
+
+        public Builder setHeader(int header) {
+            mHeader = mContext.getString(header);
             return this;
         }
 
-        public Builder setHeader(@StringRes int headerId) {
-            return setHeader(LazyStringResource.of(headerId));
-        }
-
-        public Builder setDescription(LazyStringResource description) {
-            this.mDescription = description;
+        public Builder setHeader(String header) {
+            mHeader = header;
             return this;
         }
 
-        public Builder setDescription(@StringRes int descriptionId) {
-            return setDescription(LazyStringResource.of(descriptionId));
+        public Builder setDescription(int description) {
+            mDescription = mContext.getString(description);
+            return this;
+        }
+
+        public Builder setDescription(String description) {
+            mDescription = description;
+            return this;
         }
 
         public Builder setAnimation(int drawable) {
-            this.mDrawable = drawable;
+            mDrawable = drawable;
             return this;
         }
 
-        public Builder setSubHeaderTitle(LazyStringResource subHeaderTitle) {
-            this.mSubHeaderTitle = subHeaderTitle;
+        public Builder setSubHeaderTitle(int subHeaderTitle) {
+            mSubHeaderTitle = subHeaderTitle;
             return this;
         }
 
-        public Builder setSubHeaderTitle(@StringRes int subHeaderTitleId) {
-            return setSubHeaderTitle(LazyStringResource.of(subHeaderTitleId));
-        }
-
-        public Builder setSubHeader(LazyStringResource subHeader) {
-            this.mSubHeader = subHeader;
+        public Builder setSubHeader(int subHeader) {
+            mSubHeader = mContext.getString(subHeader);
             return this;
         }
 
-        public Builder setSubHeader(@StringRes int subHeaderId) {
-            return setSubHeader(LazyStringResource.of(subHeaderId));
+        public Builder setSubHeader(String subHeader) {
+            mSubHeader = subHeader;
+            return this;
         }
 
         public Builder setSubHeaderIcon(int subHeaderIcon) {
-            this.mSubHeaderIcon = subHeaderIcon;
+            mSubHeaderIcon = subHeaderIcon;
             return this;
         }
 
         public Builder setShouldLoop(boolean shouldLoop) {
-            this.mShouldLoop = shouldLoop;
+            mShouldLoop = shouldLoop;
             return this;
         }
 
-        public Builder setSecondarySubHeaderTitle(LazyStringResource secondarySubHeaderTitle) {
-            this.mSecondarySubHeaderTitle = secondarySubHeaderTitle;
+        public Builder setSecondarySubHeaderTitle(int secondarySubHeaderTitle) {
+            mSecondarySubHeaderTitle = secondarySubHeaderTitle;
             return this;
         }
 
-        public Builder setSecondarySubHeaderTitle(@StringRes int secondarySubHeaderTitleId) {
-            return setSecondarySubHeaderTitle(LazyStringResource.of(secondarySubHeaderTitleId));
-        }
-
-        public Builder setSecondarySubHeader(LazyStringResource secondarySubHeader) {
-            this.mSecondarySubHeader = secondarySubHeader;
+        public Builder setSecondarySubHeader(int secondarySubHeader) {
+            mSecondarySubHeader = mContext.getString(secondarySubHeader);
             return this;
         }
 
-        public Builder setSecondarySubHeader(@StringRes int secondarySubHeaderId) {
-            return setSecondarySubHeader(LazyStringResource.of(secondarySubHeaderId));
+        public Builder setSecondarySubHeader(String secondarySubHeader) {
+            mSecondarySubHeader = secondarySubHeader;
+            return this;
         }
 
         public Builder setSecondarySubHeaderIcon(int secondarySubHeaderIcon) {
-            this.mSecondarySubHeaderIcon = secondarySubHeaderIcon;
+            mSecondarySubHeaderIcon = secondarySubHeaderIcon;
             return this;
         }
 
         public TransitionScreenWrapper build() {
-            return new TransitionScreenWrapper(
-                    mHeader,
-                    mDescription,
-                    mDrawable,
-                    mSubHeaderTitle,
-                    mSubHeader,
-                    mSubHeaderIcon,
-                    mShouldLoop,
-                    mSecondarySubHeaderTitle,
-                    mSecondarySubHeader,
-                    mSecondarySubHeaderIcon);
+            return new TransitionScreenWrapper(mHeader, mDescription, mDrawable, mSubHeaderTitle,
+                    mSubHeader, mSubHeaderIcon, mShouldLoop, mSecondarySubHeaderTitle,
+                    mSecondarySubHeader, mSecondarySubHeaderIcon, mContext);
         }
     }
 }
