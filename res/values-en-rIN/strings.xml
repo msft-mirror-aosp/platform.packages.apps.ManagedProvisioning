@@ -28,9 +28,7 @@
     <string name="the_following_is_your_mdm_for_device" msgid="6717973404364414816">"The following app will manage your device:"</string>
     <string name="next" msgid="1004321437324424398">"Next"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"Setting up work profile…"</string>
-    <string name="admin_has_ability_to_monitor_profile" msgid="7051310668406162979">"Your IT admin has the ability to monitor and manage settings, corporate access, apps, permissions and data associated with this profile, including your network activity, as well as your device\'s location, call history and contact search history.<xliff:g id="LINE_BREAK">
-
-</xliff:g>Contact your IT admin for more information, including your organisation\'s privacy policies."</string>
+    <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"Your IT admin can monitor and manage settings, corporate access, apps, permissions, data and network activity associated with this profile, as well as your call history and contact search history. Contact your IT admin for more information and to find out more about your organisation\'s privacy policies."</string>
     <string name="admin_has_ability_to_monitor_device" msgid="6303112630697870695">"Your IT admin has the ability to monitor and manage settings, corporate access, apps, permissions and data associated with this device, including your network activity, as well as your device\'s location, call history and contact search history.<xliff:g id="LINE_BREAK">
 
 </xliff:g>Contact your IT admin for more information, including your organisation\'s privacy policies."</string>
@@ -116,7 +114,7 @@
     <string name="your_organization_beginning" msgid="5952561489910967255">"Your organisation"</string>
     <string name="your_organization_middle" msgid="8288538158061644733">"your organisation"</string>
     <string name="view_terms" msgid="7230493092383341605">"View terms"</string>
-    <string name="accept_and_continue" msgid="1632679734918410653">"Accept &amp; continue"</string>
+    <string name="accept_and_continue" msgid="1632679734918410653">"Accept and continue"</string>
     <string name="back" msgid="6455622465896147127">"Back"</string>
     <string name="set_up_your_device" msgid="1896651520959894681">"Set up your device"</string>
     <string name="info_anim_title_0" msgid="3285414600215959704">"Change the way that you work"</string>
