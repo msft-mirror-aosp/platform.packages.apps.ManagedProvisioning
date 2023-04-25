@@ -23,9 +23,6 @@ import static android.app.admin.DevicePolicyManager.FLAG_SUPPORTED_MODES_DEVICE_
 import static android.app.admin.DevicePolicyManager.FLAG_SUPPORTED_MODES_ORGANIZATION_OWNED;
 import static android.content.pm.PackageManager.MATCH_HIDDEN_UNTIL_INSTALLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
-
-import static java.util.Objects.requireNonNull;
-
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
