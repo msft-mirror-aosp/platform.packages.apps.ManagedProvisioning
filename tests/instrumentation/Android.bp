@@ -27,7 +27,7 @@ android_test {
         "androidx.test.espresso.intents",
         "truth-prebuilt",
         "testng", // used only for assertThrows
-        "ub-uiautomator", // used for unlocking the device
+        "androidx.test.uiautomator_uiautomator", // used for unlocking the device
         "TestApp",
         "ctstestrunner-axt",
         "Harrier",
@@ -58,7 +58,7 @@ android_library {
         "androidx.test.espresso.intents",
         "truth-prebuilt",
         "testng",
-        "ub-uiautomator",
+        "androidx.test.uiautomator_uiautomator",
         "TestApp",
         "ctstestrunner-axt",
         "Harrier",

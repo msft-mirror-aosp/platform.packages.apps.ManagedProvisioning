@@ -63,12 +63,12 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.Settings;
-import android.support.test.uiautomator.UiDevice;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.SmallTest;
+import androidx.test.uiautomator.UiDevice;
 
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.TestInstrumentationRunner;
