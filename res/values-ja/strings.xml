@@ -159,7 +159,7 @@
     <string name="brand_screen_subheader" msgid="7664792208784456436">"このスマートフォンの管理には以下のアプリを使用します"</string>
     <string name="account_management_disclaimer_header" msgid="8013083414694316564">"ご利用のアカウントは管理されています"</string>
     <string name="account_management_disclaimer_subheader" msgid="8991450067243733878">"IT 管理者はモバイル管理を使用して、セキュリティ ポリシーを適用しています"</string>
-    <string name="downloading_administrator_header" msgid="8660294318893902915">"仕事用のセットアップを準備しています…"</string>
+    <string name="downloading_administrator_header" msgid="8660294318893902915">"仕事用プロファイルのセットアップを準備しています…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"仕事用プロファイルを設定しましょう"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"仕事用アプリは仕事用プロファイルに保存されます"</string>
     <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"1 日の仕事を終えたら仕事用アプリを一時停止する"</string>
@@ -180,6 +180,9 @@
     <string name="fully_managed_device_provisioning_return_device_subheader" msgid="6194410367910957686">"前の画面に戻ってセットアップを完了するか、このデバイスをリセットして IT 管理者に返却してください。"</string>
     <string name="fully_managed_device_cancel_setup_button" msgid="4910041382610777599">"セットアップをキャンセル"</string>
     <string name="fully_managed_device_reset_and_return_button" msgid="6451125722998550681">"デバイスをリセットして返却"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_header" msgid="7938653381656306039">"デバイスを設定できません"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_subheader" msgid="5158035482490079567">"このデバイスを完全管理モードに登録できません。デバイスを出荷時の設定にリセットして、IT 管理者に問い合わせてください。"</string>
+    <string name="fully_managed_device_reset_button" msgid="5957116315144904542">"出荷時の設定にリセットする"</string>
     <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"仕事用アプリは仕事用プロファイルに保存され、IT 管理者が管理します"</string>
     <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"個人用と仕事用のアプリは別々に保存、表示されます"</string>
     <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"IT 管理者は、このデバイスを管理して特定のアプリをブロックできます"</string>

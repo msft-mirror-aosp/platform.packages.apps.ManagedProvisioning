@@ -29,7 +29,7 @@
     <string name="next" msgid="1004321437324424398">"अर्को"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"कार्य प्रोफाइल सेटअप गर्दै…"</string>
     <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"तपाईंका सूचना प्रविधि व्यवस्थापकले यो प्रोफाइलसँग सम्बन्धित सेटिङ, संस्थागत पहुँच, एप, अनुमति, डेटा र नेटवर्कसम्बन्धी क्रियाकलापका साथै तपाईंको कल हिस्ट्री तथा कन्ट्याक्ट सर्च हिस्ट्री निगरानी गर्नुका साथै व्यवस्थापन गर्न सक्नुहुन्छ। तपाईं यसका सम्बन्धमा थप जानकारी प्राप्त गर्न र आफ्नो सङ्गठनका गोपनीयता नीतिका बारेमा थप जान्न चाहनुहुन्छ भने आफ्ना सूचना प्रविधि व्यवस्थापकलाई सम्पर्क गर्नुहोस्।"</string>
-    <string name="admin_has_ability_to_monitor_device" msgid="7786186939607332934">"तपाईंका IT एड्मिन नेटवर्कसम्बन्धी क्रियाकलापका साथै तपाईंको डिभाइसको लोकेसन, कलको इतिहास र कन्ट्याक्ट सर्च हिस्ट्रीलगायतका सेटिङ, संस्थागत पहुँच, एप, अनुमति र यो <xliff:g id="DEVICE_NAME">%1$s</xliff:g> सँग सम्बन्धित डेटाको निरीक्षण तथा व्यवस्थापन गर्न सक्नुहुन्छ।<xliff:g id="LINE_BREAK">
+    <string name="admin_has_ability_to_monitor_device" msgid="7786186939607332934">"तपाईंका IT एड्मिन नेटवर्कसम्बन्धी क्रियाकलापका साथै तपाईंको डिभाइसको लोकेसन, कल हिस्ट्री र कन्ट्याक्ट सर्च हिस्ट्रीलगायतका सेटिङ, संस्थागत पहुँच, एप, अनुमति र यो <xliff:g id="DEVICE_NAME">%1$s</xliff:g> सँग सम्बन्धित डेटाको निरीक्षण तथा व्यवस्थापन गर्न सक्नुहुन्छ।<xliff:g id="LINE_BREAK">
 
 </xliff:g>तपाईंको सङ्गठनका गोपनीयता नीतिलगायतका कुराका बारेमा थप जानकारी प्राप्त गर्न आफ्ना IT एड्मिनलाई सम्पर्क गर्नुहोस्।"</string>
     <string name="theft_protection_disabled_warning" msgid="3708092473574738478">"चोरीबाट सुरक्षा गर्ने सुविधाहरू प्रयोग गर्नाका लागि तपाईँले आफ्नो डिभाइसको लागि पासवर्डद्वारा सुरक्षित स्क्रिन लक अनिवार्य रूपमा राख्नुपर्छ।"</string>
@@ -76,7 +76,7 @@
     <string name="reset" msgid="6467204151306265796">"रिसेट गर्नुहोस्"</string>
     <string name="cant_set_up_profile" msgid="4341825293970158436">"प्रोफाइललाई सेटअप गर्न सकिँदैन"</string>
     <string name="cant_set_up_device" msgid="4120090138983350714">"यन्त्रलाई सेटअप गर्न सकिँदैन"</string>
-    <string name="something_went_wrong" msgid="3593223774041784329">"केही चिज गडबड भयो"</string>
+    <string name="something_went_wrong" msgid="3593223774041784329">"कुनै समस्या आयो"</string>
     <string name="couldnt_set_up_device" msgid="5137950404283642302">"डिभाइस सेट अप गर्न सकिएन। मद्दतका लागि, आफ्ना IT व्यवस्थापकसँग सम्पर्क गर्नुहोस्।"</string>
     <string name="contact_your_admin_for_help" msgid="2009904021552323731">"मद्दतका लागि आफ्ना IT व्यवस्थापकसँग सम्पर्क गर्नुहोस्"</string>
     <string name="reset_device" msgid="265029891515486543">"यो <xliff:g id="DEVICE_NAME">%1$s</xliff:g> रिसेट गरेर यसलाई फेरि सेटअप गरी हेर्नुहोस्"</string>
@@ -180,6 +180,9 @@
     <string name="fully_managed_device_provisioning_return_device_subheader" msgid="6194410367910957686">"अघिल्लो स्क्रिनमा फर्कनुहोस् वा यो डिभाइस रिसेट गर्नुहोस् अनि आफ्ना IT एड्मिनलाई फिर्ता गर्नुहोस्।"</string>
     <string name="fully_managed_device_cancel_setup_button" msgid="4910041382610777599">"सेटअप प्रक्रिया रद्द गर्नुहोस्"</string>
     <string name="fully_managed_device_reset_and_return_button" msgid="6451125722998550681">"यन्त्र रिसेट गर्नुहोस् र फिर्ता गर्नुहोस्"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_header" msgid="7938653381656306039">"यो डिभाइस सेटअप गर्न मिल्दैन"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_subheader" msgid="5158035482490079567">"यो डिभाइस पूर्ण रूपमा व्यवस्थापन गरिने मोडमा दर्ता गर्न मिल्दैन। आफ्नो डिभाइस फ्याक्ट्री रिसेट गर्नुहोस् अनि आफ्ना IT एड्मिनलाई सम्पर्क गर्नुहोस्।"</string>
+    <string name="fully_managed_device_reset_button" msgid="5957116315144904542">"फ्याक्ट्री रिसेट गर्नुहोस्"</string>
     <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"IT एडमिन कार्य प्रोफाइलमा राखिने कार्य एप व्यवस्थित गर्छन्"</string>
     <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"व्यक्तिगत एप छुट्टै राखिन्छन् र कामसम्बन्धी एपसँगै देखिँदैनन्"</string>
     <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"IT एडमिन यो डिभाइस र यसका केही एपहरू नियन्त्रण गर्न सक्छन्"</string>
