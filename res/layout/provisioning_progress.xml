@@ -54,7 +54,7 @@
                 android:id="@+id/animation"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="fitCenter" />
+                android:scaleType="center" />
         </com.google.android.setupdesign.view.FillContentLayout>
     </LinearLayout>
 </com.google.android.setupdesign.GlifLayout>

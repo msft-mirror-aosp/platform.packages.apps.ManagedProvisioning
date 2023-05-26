@@ -35,6 +35,6 @@
             app:lottie_loop="true"
             app:lottie_autoPlay="true"
             android:importantForAccessibility="no"
-            android:scaleType="fitCenter" />
+            android:scaleType="center" />
     </com.google.android.setupdesign.view.FillContentLayout>
 </com.google.android.setupdesign.GlifLayout>
