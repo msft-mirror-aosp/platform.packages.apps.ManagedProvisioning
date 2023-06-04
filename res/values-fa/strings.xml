@@ -97,7 +97,7 @@
     <string name="work_profile_setup_later_message" msgid="122069011117225292">"در فرصت دیگری می‌توانید از برنامه مدیریت دستگاه مورداستفاده سازمانتان، نمایه کاری‌تان را راه‌اندازی کنید"</string>
     <string name="continue_button" msgid="7177918589510964446">"ادامه"</string>
     <string name="work_profile_setup_stop" msgid="6772128629992514750">"متوقف کردن"</string>
-    <string name="dismiss" msgid="9009534756748565880">"نپذیرفتن"</string>
+    <string name="dismiss" msgid="9009534756748565880">"بستن پنجره"</string>
     <string name="profile_owner_info" msgid="8975319972303812298">"می‌خواهید یک نمایه کاری ایجاد کنید که توسط سازمانتان مدیریت و پایش خواهد شد. شرایط اعمال می‌شود."</string>
     <string name="profile_owner_info_with_terms_headers" msgid="7373591910245655373">"می‌خواهید یک نمایه کاری ایجاد کنید که توسط سازمان شما مدیریت و پایش خواهد شد. شرایط <xliff:g id="TERMS_HEADERS">%1$s</xliff:g> اعمال می‌شود."</string>
     <string name="profile_owner_info_comp" msgid="9190421701126119142">"نمایه‌ای برای برنامه‌های کاری‌تان ایجاد می‌شود. این نمایه و مابقی دستگاهتان توسط سازمان شما مدیریت و پایش خواهد شد. شرایط اعمال می‌شود."</string>
@@ -163,9 +163,9 @@
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"ابتدا بیایید نمایه کاری‌تان را راه‌اندازی کنیم"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"برنامه‌های کاری در نمایه کاری‌تان حفظ می‌شوند"</string>
     <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"توقف موقت برنامه‌های کاری وقتی کار روزانه‌تان تمام شد"</string>
-    <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"داده‌های موجود در نمایه کاری‌تان برای سرپرست فناوری اطلاعات نمایان است"</string>
+    <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"سرپرست فناوری اطلاعات می‌تواند داده‌های نمایه کاری‌تان را ببیند"</string>
     <string name="work_profile_provisioning_progress_label" msgid="2627905308998389193">"درحال راه اندازی نمایه کاری‌…"</string>
-    <string name="work_profile_provisioning_summary" msgid="3436190271657388747">"برنامه‌های کاری در نمایه کاری‌تان حفظ می‌شوند. وقتی کار روزانه‌تان تمام شد، می‌توانید برنامه‌های کاری را موقتاً متوقف کنید. داده‌های موجود در نمایه کاری‌تان برای سرپرست فناوری اطلاعات نمایان است."</string>
+    <string name="work_profile_provisioning_summary" msgid="3436190271657388747">"برنامه‌های کاری در نمایه کاری‌تان حفظ می‌شوند. وقتی کار روزانه‌تان تمام شد، می‌توانید برنامه‌های کاری را موقتاً متوقف کنید. سرپرست فناوری اطلاعات می‌تواند داده‌های نمایه کاری‌تان را ببیند."</string>
     <string name="fully_managed_device_provisioning_accept_header" msgid="2944032660440403130">"بیایید دستگاه محل کارتان را راه‌اندازی کنیم"</string>
     <string name="fully_managed_device_provisioning_step_1_header" msgid="6396274703116708592">"به‌آسانی به برنامه‌های کاری دسترسی داشته باشید"</string>
     <string name="fully_managed_device_provisioning_step_2_header" msgid="7165472083121590030">"این دستگاه شخصی نیست"</string>
