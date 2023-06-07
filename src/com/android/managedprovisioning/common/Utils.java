@@ -23,6 +23,7 @@ import static android.app.admin.DevicePolicyManager.FLAG_SUPPORTED_MODES_DEVICE_
 import static android.app.admin.DevicePolicyManager.FLAG_SUPPORTED_MODES_ORGANIZATION_OWNED;
 import static android.content.pm.PackageManager.MATCH_HIDDEN_UNTIL_INSTALLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
+
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
@@ -452,7 +453,7 @@ public class Utils {
      * Factory resets the device.
      */
     public void factoryReset(Context context, String reason) {
-        context.getSystemService(DevicePolicyManager.class).wipeData(/* flags=*/ 0, reason);
+        context.getSystemService(DevicePolicyManager.class).wipeDevice(/* flags=*/ 0);
     }
 
     /**
