@@ -98,8 +98,8 @@
     <string name="continue_button" msgid="7177918589510964446">"Продолжи"</string>
     <string name="work_profile_setup_stop" msgid="6772128629992514750">"Сопри"</string>
     <string name="dismiss" msgid="9009534756748565880">"Отфрли"</string>
-    <string name="profile_owner_info" msgid="8975319972303812298">"Ќе создадете работен профил што ќе го управува и следи вашата организацијата. Важат стандардните услови."</string>
-    <string name="profile_owner_info_with_terms_headers" msgid="7373591910245655373">"Ќе создадете работен профил што ќе го управува и следи вашата организацијата. Важат условите од <xliff:g id="TERMS_HEADERS">%1$s</xliff:g>."</string>
+    <string name="profile_owner_info" msgid="8975319972303812298">"Ќе создадете работен профил што ќе го управува и следи вашата организација. Важат стандардните услови."</string>
+    <string name="profile_owner_info_with_terms_headers" msgid="7373591910245655373">"Ќе создадете работен профил што ќе го управува и следи вашата организација. Важат условите од <xliff:g id="TERMS_HEADERS">%1$s</xliff:g>."</string>
     <string name="profile_owner_info_comp" msgid="9190421701126119142">"Ќе се создаде профил за вашите апликации за работа. Профилот и остатокот од уредот ќе ги управува и следи вашата организација. Важат стандардните услови."</string>
     <string name="profile_owner_info_with_terms_headers_comp" msgid="2012766614492554556">"Ќе се создаде профил за вашите апликации за работа. Профилот и остатокот од уредот ќе ги управува и следи вашата организација. Важат условите од <xliff:g id="TERMS_HEADERS">%1$s</xliff:g>."</string>
     <string name="device_owner_info" msgid="3716661456037934467">"<xliff:g id="YOUR_ORGANIZATION">%1$s</xliff:g> ќе управува со уредов, ќе го надгледува и ќе го обезбедува. Важат стандардните услови. <xliff:g id="VIEW_TERMS">%2$s</xliff:g>"</string>
@@ -181,9 +181,9 @@
     <string name="fully_managed_device_cancel_setup_button" msgid="4910041382610777599">"Откажи поставување"</string>
     <string name="fully_managed_device_reset_and_return_button" msgid="6451125722998550681">"Ресетирајте и вратете го уредот"</string>
     <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"Работните апликации се чуваат во работниот профил и со нив управува IT-администраторот"</string>
-    <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"Личните апликации се одделни и сокриени од работните апликации"</string>
+    <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"Личните апликации се одделни и скриени од работните апликации"</string>
     <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"IT-администраторот може да го контролира уредов и да блокира одредени апликации"</string>
-    <string name="cope_provisioning_summary" msgid="993014104601034878">"Работните апликации се чуваат во вашиот работен профил и со нив управува IT-администраторот. Личните апликации се одделени и сокриени од работните апликации. IT-администраторот може да го контролира уредов и да блокира одредени апликации."</string>
+    <string name="cope_provisioning_summary" msgid="993014104601034878">"Работните апликации се чуваат во вашиот работен профил и со нив управува IT-администраторот. Личните апликации се одделени и скриени од работните апликации. IT-администраторот може да го контролира уредов и да блокира одредени апликации."</string>
     <string name="just_a_sec" msgid="6244676028626237220">"Само момент…"</string>
     <string name="fully_managed_device_provisioning_privacy_title" msgid="4017627906103556021">"Потсетник за приватност"</string>
     <string name="fully_managed_device_provisioning_privacy_body" msgid="2219074604343348608">"Вашиот IT-администратор можеби ќе ги гледа вашите податоци и активноста на уредов"</string>
