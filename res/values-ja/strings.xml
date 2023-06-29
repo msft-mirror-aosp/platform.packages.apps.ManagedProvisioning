@@ -29,7 +29,7 @@
     <string name="next" msgid="1004321437324424398">"次へ"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"仕事用プロファイルを設定中…"</string>
     <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"IT 管理者は、このプロファイルに関連付けられた設定、コーポレート アクセス、アプリ、権限、データ、ネットワーク アクティビティと、通話履歴、連絡先の検索履歴を監視および管理できます。組織のプライバシー ポリシーなど、詳しくは IT 管理者にお問い合わせください。"</string>
-    <string name="admin_has_ability_to_monitor_device" msgid="6303112630697870695">"IT 管理者は、このデバイスに関連付けられた設定、コーポレート アクセス、アプリ、権限、データの監視、管理を行えます。これには、デバイスの位置情報、通話履歴、連絡先の検索履歴など、ネットワーク アクティビティも含まれます。<xliff:g id="LINE_BREAK">
+    <string name="admin_has_ability_to_monitor_device" msgid="6303112630697870695">"IT 管理者は、このデバイスに関連付けられた設定、コーポレート アクセス、アプリ、権限、データの監視、管理を行えます。これには、ネットワーク アクティビティのほか、デバイスの位置情報、通話履歴、連絡先の検索履歴なども含まれます。<xliff:g id="LINE_BREAK">
 
 </xliff:g>組織のプライバシー ポリシーなど、詳しくは IT 管理者にお問い合わせください。"</string>
     <string name="theft_protection_disabled_warning" msgid="3708092473574738478">"盗難防止機能を使用するには、デバイスでパスワードで保護された画面ロックを設定する必要があります。"</string>
@@ -157,7 +157,7 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"管理アプリをセットアップしています"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"これは組織が所有するデバイスです"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"このスマートフォンの管理には以下のアプリを使用します"</string>
-    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"ご利用のアカウントは管理されています"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"ご利用のアカウントは管理されます"</string>
     <string name="account_management_disclaimer_subheader" msgid="5146471918840236988">"IT 管理者はモバイル デバイス管理を使用して、セキュリティ ポリシーを適用しています"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"仕事用プロファイルのセットアップを準備しています…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"仕事用プロファイルを設定しましょう"</string>
