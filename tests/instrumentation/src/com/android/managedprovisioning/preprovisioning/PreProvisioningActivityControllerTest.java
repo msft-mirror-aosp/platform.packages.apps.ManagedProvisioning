@@ -81,7 +81,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.drawable.VectorDrawable;
-import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -92,7 +92,6 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.service.persistentdata.PersistentDataBlockManager;
 import android.telephony.TelephonyManager;
-import android.test.AndroidTestCase;
 import android.text.TextUtils;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -108,6 +107,7 @@ import com.android.managedprovisioning.common.GetProvisioningModeUtils;
 import com.android.managedprovisioning.common.IllegalProvisioningArgumentException;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.PolicyComplianceUtils;
+import com.android.managedprovisioning.common.RoleGranter;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.DisclaimersParam;
@@ -118,6 +118,8 @@ import com.android.managedprovisioning.parser.MessageParser;
 import com.android.managedprovisioning.preprovisioning.PreProvisioningActivityController.UiParams;
 import com.android.managedprovisioning.util.LazyStringResource;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -127,7 +129,7 @@ import java.util.List;
 import java.util.Locale;
 
 @SmallTest
-public class PreProvisioningActivityControllerTest extends AndroidTestCase {
+public class PreProvisioningActivityControllerTest {
     private static final String TEST_MDM_PACKAGE = "com.test.mdm";
     private static final String TEST_MDM_PACKAGE_LABEL = "Test MDM";
     private static final CharSequence DEFAULT_DEVICE_NAME = "device";
@@ -189,6 +191,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
     private static final String TEST_ROLE_HOLDER_UPDATER_PACKAGE_NAME =
             "test.roleholderupdater.package";
     private static final FeatureFlagChecker sFeatureFlagChecker = createFeatureFlagChecker();
+    private static final RoleGranter sRoleGranter =
+            (context, user, roleName, packageName, callback) -> callback.accept(true);
     private static final DeviceManagementRoleHolderHelper
             DEVICE_MANAGEMENT_ROLE_HOLDER_HELPER =
             new DeviceManagementRoleHolderHelper(
@@ -196,7 +200,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                     /* packageInstallChecker= */ (packageName) -> true,
                     /* resolveIntentChecker= */ (intent, packageManager) -> true,
                     /* roleHolderStubChecker= */ (packageName, packageManager) -> false,
-                    sFeatureFlagChecker);
+                    sFeatureFlagChecker,
+                    sRoleGranter);
     private static final DeviceManagementRoleHolderHelper
             DEVICE_MANAGEMENT_ROLE_HOLDER_HELPER_NOT_PRESENT =
             new DeviceManagementRoleHolderHelper(
@@ -204,7 +209,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                     /* packageInstallChecker= */ (packageName) -> false,
                     /* resolveIntentChecker= */ (intent, packageManager) -> false,
                     /* roleHolderStubChecker= */ (packageName, packageManager) -> false,
-                    sFeatureFlagChecker);
+                    sFeatureFlagChecker,
+                    sRoleGranter);
     private static final String EMPTY_PACKAGE_NAME = "";
     private static final DeviceManagementRoleHolderHelper
             DEVICE_MANAGEMENT_ROLE_HOLDER_HELPER_NOT_CONFIGURED =
@@ -213,7 +219,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                     /* packageInstallChecker= */ (packageManager) -> false,
                     /* resolveIntentChecker= */ (intent, packageManager) -> false,
                     /* roleHolderStubChecker= */ (packageName, packageManager) -> false,
-                    sFeatureFlagChecker);
+                    sFeatureFlagChecker,
+                    sRoleGranter);
     private static final DeviceManagementRoleHolderUpdaterHelper
             ROLE_HOLDER_UPDATER_HELPER =
             new DeviceManagementRoleHolderUpdaterHelper(
@@ -296,14 +303,15 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
     }
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
-    @Override
+    @Before
     public void setUp() throws PackageManager.NameNotFoundException {
-        // this is necessary for mockito to work
+        MockitoAnnotations.initMocks(this);
         mContentResolver = mock(ContentResolver.class,
                 withSettings().useConstructor(mContext, mContentInterface));
-        System.setProperty("dexmaker.dexcache", getContext().getCacheDir().toString());
 
-        MockitoAnnotations.initMocks(this);
+        System.setProperty("dexmaker.dexcache",
+                InstrumentationRegistry.getInstrumentation()
+                        .getTargetContext().getCacheDir().toString());
 
         when(mContext.getSystemServiceName(DevicePolicyManager.class))
                 .thenReturn(Context.DEVICE_POLICY_SERVICE);
@@ -322,7 +330,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .thenReturn(mPdbManager);
         when(mContext.getPackageName()).thenReturn(MP_PACKAGE_NAME);
         when(mContext.getResources()).thenReturn(
-                androidx.test.InstrumentationRegistry.getTargetContext().getResources());
+                InstrumentationRegistry.getInstrumentation().getTargetContext().getResources());
         when(mContext.getSystemServiceName(TelephonyManager.class))
                 .thenReturn(Context.TELEPHONY_SERVICE);
         when(mContext.getSystemService(TelephonyManager.class)).thenReturn(mTelephonyManager);
@@ -330,10 +338,12 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
 
         when(mUserManager.getProcessUserId()).thenReturn(TEST_USER_ID);
 
+        when(mUtils.getActiveNetworkCapabilities(any(Context.class)))
+                .thenReturn(new NetworkCapabilities());
         when(mUtils.isEncryptionRequired()).thenReturn(false);
         when(mUtils.currentLauncherSupportsManagedProfiles(mContext)).thenReturn(true);
-        when(mUserManager.canAddMoreManagedProfiles(anyInt(), anyBoolean())).thenReturn(
-                true);
+        when(mUserManager.canAddMoreManagedProfiles(anyInt(), anyBoolean()))
+                .thenReturn(true);
 
         when(mPackageManager.getApplicationIcon(anyString())).thenReturn(new VectorDrawable());
         when(mPackageManager.getApplicationLabel(any())).thenReturn(TEST_MDM_PACKAGE_LABEL);
@@ -371,6 +381,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 roleHolderUpdaterHelper);
     }
 
+    @Test
     public void testManagedProfile() throws Exception {
         // GIVEN an intent to provision a managed profile
         prepareMocksForManagedProfileIntent(false);
@@ -389,6 +400,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_hasRoleHolderUpdaterInstalled_startsRoleHolderUpdater()
             throws Exception {
         enableRoleHolderDelegation();
@@ -404,8 +416,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void
-    testManagedProfile_hasRoleHolderValidAndInstalled_updaterNotInstalled_startsRoleHolder()
+    @Test
+    public void testManagedProfile_hasRoleHolderValidAndInstalled_updaterNotInstalled_startsRoleHolder()
             throws Exception {
         enableRoleHolderDelegation();
         mController = createControllerWithRoleHolderValidAndInstalledWithUpdater(
@@ -425,8 +437,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mSharedPreferences).setIsProvisioningFlowDelegatedToRoleHolder(true);
     }
 
-    public void
-            testTrustedSource_roleHolderDownloadExtra_downloadsRoleHolder() throws Exception {
+    @Test
+    public void testTrustedSource_roleHolderDownloadExtra_downloadsRoleHolder() throws Exception {
         enableRoleHolderDelegation();
         when(mSettingsFacade.isDuringSetupWizard(any())).thenReturn(false);
         mController = createControllerWithRoleHolderHelpers(
@@ -447,8 +459,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void
-            testManagedProfile_roleHolderDownloadExtraAndAllowOffline_startsPlatformProvidedProvisioning()
+    @Test
+    public void testManagedProfile_roleHolderDownloadExtraAndAllowOffline_startsPlatformProvidedProvisioning()
             throws Exception {
         enableRoleHolderDelegation();
         when(mSettingsFacade.isDuringSetupWizard(any())).thenReturn(false);
@@ -471,6 +483,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mSharedPreferences).setIsProvisioningFlowDelegatedToRoleHolder(false);
     }
 
+    @Test
     public void testManagedProfile_noRoleHolderAndRoleHolderDownloadExtra_failsProvisioning()
             throws Exception {
         enableRoleHolderDelegation();
@@ -494,8 +507,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mSharedPreferences).setIsProvisioningFlowDelegatedToRoleHolder(false);
     }
 
-    public void
-    testManagedProfile_hasRoleHolderValidAndInstalled_updaterNotDefined_startsRoleHolder()
+    @Test
+    public void testManagedProfile_hasRoleHolderValidAndInstalled_updaterNotDefined_startsRoleHolder()
             throws Exception {
         enableRoleHolderDelegation();
         mController = createControllerWithRoleHolderValidAndInstalledWithUpdater(
@@ -515,6 +528,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mSharedPreferences).setIsProvisioningFlowDelegatedToRoleHolder(true);
     }
 
+    @Test
     public void testManagedProfile_roleHolderStarted_startedWithoutState()
             throws Exception {
         enableRoleHolderDelegation();
@@ -540,8 +554,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void
-            testManagedProfile_withoutRoleHolderUpdaterAndNoRoleHolderInstalled_startsPlatformProvidedProvisioning()
+    @Test
+    public void testManagedProfile_withoutRoleHolderUpdaterAndNoRoleHolderInstalled_startsPlatformProvidedProvisioning()
             throws Exception {
         enableRoleHolderDelegation();
         mController = createControllerWithRoleHolderHelpers(
@@ -561,6 +575,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mSharedPreferences).setIsProvisioningFlowDelegatedToRoleHolder(false);
     }
 
+    @Test
     public void testFinancedDevice_provisioningStarted()
             throws Exception {
         enableRoleHolderDelegation();
@@ -580,6 +595,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mSharedPreferences).setIsProvisioningFlowDelegatedToRoleHolder(false);
     }
 
+    @Test
     public void testManagedProfile_roleHolderRequestedUpdate_restartsWithProvidedState()
             throws Exception {
         enableRoleHolderDelegation();
@@ -620,8 +636,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void
-    testManagedProfile_roleHolderRequestedUpdate_updateFailsOnce_restartsWithProvidedState()
+    @Test
+    public void testManagedProfile_roleHolderRequestedUpdate_updateFailsOnce_restartsWithProvidedState()
             throws Exception {
         enableRoleHolderDelegation();
         mController = createControllerWithRoleHolderValidAndInstalledWithUpdater(
@@ -668,6 +684,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_roleHolderReady_startsRoleHolderProvisioning()
             throws Exception {
         enableRoleHolderDelegation();
@@ -688,6 +705,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mSharedPreferences).setIsProvisioningFlowDelegatedToRoleHolder(false);
     }
 
+    @Test
     public void testManagedProfile_allowOffline_startsPlatformProvidedProvisioning()
             throws Exception {
         enableRoleHolderDelegation();
@@ -708,6 +726,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mSharedPreferences).setIsProvisioningFlowDelegatedToRoleHolder(false);
     }
 
+    @Test
     public void testManagedProfile_roleHolderNotConfigured_startsPlatformProvidedProvisioning()
             throws Exception {
         enableRoleHolderDelegation();
@@ -728,6 +747,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mSharedPreferences).setIsProvisioningFlowDelegatedToRoleHolder(false);
     }
 
+    @Test
     public void testManagedProfile_provisioningNotAllowed() throws Exception {
         // GIVEN an intent to provision a managed profile, but provisioning mode is not allowed
         prepareMocksForManagedProfileIntent(false);
@@ -748,6 +768,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_nullCallingPackage() throws Exception {
         // GIVEN a device that is not currently encrypted
         prepareMocksForManagedProfileIntent(false);
@@ -759,6 +780,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_invalidCallingPackage() throws Exception {
         // GIVEN a device that is not currently encrypted
         prepareMocksForManagedProfileIntent(false);
@@ -770,6 +792,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_withEncryption() throws Exception {
         // GIVEN a device that is not currently encrypted
         prepareMocksForManagedProfileIntent(false);
@@ -787,6 +810,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_afterEncryption() throws Exception {
         // GIVEN managed profile provisioning continues after successful encryption. In this case
         // we don't set the startedByTrustedSource flag.
@@ -807,6 +831,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_badLauncher() throws Exception {
         // GIVEN that the current launcher does not support managed profiles
         prepareMocksForManagedProfileIntent(false);
@@ -824,6 +849,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_wrongPackage() throws Exception {
         // GIVEN that the provisioning intent tries to set a package different from the caller
         // as owner of the profile
@@ -836,6 +862,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_frp() throws Exception {
         // GIVEN managed profile provisioning is invoked from SUW with FRP active
         prepareMocksForManagedProfileIntent(false);
@@ -856,6 +883,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testCheckFactoryResetProtection_skipFrp() throws Exception {
         // GIVEN managed profile provisioning is invoked from SUW with FRP active
         when(mSettingsFacade.isDeviceProvisioned(mContext)).thenReturn(false);
@@ -882,6 +910,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(result).isTrue();
     }
 
+    @Test
     public void testManagedProfile_skipEncryption() throws Exception {
         // GIVEN an intent to provision a managed profile with skip encryption
         prepareMocksForManagedProfileIntent(true);
@@ -903,6 +932,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
+    @Test
     public void testManagedProfile_encryptionNotSupported() throws Exception {
         // GIVEN an intent to provision a managed profile on an unencrypted device that does not
         // support encryption
@@ -932,7 +962,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
 
     // TODO(b/177575786): Migrate outdated PreProvisioningControllerTest tests to robolectric
     /*
-    public void testNfc_afterEncryption() throws Exception {
+        @Test
+public void testNfc_afterEncryption() throws Exception {
         // GIVEN provisioning was started via an NFC tap and we have gone through encryption
         // in this case the device gets resumed with the DO intent and startedByTrustedSource flag
         // set
@@ -947,7 +978,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void testQr() throws Exception {
+        @Test
+public void testQr() throws Exception {
         // GIVEN provisioning was started via a QR code and device is already encrypted
         prepareMocksForQrIntent(ACTION_PROVISION_MANAGED_DEVICE, false);
         // WHEN initiating QR provisioning
@@ -960,7 +992,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void testQr_skipEncryption() throws Exception {
+        @Test
+public void testQr_skipEncryption() throws Exception {
         // GIVEN provisioning was started via a QR code with encryption skipped
         prepareMocksForQrIntent(ACTION_PROVISION_MANAGED_DEVICE, true);
         when(mUtils.isEncryptionRequired()).thenReturn(true);
@@ -975,7 +1008,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void testQr_withEncryption() throws Exception {
+        @Test
+public void testQr_withEncryption() throws Exception {
         // GIVEN provisioning was started via a QR code with encryption necessary
         prepareMocksForQrIntent(ACTION_PROVISION_MANAGED_DEVICE, false);
         when(mUtils.isEncryptionRequired()).thenReturn(true);
@@ -989,7 +1023,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void testQr_frp() throws Exception {
+        @Test
+public void testQr_frp() throws Exception {
         // GIVEN provisioning was started via a QR code, but the device is locked with FRP
         prepareMocksForQrIntent(ACTION_PROVISION_MANAGED_DEVICE, false);
         // setting the data block size to any number greater than 0 should invoke FRP.
@@ -1002,7 +1037,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void testDeviceOwner() throws Exception {
+        @Test
+public void testDeviceOwner() throws Exception {
         // GIVEN device owner provisioning was started and device is already encrypted
         prepareMocksForDoIntent(true);
         // WHEN initiating provisioning
@@ -1017,7 +1053,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void testDeviceOwner_skipEncryption() throws Exception {
+        @Test
+public void testDeviceOwner_skipEncryption() throws Exception {
         // GIVEN device owner provisioning was started with skip encryption flag
         prepareMocksForDoIntent(true);
         when(mUtils.isEncryptionRequired()).thenReturn(true);
@@ -1038,7 +1075,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
     // owner case: In managed profile case, we invoke encryption after user clicks next, but in
     // device owner mode we invoke it straight away. Also in theory no need to update
     // the UI elements if we're moving away from this activity straight away.
-    public void testDeviceOwner_withEncryption() throws Exception {
+        @Test
+public void testDeviceOwner_withEncryption() throws Exception {
         // GIVEN device owner provisioning is started with encryption needed
         prepareMocksForDoIntent(false);
         when(mUtils.isEncryptionRequired()).thenReturn(true);
@@ -1052,7 +1090,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void testDeviceOwner_afterEncryption() throws Exception {
+        @Test
+public void testDeviceOwner_afterEncryption() throws Exception {
         // GIVEN device owner provisioning is continued after encryption. In this case we do not set
         // the startedByTrustedSource flag.
         prepareMocksForAfterEncryption(ACTION_PROVISION_MANAGED_DEVICE, false);
@@ -1068,7 +1107,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }
 
-    public void testDeviceOwner_frp() throws Exception {
+        @Test
+public void testDeviceOwner_frp() throws Exception {
         // GIVEN device owner provisioning is invoked with FRP active
         prepareMocksForDoIntent(false);
         // setting the data block size to any number greater than 0 should invoke FRP.
@@ -1081,10 +1121,12 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verifyNoMoreInteractions(mUi);
     }*/
 
+    @Test
     public void testParamsNotLoaded_throwsException() {
         assertThrows(IllegalStateException.class, () -> mController.getParams());
     }
 
+    @Test
     public void testInitiateProvisioning_showsWifiPicker() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .build();
@@ -1092,6 +1134,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mUi).requestWifiPick();
     }
 
+    @Test
     public void testInitiateProvisioning_useMobileData_showsWifiPicker() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setUseMobileData(true)
@@ -1100,6 +1143,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mUi).requestWifiPick();
     }
 
+    @Test
     public void testInitiateProvisioning_useMobileData_noWifiPicker() {
         when(mUtils.isMobileNetworkConnectedToInternet(mContext)).thenReturn(true);
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
@@ -1109,15 +1153,18 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mUi, never()).requestWifiPick();
     }
 
+    @Test
     public void testInitiateProvisioning_connectedToWifiOrEthernet_noWifiPicker() {
-        when(mUtils.isNetworkTypeConnected(mContext, ConnectivityManager.TYPE_WIFI,
-                ConnectivityManager.TYPE_ETHERNET)).thenReturn(true);
+        when(mUtils.getActiveNetworkCapabilities(any())).thenReturn(new NetworkCapabilities());
+        when(mUtils.isNetworkConnectedToInternetViaWiFi(any())).thenReturn(true);
+
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .build();
         initiateProvisioning(params);
         verify(mUi, never()).requestWifiPick();
     }
 
+    @Test
     public void testInitiateProvisioning_noAdminDownloadInfo_noWifiPicker() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setDeviceAdminDownloadInfo(null)
@@ -1126,6 +1173,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mUi, never()).requestWifiPick();
     }
 
+    @Test
     public void testInitiateProvisioning_wifiInfo_noWifiPicker() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setWifiInfo(new WifiInfo.Builder().setSsid(TEST_WIFI_SSID).build())
@@ -1134,8 +1182,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         verify(mUi, never()).requestWifiPick();
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_orgDevice_exactExtras() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_orgDevice_exactExtras() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1152,6 +1200,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(bundle.size()).isEqualTo(5);
     }
 
+    @Test
     public void testGetAdditionalExtrasForGetProvisioningModeIntent_orgDevice_imeiPassed() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
@@ -1169,6 +1218,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(bundle.getString(EXTRA_PROVISIONING_IMEI)).isEqualTo(TEST_IMEI);
     }
 
+    @Test
     public void testGetAdditionalExtrasForGetProvisioningModeIntent_orgDevice_serialNumberPassed() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
@@ -1186,8 +1236,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(bundle.containsKey(EXTRA_PROVISIONING_SERIAL_NUMBER)).isTrue();
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_nonOrgDevice_adminBundlePassed() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_nonOrgDevice_adminBundlePassed() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(false)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1204,8 +1254,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(TEST_ADMIN_BUNDLE);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_nonOrgDevice_allowedModesPassed() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_nonOrgDevice_allowedModesPassed() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(false)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1221,8 +1271,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .containsExactly(PROVISIONING_MODE_MANAGED_PROFILE);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_nonOrgDevice_hasExactlyTwoExtras() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_nonOrgDevice_hasExactlyTwoExtras() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(false)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1237,6 +1287,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(bundle.size()).isEqualTo(2);
     }
 
+    @Test
     public void testGetAdditionalExtrasForGetProvisioningModeIntent_orgDevice_adminBundlePassed() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
@@ -1250,8 +1301,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(TEST_ADMIN_BUNDLE);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManagedDevice_adminBundlePassed() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManagedDevice_adminBundlePassed() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1268,8 +1319,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(TEST_ADMIN_BUNDLE);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManagedDevice_exactExtras() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManagedDevice_exactExtras() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1285,6 +1336,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(bundle.size()).isEqualTo(5);
     }
 
+    @Test
     public void testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManagedDevice_imeiPassed() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
@@ -1301,6 +1353,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(bundle.getString(EXTRA_PROVISIONING_IMEI)).isEqualTo(TEST_IMEI);
     }
 
+    @Test
     public void testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManagedDevice_serialNumberPassed() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
@@ -1317,8 +1370,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(bundle.containsKey(EXTRA_PROVISIONING_SERIAL_NUMBER)).isTrue();
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManaged_hasOptOutExtra() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManaged_hasOptOutExtra() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1336,8 +1389,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(false);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManaged_optOutExtraIsTrue() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManaged_optOutExtraIsTrue() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1355,8 +1408,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(true);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_managedProfile_optOutExtraIsFalseByDefault() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_managedProfile_optOutExtraIsFalseByDefault() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(false)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1372,8 +1425,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(false);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManaged_optOutExtraIsFalse() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_fullyManaged_optOutExtraIsFalse() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(true)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1391,8 +1444,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(false);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_managedProfileByo_optOutExtraNotPresent() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_managedProfileByo_optOutExtraNotPresent() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(false)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1409,8 +1462,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(false);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_managedProfile_optOutExtraNotPresent() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_managedProfile_optOutExtraNotPresent() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(false)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1427,8 +1480,8 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(false);
     }
 
-    public void
-            testGetAdditionalExtrasForGetProvisioningModeIntent_managedProfileByo_optOutExtraHasNoEffect() {
+    @Test
+    public void testGetAdditionalExtrasForGetProvisioningModeIntent_managedProfileByo_optOutExtraHasNoEffect() {
         final ProvisioningParams params = createProvisioningParamsBuilderForInitiateProvisioning()
                 .setIsOrganizationOwnedProvisioning(false)
                 .setAdminExtrasBundle(TEST_ADMIN_BUNDLE)
@@ -1446,6 +1499,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(false);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_managedProfileModeWithAccountMigratedExtraTrue_setsParamToTrue() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION, true);
@@ -1458,6 +1512,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().keepAccountMigrated).isTrue();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_managedProfileModeWithAccountMigratedExtraFalse_setsParamToFalse() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION, false);
@@ -1470,6 +1525,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().keepAccountMigrated).isFalse();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_managedProfileMode_accountMigratedIsFalse() {
         Intent resultIntent = createResultIntentWithManagedProfile();
         final ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
@@ -1481,6 +1537,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().keepAccountMigrated).isFalse();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_managedDeviceModeWithAccountMigratedExtraTrue_accountMigratedIsFalse() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION, true);
@@ -1493,6 +1550,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().keepAccountMigrated).isFalse();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_managedProfileModeWithLeaveSystemAppsEnabledTrue_setsParamToTrue() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED, true);
@@ -1505,6 +1563,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().leaveAllSystemAppsEnabled).isTrue();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_managedProfileModeWithLeaveSystemAppsEnabledFalse_setsParamToFalse() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED, false);
@@ -1517,6 +1576,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().leaveAllSystemAppsEnabled).isFalse();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_managedProfileMode_leaveSystemAppsEnabledIsFalse() {
         Intent resultIntent = createResultIntentWithManagedProfile();
         final ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
@@ -1528,6 +1588,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().leaveAllSystemAppsEnabled).isFalse();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_managedDeviceModeWithLeaveSystemAppsEnabledTrue_paramIsFalse() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED, true);
@@ -1540,6 +1601,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().leaveAllSystemAppsEnabled).isFalse();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_adminBundlePassed_setsParam() {
         PersistableBundle testAdminExtrasBundle = new PersistableBundle();
         testAdminExtrasBundle.putInt("key1", 2);
@@ -1555,6 +1617,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().adminExtrasBundle).isEqualTo(testAdminExtrasBundle);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_adminBundlePassedWithPreexistingAdminBundle_appendsValues() {
         PersistableBundle resultingAdminBundle = new PersistableBundle();
         resultingAdminBundle.putInt("key1", 2);
@@ -1583,6 +1646,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(expectedResult.toString());
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_noAdminBundleResult_existingAdminBundleRetained() {
         PersistableBundle existingAdminBundle = new PersistableBundle();
         existingAdminBundle.putInt("key2", 3);
@@ -1603,6 +1667,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
                 .isEqualTo(existingAdminBundle.toString());
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_validDisclaimersWithWorkProfile_works() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_DISCLAIMERS, DISCLAIMERS_EXTRA);
@@ -1615,6 +1680,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().disclaimersParam).isEqualTo(DISCLAIMERS_PARAM);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_validDisclaimersWithDeviceOwner_works() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_DISCLAIMERS, DISCLAIMERS_EXTRA);
@@ -1627,6 +1693,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().disclaimersParam).isEqualTo(DISCLAIMERS_PARAM);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_noDisclaimersSet_isNull() {
         Intent resultIntent = createResultIntentWithManagedProfile();
         ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
@@ -1638,6 +1705,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().disclaimersParam).isNull();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_withPreExistingDisclaimers_replaced() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_DISCLAIMERS, DISCLAIMERS_EXTRA);
@@ -1651,6 +1719,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().disclaimersParam).isEqualTo(DISCLAIMERS_PARAM);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_validLocaleWithWorkProfile_ignored() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_LOCALE, LOCALE_EXTRA);
@@ -1663,6 +1732,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().locale).isNull();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_validLocaleWithDeviceOwner_works() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_LOCALE, LOCALE_EXTRA);
@@ -1675,6 +1745,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().locale).isEqualTo(LOCALE);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_noLocaleSet_isNull() {
         Intent resultIntent = createResultIntentWithManagedProfile();
         ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
@@ -1686,6 +1757,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().locale).isNull();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_withPreExistingLocale_replaced() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_LOCALE, LOCALE_EXTRA);
@@ -1699,6 +1771,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().locale).isEqualTo(LOCALE);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_invalidLocale_ignored() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_LOCALE, INVALID_LOCALE_EXTRA);
@@ -1711,6 +1784,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().locale).isNull();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_localTimeWithWorkProfile_ignored() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_LOCAL_TIME, LOCAL_TIME_EXTRA);
@@ -1723,6 +1797,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().localTime).isEqualTo(DEFAULT_LOCAL_TIME);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_localTimeWithDeviceOwner_works() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_LOCAL_TIME, LOCAL_TIME_EXTRA);
@@ -1735,6 +1810,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().localTime).isEqualTo(LOCAL_TIME_EXTRA);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_noLocalTimeSet_isDefaultLocalTime() {
         Intent resultIntent = createResultIntentWithManagedProfile();
         ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
@@ -1746,6 +1822,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().localTime).isEqualTo(DEFAULT_LOCAL_TIME);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_withPreExistingLocalTime_replaced() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_LOCAL_TIME, LOCAL_TIME_EXTRA);
@@ -1759,6 +1836,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().localTime).isEqualTo(LOCAL_TIME_EXTRA);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_timeZoneWithWorkProfile_ignored() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_TIME_ZONE, TIME_ZONE_EXTRA);
@@ -1771,6 +1849,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().timeZone).isNull();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_timeZoneWithDeviceOwner_works() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_TIME_ZONE, TIME_ZONE_EXTRA);
@@ -1783,6 +1862,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().timeZone).isEqualTo(TIME_ZONE_EXTRA);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_noTimeZoneSet_isNull() {
         Intent resultIntent = createResultIntentWithManagedProfile();
         ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
@@ -1794,6 +1874,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().timeZone).isNull();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_withPreExistingTimeZone_replaced() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_TIME_ZONE, TIME_ZONE_EXTRA);
@@ -1807,6 +1888,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().timeZone).isEqualTo(TIME_ZONE_EXTRA);
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_skipEncryptionWithWorkProfile_works() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION, /* value= */ true);
@@ -1819,6 +1901,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().skipEncryption).isTrue();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_skipEncryptionWithDeviceOwner_works() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION, /* value= */ true);
@@ -1831,6 +1914,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().skipEncryption).isTrue();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_noSkipEncryptionSet_isFalse() {
         Intent resultIntent = createResultIntentWithManagedProfile();
         ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
@@ -1842,6 +1926,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().skipEncryption).isFalse();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_withPreExistingSkipEncryption_replaced() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION, true);
@@ -1855,6 +1940,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().skipEncryption).isTrue();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_deviceOwnerPermissionGrantOptOutWithWorkProfile_ignored() {
         Intent resultIntent = createResultIntentWithManagedProfile()
                 .putExtra(EXTRA_PROVISIONING_SENSORS_PERMISSION_GRANT_OPT_OUT, /* value= */ true);
@@ -1867,6 +1953,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().deviceOwnerPermissionGrantOptOut).isFalse();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_deviceOwnerPermissionGrantOptOutWithDeviceOwner_works() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_SENSORS_PERMISSION_GRANT_OPT_OUT, /* value= */ true);
@@ -1879,6 +1966,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().deviceOwnerPermissionGrantOptOut).isTrue();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_noDeviceOwnerPermissionGrantOptOutSet_isFalse() {
         Intent resultIntent = createResultIntentWithManagedProfile();
         ProvisioningParams params = createProvisioningParamsBuilderForManagedProfile()
@@ -1890,6 +1978,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().deviceOwnerPermissionGrantOptOut).isFalse();
     }
 
+    @Test
     public void testUpdateProvisioningParamsFromIntent_withPreExistingDeviceOwnerPermissionGrantOptOut_replaced() {
         Intent resultIntent = createResultIntentWithFullyManagedDevice()
                 .putExtra(EXTRA_PROVISIONING_SENSORS_PERMISSION_GRANT_OPT_OUT, /* value= */ true);
@@ -1903,6 +1992,7 @@ public class PreProvisioningActivityControllerTest extends AndroidTestCase {
         assertThat(mController.getParams().deviceOwnerPermissionGrantOptOut).isTrue();
     }
 
+    @Test
     public void testInitiateProvisioning_withActionProvisionManagedDevice_failsSilently()
             throws Exception {
         prepareMocksForDoIntent(/* skipEncryption= */ false);

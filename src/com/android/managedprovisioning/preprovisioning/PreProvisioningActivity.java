@@ -95,6 +95,7 @@ import com.google.android.setupcompat.logging.ScreenKey;
 import com.google.android.setupcompat.logging.SetupMetric;
 import com.google.android.setupcompat.logging.SetupMetricsLogger;
 import com.google.android.setupcompat.util.WizardManagerHelper;
+import com.google.android.setupdesign.transition.TransitionHelper;
 
 public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
         SimpleDialog.SimpleDialogListener, PreProvisioningActivityController.Ui {
@@ -212,7 +213,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
         SetupMetricsLogger.logMetrics(this, mScreenKey,
                 SetupMetric.ofImpression(setupMetricScreenName));
         if (mShouldForwardTransition) {
-            overridePendingTransition(R.anim.sud_slide_next_in, R.anim.sud_slide_next_out);
+            TransitionHelper.applyForwardTransition(
+                    this, TransitionHelper.TRANSITION_FADE_THROUGH);
             mShouldForwardTransition = false;
         }
     }
@@ -501,17 +503,26 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                     createRoleHolderAdditionalExtras(resultCode),
                     getCallingPackage());
             if (!isProvisioningStarted) {
-                mAnalyticsTracker.logRoleHolderUpdaterUpdateFailed();
-                failRoleHolderUpdate();
-                ProvisionLogger.loge("Failed to start provisioning after a "
+                if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+                    ProvisionLogger.logi("Result is " + resultCode
+                            + " and applied fallback strategy.");
+                    mController.performPlatformProvidedProvisioning();
+                } else {
+                    mAnalyticsTracker.logRoleHolderUpdaterUpdateFailed();
+                    failRoleHolderUpdate();
+                    ProvisionLogger.loge("Failed to start provisioning after a "
                         + "platform-requested role holder update. Result is " + resultCode
                         + " and allow offline provisioning is "
                         + mController.getParams().allowOffline);
-                SetupMetricsLogger.logMetrics(this, mScreenKey,
-                        SetupMetric.ofError(setupMetricScreenName, resultCode));
+                    SetupMetricsLogger.logMetrics(this, mScreenKey,
+                            SetupMetric.ofError(setupMetricScreenName, resultCode));
+                }
             }
-        } else if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)
-                || mController.getParams().allowOffline) {
+        } else if (mController.getParams().allowOffline) {
+            ProvisionLogger.logi("Result is " + resultCode + ". Allowed offline provisioning.");
+            mController.performPlatformProvidedProvisioning();
+        } else if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+            ProvisionLogger.logi("Result is " + resultCode + " and applied fallback strategy.");
             mController.performPlatformProvidedProvisioning();
         } else {
             mAnalyticsTracker.logRoleHolderUpdaterUpdateFailed();
@@ -542,16 +553,25 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                     createRoleHolderAdditionalExtras(resultCode),
                     getCallingPackage());
             if (!isProvisioningStarted) {
-                failRoleHolderUpdate();
-                ProvisionLogger.loge("Failed to start provisioning after a "
-                        + "role holder-requested role holder update. Result is "
-                        + resultCode + " and allow offline provisioning is "
-                        + mController.getParams().allowOffline);
-                SetupMetricsLogger.logMetrics(this, mScreenKey,
-                        SetupMetric.ofError(setupMetricScreenName, resultCode));
+                if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+                    ProvisionLogger.logi("Result is " + resultCode
+                            + " and applied fallback strategy.");
+                    mController.performPlatformProvidedProvisioning();
+                } else {
+                    failRoleHolderUpdate();
+                    ProvisionLogger.loge("Failed to start provisioning after a "
+                            + "role holder-requested role holder update. Result is "
+                            + resultCode + " and allow offline provisioning is "
+                            + mController.getParams().allowOffline);
+                    SetupMetricsLogger.logMetrics(this, mScreenKey,
+                            SetupMetric.ofError(setupMetricScreenName, resultCode));
+                }
             }
-        } else if (mController.getParams().allowOffline
-                || isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+        } else if (mController.getParams().allowOffline) {
+            ProvisionLogger.logi("Result is " + resultCode + ". Allowed offline provisioning.");
+            mController.performPlatformProvidedProvisioning();
+        } else if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+            ProvisionLogger.logi("Result is " + resultCode + " and applied fallback strategy.");
             mController.performPlatformProvidedProvisioning();
         } else {
             failRoleHolderUpdate();

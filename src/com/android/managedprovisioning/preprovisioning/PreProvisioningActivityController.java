@@ -70,7 +70,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -244,14 +243,22 @@ public class PreProvisioningActivityController {
 
         if (isRoleHolderReadyForProvisioning && isRoleHolderProvisioningAllowed) {
             ProvisionLogger.logw("Provisioning via role holder.");
-            Intent roleHolderProvisioningIntent =
-                    mRoleHolderHelper.createRoleHolderProvisioningIntent(
-                            managedProvisioningIntent,
-                            roleHolderAdditionalExtras, callingPackage, mViewModel.getRoleHolderState()
-                    );
-            mSharedPreferences.setIsProvisioningFlowDelegatedToRoleHolder(true);
-            mViewModel.onRoleHolderProvisioningInitiated();
-            mUi.startRoleHolderProvisioning(roleHolderProvisioningIntent);
+            mRoleHolderHelper.ensureRoleGranted(mContext, success -> {
+                if (success) {
+                    Intent roleHolderProvisioningIntent =
+                            mRoleHolderHelper.createRoleHolderProvisioningIntent(
+                                    managedProvisioningIntent,
+                                    roleHolderAdditionalExtras, callingPackage,
+                                    mViewModel.getRoleHolderState()
+                            );
+                    mSharedPreferences.setIsProvisioningFlowDelegatedToRoleHolder(true);
+                    mViewModel.onRoleHolderProvisioningInitiated();
+                    mUi.startRoleHolderProvisioning(roleHolderProvisioningIntent);
+                } else {
+                    ProvisionLogger.logw("Falling back to provisioning via platform.");
+                    performPlatformProvidedProvisioning();
+                }
+            });
             return true;
         } else if (!mRoleHolderHelper.isRoleHolderProvisioningEnabled()
                 || !mRoleHolderUpdaterHelper.isRoleHolderUpdaterDefined()
@@ -535,8 +542,10 @@ public class PreProvisioningActivityController {
         if (params.deviceAdminDownloadInfo == null) {
             return false;
         }
-        if (mUtils.isNetworkTypeConnected(mContext, ConnectivityManager.TYPE_WIFI,
-                ConnectivityManager.TYPE_ETHERNET)) {
+        var networkCapabilities = mUtils.getActiveNetworkCapabilities(mContext);
+        if (networkCapabilities != null
+                && (mUtils.isNetworkConnectedToInternetViaWiFi(networkCapabilities)
+                        || mUtils.isNetworkConnectedToInternetViaEthernet(networkCapabilities))) {
             return false;
         }
         // we intentionally disregard whether mobile is connected for QR and NFC
