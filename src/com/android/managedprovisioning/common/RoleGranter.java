@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.managedprovisioning.parser;
+package com.android.managedprovisioning.common;
 
-import android.os.Parcelable;
+import android.content.Context;
+import android.os.UserHandle;
 
-import com.android.managedprovisioning.model.DisclaimersParam;
+import java.util.function.Consumer;
 
 /**
- * Parser which processes disclaimer parameters.
- *
- * @see android.app.admin.DevicePolicyManager#EXTRA_PROVISIONING_DISCLAIMERS
+ * Checker that checks and tries to grant a role if not already granted
  */
-public interface DisclaimerParser {
-    DisclaimersParam parse(Parcelable[] disclaimers);
+@FunctionalInterface
+public interface RoleGranter {
+    /**
+     * Checks that a role is granted to a given package on a given user and grants it if needed
+     */
+    void ensureRoleGranted(Context context, UserHandle user, String roleName, String packageName,
+            Consumer<Boolean> callback);
 }
