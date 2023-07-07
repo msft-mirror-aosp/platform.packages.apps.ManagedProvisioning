@@ -155,15 +155,15 @@
     <string name="device_owner_description" msgid="168013145812679664">"Ձեր կազմակերպությունը կկառավարի այս սարքն ու կապահովի դրա անվտանգությունը"</string>
     <string name="setup_provisioning_header" msgid="4282483198266806271">"Սարքի կարգավորման նախապատրաստում…"</string>
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"Ադմինիստրատորի հավելվածի կարգավորում"</string>
-    <string name="brand_screen_header" msgid="8865808542690116648">"Այս սարքը պատկանում է ձեր կազմակերպությանը"</string>
+    <string name="brand_screen_header" msgid="8865808542690116648">"Այս սարքը պատկանում է ձեր ընկերությանը"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"Հետևյալ հավելվածը կօգտագործվի այս հեռախոսը կառավարելու և վերահսկելու համար"</string>
     <string name="account_management_disclaimer_header" msgid="8013083414694316564">"Ձեր հաշիվը կառավարվող է"</string>
     <string name="account_management_disclaimer_subheader" msgid="8991450067243733878">"Ձեր ՏՏ ադմինիստրատորն ապահովում է անվտանգության կանոնների գործադրումը շարժական սարքերի կառավարման միջոցով"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"Սարքի կարգավորման նախապատրաստում…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Կարգավորեք ձեր աշխատանքային պրոֆիլը"</string>
-    <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Աշխատանքային հավելվածները պահվում են ձեր աշխատանքային պրոֆիլում"</string>
+    <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Աշխ․ հավելվածները պահվում են ձեր աշխ․ պրոֆիլում"</string>
     <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"Դադարեցրեք աշխատանքային հավելվածները օրվա ավարտին"</string>
-    <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"Ձեր աշխատանքային պրոֆիլի տվյալները տեսանելի են ՏՏ ադմինիստրատորին"</string>
+    <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"ՏՏ ադմինին տեսանելի են ձեր աշխ․ պրոֆիլի տվյալները"</string>
     <string name="work_profile_provisioning_progress_label" msgid="2627905308998389193">"Աշխատանքային պրոֆիլը կարգավորվում է…"</string>
     <string name="work_profile_provisioning_summary" msgid="3436190271657388747">"Աշխատանքային հավելվածները պահվում են ձեր աշխատանքային պրոֆիլում։ Դրանք կարող եք դադարեցնել աշխատանքային օրվա ավարտին։ Ձեր աշխատանքային պրոֆիլի տվյալները տեսանելի են ՏՏ ադմինիստրատորին։"</string>
     <string name="fully_managed_device_provisioning_accept_header" msgid="2944032660440403130">"Կարգավորեք աշխատանքային սարքը"</string>
@@ -180,6 +180,9 @@
     <string name="fully_managed_device_provisioning_return_device_subheader" msgid="6194410367910957686">"Վերադարձեք նախորդ էկրան կամ վերակայեք այս սարքը և վերադարձրեք այն ձեր ՏՏ ադմինիստրատորին։"</string>
     <string name="fully_managed_device_cancel_setup_button" msgid="4910041382610777599">"Չեղարկել կարգավորումը"</string>
     <string name="fully_managed_device_reset_and_return_button" msgid="6451125722998550681">"Վերակայել և վերադարձներ սարքը"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_header" msgid="7938653381656306039">"Սարքը հնարավոր չէ կարգավորել"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_subheader" msgid="5158035482490079567">"Այս սարքը չի կարող գրանցվել ամբողջությամբ կառավարվող ռեժիմում։ Վերականգնեք ձեր սարքի գործարանային կարգավորումները և դիմեք ձեր ՏՏ ադմինիստրատորին։"</string>
+    <string name="fully_managed_device_reset_button" msgid="5957116315144904542">"Վերականգնել գործարանային կարգավորումները"</string>
     <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"Աշխատանքային հավելվածները ձեր աշխատանքային պրոֆիլում են, կառավարիչը՝ ՏՏ ադմինիստրատորը"</string>
     <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"Անձնական հավելվածները թաքցված են և առանձին են աշխատանքայիններից"</string>
     <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"ՏՏ ադմինիստրատորը կարող է վերահսկել սարքը և արգելափակել որոշ հավելվածներ"</string>

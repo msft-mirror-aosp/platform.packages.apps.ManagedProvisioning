@@ -450,7 +450,7 @@ public class Utils {
      * Factory resets the device.
      */
     public void factoryReset(Context context, String reason) {
-        context.getSystemService(DevicePolicyManager.class).wipeData(/* flags=*/ 0, reason);
+        context.getSystemService(DevicePolicyManager.class).wipeDevice(/* flags=*/ 0);
     }
 
     /**
@@ -826,9 +826,9 @@ public class Utils {
 
     /** Adds a primary "Cancel setup" button */
     public static FooterButton addResetButton(GlifLayout layout,
-            @NonNull OnClickListener listener) {
+            @NonNull OnClickListener listener, @StringRes int resetButtonString) {
         return setPrimaryButton(layout, listener, ButtonType.CANCEL,
-                R.string.fully_managed_device_reset_and_return_button);
+                resetButtonString);
     }
 
     private static FooterButton setPrimaryButton(GlifLayout layout, OnClickListener listener,
