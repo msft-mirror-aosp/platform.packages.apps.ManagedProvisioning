@@ -28,7 +28,7 @@
     <string name="the_following_is_your_mdm_for_device" msgid="6717973404364414816">"निम्न अनुप्रयोगले तपाईँको यन्त्र व्यवस्थापन गर्ने छ:"</string>
     <string name="next" msgid="1004321437324424398">"अर्को"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"कार्य प्रोफाइल सेटअप गर्दै…"</string>
-    <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"तपाईंका सूचना प्रविधि व्यवस्थापकले यो प्रोफाइलसँग सम्बन्धित सेटिङ, संस्थागत पहुँच, एप, अनुमति, डेटा र नेटवर्कसम्बन्धी क्रियाकलापका साथै तपाईंको कल हिस्ट्री तथा कन्ट्याक्ट सर्च हिस्ट्री निगरानी गर्नुका साथै व्यवस्थापन गर्न सक्नुहुन्छ। तपाईं यसका सम्बन्धमा थप जानकारी प्राप्त गर्न र आफ्नो सङ्गठनका गोपनीयता नीतिका बारेमा थप जान्न चाहनुहुन्छ भने आफ्ना सूचना प्रविधि व्यवस्थापकलाई सम्पर्क गर्नुहोस्।"</string>
+    <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"तपाईंका IT एड्मिनले यो प्रोफाइलसँग सम्बन्धित सेटिङ, संस्थागत पहुँच, एप, अनुमति, डेटा र नेटवर्कसम्बन्धी क्रियाकलापका साथै तपाईंको कल हिस्ट्री तथा कन्ट्याक्ट सर्च हिस्ट्री निगरानी गर्नुका साथै व्यवस्थापन गर्न सक्नुहुन्छ। तपाईं यसका सम्बन्धमा थप जानकारी प्राप्त गर्न र आफ्नो सङ्गठनका गोपनीयता नीतिका बारेमा थप जान्न चाहनुहुन्छ भने आफ्ना IT एड्मिनलाई सम्पर्क गर्नुहोस्।"</string>
     <string name="admin_has_ability_to_monitor_device" msgid="7786186939607332934">"तपाईंका IT एड्मिन नेटवर्कसम्बन्धी क्रियाकलापका साथै तपाईंको डिभाइसको लोकेसन, कल हिस्ट्री र कन्ट्याक्ट सर्च हिस्ट्रीलगायतका सेटिङ, संस्थागत पहुँच, एप, अनुमति र यो <xliff:g id="DEVICE_NAME">%1$s</xliff:g> सँग सम्बन्धित डेटाको निरीक्षण तथा व्यवस्थापन गर्न सक्नुहुन्छ।<xliff:g id="LINE_BREAK">
 
 </xliff:g>तपाईंको सङ्गठनका गोपनीयता नीतिलगायतका कुराका बारेमा थप जानकारी प्राप्त गर्न आफ्ना IT एड्मिनलाई सम्पर्क गर्नुहोस्।"</string>
@@ -109,7 +109,7 @@
     <string name="if_questions_contact_admin" msgid="3509427015901582047">"तपाईंसँग प्रश्नहरू छन् भने आफ्ना IT व्यवस्थापकसँग सम्पर्क गर्नुहोस्"</string>
     <string name="setup_isnt_finished_contact_admin" msgid="8849644190723875952">"सेटअप सम्पन्न भएको छैन। मद्दतका लागि, आफ्ना IT व्यवस्थापकलाई सम्पर्क गर्नुहोस्।"</string>
     <string name="for_help_contact_admin" msgid="5922538077702487859">"मद्दतका लागि आफ्ना IT व्यवस्थापकसँग सम्पर्क गर्नुहोस्"</string>
-    <string name="organization_admin" msgid="5975914478148511290">"IT व्यवस्थापक"</string>
+    <string name="organization_admin" msgid="5975914478148511290">"IT एड्मिन"</string>
     <string name="your_org_app_used" msgid="5336414768293540831">"<xliff:g id="YOUR_ORGANIZATION">%1$s</xliff:g> ले निम्न एपको प्रयोग गरी यस डिभाइसको व्यवस्थापन तथा अनुगमन गर्ने छ:"</string>
     <string name="your_organization_beginning" msgid="5952561489910967255">"तपाईँको संगठन"</string>
     <string name="your_organization_middle" msgid="8288538158061644733">"तपाईँको संगठन"</string>
@@ -159,15 +159,15 @@
     <string name="brand_screen_subheader" msgid="7664792208784456436">"यो फोनको व्यवस्थापन तथा अनुगमन गर्न निम्न एपको उपयोग गरिने छ"</string>
     <string name="account_management_disclaimer_header" msgid="8013083414694316564">"तपाईंको खाता नयाँ डिभाइसमा व्यवस्थापन गरिने छ"</string>
     <string name="account_management_disclaimer_subheader" msgid="8991450067243733878">"तपाईंका IT एड्मिन सुरक्षासम्बन्धी नीतिहरू लागू गर्न मोबाइल डिभाइस व्यवस्थापन गर्ने सुविधा प्रयोग गर्नुहुन्छ"</string>
-    <string name="downloading_administrator_header" msgid="8660294318893902915">"कार्यस्थल सेटअप गर्न तयारी गर्दै…"</string>
+    <string name="downloading_administrator_header" msgid="8660294318893902915">"कामका लागि डिभाइस सेटअप गर्ने तयारी गरिँदै छ…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"सर्वप्रथम आफ्नो कार्य प्रोफाइल सेटअप गरौँ"</string>
-    <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"कार्यस्थलसम्बन्धी एपहरू तपाईंको कार्यसम्बन्धी प्रोफाइलमा राखिन्छन्"</string>
-    <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"आफ्नो दिनभरिको काम पूरा भएपछि कार्यस्थलसम्बन्धी एप पज गर्नुहोस्"</string>
+    <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"कामसम्बन्धी एपहरू तपाईंको कार्य प्रोफाइलमा राखिन्छन्"</string>
+    <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"आफ्नो दिनभरिको काम पूरा भएपछि कामसम्बन्धी एप पज गर्नुहोस्"</string>
     <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"तपाईंका IT एडमिनले तपाईंको कार्यलयको प्रोफाइलमा भएका डेटा हेर्न सक्छन्"</string>
     <string name="work_profile_provisioning_progress_label" msgid="2627905308998389193">"तपाईंको कार्य प्रोफाइल सेट गरिँदै छ…"</string>
     <string name="work_profile_provisioning_summary" msgid="3436190271657388747">"कामसम्बन्धी एपहरू तपाईंको कार्यलयको प्रोफाइलमा राखिन्छन्। तपाईंले दिनभरिको काम सकेपछि तपाईं कामसम्बन्धी एपहरू पज गर्न सक्नुहुन्छ। तपाईंका IT एडमिनले तपाईंको कार्यलयको प्रोफाइलमा भएका डेटा हेर्न सक्छन्।"</string>
     <string name="fully_managed_device_provisioning_accept_header" msgid="2944032660440403130">"तपाईंको कार्यस्थलको डिभाइस सेट अप गरौँ"</string>
-    <string name="fully_managed_device_provisioning_step_1_header" msgid="6396274703116708592">"आफ्ना कार्यस्थलसम्बन्धी एपहरू सजिलै प्राप्त गर्नुहोस्"</string>
+    <string name="fully_managed_device_provisioning_step_1_header" msgid="6396274703116708592">"आफ्ना कामसम्बन्धी एपहरू सजिलै भेट्टाउनुहोस्"</string>
     <string name="fully_managed_device_provisioning_step_2_header" msgid="142633978260399682">"यो <xliff:g id="DEVICE_NAME">%1$s</xliff:g> निजी डिभाइस होइन"</string>
     <string name="fully_managed_device_provisioning_step_2_subheader" msgid="3981784440341141618">"तपाईंका IT एड्मिन तपाईंले यो <xliff:g id="DEVICE_NAME">%1$s</xliff:g> मा गर्ने क्रियाकलाप र यसमा भएका डेटा हेर्न सक्छन्।"</string>
     <string name="fully_managed_device_provisioning_permissions_header" msgid="2852101532084770993">"तपाईंले गर्ने क्रियाकलाप र तपाईंको जानकारी"</string>
@@ -183,9 +183,9 @@
     <string name="fully_managed_device_unsupported_DPC_in_headless_mode_header" msgid="7938653381656306039">"यो डिभाइस सेटअप गर्न मिल्दैन"</string>
     <string name="fully_managed_device_unsupported_DPC_in_headless_mode_subheader" msgid="5158035482490079567">"यो डिभाइस पूर्ण रूपमा व्यवस्थापन गरिने मोडमा दर्ता गर्न मिल्दैन। आफ्नो डिभाइस फ्याक्ट्री रिसेट गर्नुहोस् अनि आफ्ना IT एड्मिनलाई सम्पर्क गर्नुहोस्।"</string>
     <string name="fully_managed_device_reset_button" msgid="5957116315144904542">"फ्याक्ट्री रिसेट गर्नुहोस्"</string>
-    <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"IT एडमिन कार्य प्रोफाइलमा राखिने कार्य एप व्यवस्थित गर्छन्"</string>
-    <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"व्यक्तिगत एप छुट्टै राखिन्छन् र कामसम्बन्धी एपसँगै देखिँदैनन्"</string>
-    <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"IT एडमिन यो डिभाइस र यसका केही एपहरू नियन्त्रण गर्न सक्छन्"</string>
+    <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"कामसम्बन्धी एपहरू कार्य प्रोफाइलमा राखिन्छन् र IT एड्मिनले ती एप व्यवस्थापन गर्छन्"</string>
+    <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"व्यक्तिगत एपहरू छुट्टै राखिन्छन् र ती एप कामसम्बन्धी एपसँगै देखिँदैनन्"</string>
+    <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"IT एड्मिन यो डिभाइस र यसका केही एपहरू नियन्त्रण गर्न सक्छन्"</string>
     <string name="cope_provisioning_summary" msgid="4993405755138454918">"कामसम्बन्धी एपहरू तपाईंको कार्य प्रोफाइलमा राखिन्छन् र तपाईंका IT एड्मिन ती एप व्यवस्थापन गर्छन्। व्यक्तिगत एपहरू छुट्टै राखिन्छन् र ती एप कामसम्बन्धी एपसँगै देखिँदैनन्। तपाईंका IT एड्मिन यो <xliff:g id="DEVICE_NAME">%1$s</xliff:g> नियन्त्रण गर्न र निश्चित एपमाथि रोक लगाउन सक्छन्।"</string>
     <string name="just_a_sec" msgid="6244676028626237220">"एकै छिन पर्खनुहोस्…"</string>
     <string name="fully_managed_device_provisioning_privacy_title" msgid="4017627906103556021">"गोपनीयतासम्बन्धी रिमाइन्डर"</string>
@@ -196,7 +196,7 @@
     <string name="financed_restrict_device_subheader_title" msgid="4248650736543742083">"यो <xliff:g id="DEVICE_NAME">%1$s</xliff:g> प्रयोग गर्न मिल्ने बनाइन सक्छ"</string>
     <string name="financed_restrict_device_subheader_description" msgid="1539908048861880628">"तपाईंले रकम भुक्तानी गर्नुभएन भने <xliff:g id="CREDITOR_NAME">%1$s</xliff:g> ले यो <xliff:g id="DEVICE_NAME">%2$s</xliff:g> प्रयोग गर्न नमिल्ने बनाउन सक्छ।"</string>
     <string name="error_role_holder_hash_mismatch" msgid="5098975629103567172">"<xliff:g id="DEVICE_NAME">%1$s</xliff:g> सेटअप गर्न सकिँदैन। आफ्ना IT एड्मिनलाई सम्पर्क गर्नुहोस् र \"चेकसम अवैध छ\" भनेर जानकारी गराउनुहोस्।"</string>
-    <string name="error_role_holder_download_install_failed" msgid="8151968372180693228">"पछि फेरि प्रयास गर्नुहोस् वा मद्दत चाहिएमा आफ्नो सूचना प्रविधि व्यवस्थापकलाई सम्पर्क गर्नुहोस्"</string>
+    <string name="error_role_holder_download_install_failed" msgid="8151968372180693228">"पछि फेरि प्रयास गर्नुहोस् वा मद्दत चाहिएमा आफ्नो IT एड्मिनलाई सम्पर्क गर्नुहोस्"</string>
     <string name="error_role_holder_package_invalid" msgid="8159929740916126242">"<xliff:g id="DEVICE_NAME">%1$s</xliff:g> सेटअप गर्न सकिँदैन। आफ्नो IT एड्मिनलाई सम्पर्क गर्नुहोस् र \"कम्पोनेन्टहरू छुटेका वा खराब भएका छन्\" भनेर जानकारी गराउनुहोस्।"</string>
     <string name="setting_up" msgid="1478847967385506664">"सेटअप गरिँदै छ…"</string>
 </resources>
