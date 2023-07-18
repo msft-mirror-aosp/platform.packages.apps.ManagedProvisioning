@@ -42,7 +42,8 @@ android_library {
         "androidx.webkit_webkit-nodeps",
         "setupdesign-lottie-loading-layout",
         "lottie",
-        "guava"
+        "guava",
+        "aconfig_managed_provisioning_flags_lib"
     ],
 
     plugins: ["auto_value_plugin"],
@@ -76,7 +77,8 @@ android_app {
         "androidx.webkit_webkit-nodeps",
         "setupdesign-lottie-loading-layout",
         "lottie",
-        "guava"
+        "guava",
+        "aconfig_managed_provisioning_flags_lib"
     ],
 
     plugins: ["auto_value_plugin"],
@@ -101,4 +103,17 @@ android_app {
     jacoco: {
         include_filter: ["com.android.managedprovisioning.*"],
     },
+}
+
+aconfig_declarations {
+    name: "aconfig_managed_provisioning_flags",
+    package: "com.android.managedprovisioning.flags",
+    srcs: [
+      "aconfig/*.aconfig"
+    ],
+}
+
+java_aconfig_library {
+    name: "aconfig_managed_provisioning_flags_lib",
+    aconfig_declarations: "aconfig_managed_provisioning_flags",
 }

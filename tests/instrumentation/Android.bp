@@ -31,6 +31,8 @@ android_test {
         "TestApp",
         "ctstestrunner-axt",
         "Harrier",
+        "flag-junit",
+        "platform-test-annotations",
     ],
 
     instrumentation_for: "ManagedProvisioning",
