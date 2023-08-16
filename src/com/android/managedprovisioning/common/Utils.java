@@ -193,6 +193,7 @@ public class Utils {
      * and return it.
      */
     @NonNull
+    @VisibleForTesting
     public ComponentName findDeviceAdmin(String dpcPackageName, ComponentName dpcComponentName,
             Context context, int userId) throws IllegalProvisioningArgumentException {
         if (dpcComponentName != null) {
