@@ -123,7 +123,7 @@ public class AdminIntegratedFlowPrepareActivity extends AbstractProvisioningActi
     }
 
 
-    private void initializeUi() {
+    protected void initializeUi() {
         final int headerResId = R.string.downloading_administrator_header;
         CharSequence deviceName = DeviceHelper.getDeviceName(getApplicationContext());
         final String title = getString(R.string.setup_device_progress, deviceName);
