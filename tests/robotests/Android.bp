@@ -9,7 +9,10 @@ android_robolectric_test {
 
     name: "ManagedProvisioningRoboTests",
 
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
 
     java_resource_dirs: ["config"],
 
@@ -18,7 +21,7 @@ android_robolectric_test {
         "robolectric_android-all-stub",
         "Robolectric_all-target",
         "mockito-robolectric-prebuilt",
-        "truth-prebuilt",
+        "truth",
         "androidx.test.core",
         "androidx.test.rules",
         "androidx.core_core",

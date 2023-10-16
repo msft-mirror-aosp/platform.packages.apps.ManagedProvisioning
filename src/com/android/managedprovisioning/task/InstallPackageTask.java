@@ -183,7 +183,7 @@ public class InstallPackageTask extends AbstractProvisioningTask {
         PackageInstaller pi = context.getPackageManager().getPackageInstaller();
         context.registerReceiver(
                 new PackageAddedReceiver(packageName),
-                createPackageAddedIntentFilter());
+                createPackageAddedIntentFilter(), Context.RECEIVER_EXPORTED/*UNAUDITED*/);
         pi.registerSessionCallback(sessionCallback);
         mSessionId  = pi.createSession(params);
         try (PackageInstaller.Session session = pi.openSession(mSessionId)) {
@@ -199,7 +199,7 @@ public class InstallPackageTask extends AbstractProvisioningTask {
             PendingIntent pendingIntent = PendingIntent.getBroadcast(
                     context,
                     mSessionId,
-                    new Intent(action),
+                    new Intent(action).setPackage(context.getPackageName()),
                     FLAG_ONE_SHOT | FLAG_UPDATE_CURRENT | FLAG_MUTABLE);
             session.commit(pendingIntent.getIntentSender());
         }

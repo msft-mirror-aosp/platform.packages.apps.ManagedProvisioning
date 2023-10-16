@@ -11,7 +11,10 @@ android_test {
         "android.test.mock",
     ],
 
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
 
     platform_apis: true,
     certificate: "platform",
@@ -22,7 +25,7 @@ android_test {
         "androidx.test.espresso.core",
         "androidx.test.espresso.contrib",
         "androidx.test.espresso.intents",
-        "truth-prebuilt",
+        "truth",
         "testng", // used only for assertThrows
         "ub-uiautomator", // used for unlocking the device
         "TestApp",
@@ -36,21 +39,24 @@ android_test {
 }
 
 android_library {
-   name: "ManagedProvisioningTestsLib",
-   srcs: ["src/**/*.java"],
-   manifest: "AndroidManifest.xml",
-   libs: [
+    name: "ManagedProvisioningTestsLib",
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
+    manifest: "AndroidManifest.xml",
+    libs: [
         "android.test.runner",
         "android.test.base",
         "android.test.mock",
     ],
-   static_libs: [
+    static_libs: [
         "androidx.test.rules",
         "mockito-target-minus-junit4",
         "androidx.test.espresso.core",
         "androidx.test.espresso.contrib",
         "androidx.test.espresso.intents",
-        "truth-prebuilt",
+        "truth",
         "testng",
         "ub-uiautomator",
         "TestApp",
