@@ -65,31 +65,9 @@ android_library {
 android_app {
     name: "ManagedProvisioning",
 
-    libs: [
-        "auto_value_annotations",
-    ],
+    static_libs: ["ManagedProvisioningLib"],
 
-    static_libs: [
-        "androidx.legacy_legacy-support-v4",
-        "setupcompat",
-        "setupdesign",
-        "managedprovisioning_protoslite",
-        "androidx.webkit_webkit-nodeps",
-        "setupdesign-lottie-loading-layout",
-        "lottie",
-        "guava",
-        "aconfig_managed_provisioning_flags_lib"
-    ],
-
-    plugins: ["auto_value_plugin"],
-
-    srcs: [
-        "src/**/*.java",
-        "src/**/*.kt",
-        "src/**/I*.aidl",
-    ],
-
-    resource_dirs: ["res"],
+    resource_dirs: [],
 
     platform_apis: true,
     certificate: "platform",

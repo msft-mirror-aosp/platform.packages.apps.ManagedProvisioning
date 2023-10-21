@@ -108,7 +108,9 @@ public class AdminIntegratedFlowPrepareActivity extends AbstractProvisioningActi
     public void preFinalizationCompleted() {
         ProvisionLogger.logi("AdminIntegratedFlowPrepareActivity pre-finalization completed");
         setResult(Activity.RESULT_OK);
-        this.overridePendingTransition(R.anim.sud_slide_next_in, R.anim.sud_slide_next_out);
+        this.overridePendingTransition(
+                com.google.android.setupdesign.R.anim.sud_slide_next_in,
+                com.google.android.setupdesign.R.anim.sud_slide_next_out);
         this.finish();
     }
 
