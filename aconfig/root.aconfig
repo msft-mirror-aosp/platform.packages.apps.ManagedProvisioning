@@ -4,5 +4,5 @@ flag {
     name: "cosmic_ray"
     namespace: "enterprise"
     description: "Enables Cosmic Ray features"
-    bug: "291540111"
+    bug: "288413994"
 }
