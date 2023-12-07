@@ -55,7 +55,7 @@ data class DownloadRoleHolderArguments(
 @OnboardingNode(
     component = MANAGED_PROVISIONING,
     name = "DownloadRoleHolder",
-    hasUi = OnboardingNode.HasUi.NO)
+    uiType = OnboardingNode.UiType.LOADING)
 class DownloadRoleHolderContract
 @Inject
 constructor(
