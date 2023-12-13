@@ -163,7 +163,7 @@
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Configurons votre profil professionnel"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Les applis professionnelles sont dans votre profil professionnel"</string>
     <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"Mettez vos applis professionnelles en pause quand vous avez fini de travailler"</string>
-    <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"Votre administrateur informatique peut voir les données de votre profil professionnel"</string>
+    <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"Votre administrateur informatique a accès aux données du profil professionnel"</string>
     <string name="work_profile_provisioning_progress_label" msgid="2627905308998389193">"Configuration de votre profil pro…"</string>
     <string name="work_profile_provisioning_summary" msgid="3436190271657388747">"Les applications professionnelles sont conservées dans votre profil professionnel. Vous pouvez mettre en pause vos applications professionnelles lorsque vous avez fini votre journée. Les données dans votre profil professionnel sont visibles par votre administrateur informatique."</string>
     <string name="fully_managed_device_provisioning_accept_header" msgid="2944032660440403130">"Configurez votre appareil professionnel"</string>
@@ -180,9 +180,6 @@
     <string name="fully_managed_device_provisioning_return_device_subheader" msgid="6194410367910957686">"Revenez à l\'écran précédent ou réinitialisez cet appareil et retournez-le à votre administrateur informatique."</string>
     <string name="fully_managed_device_cancel_setup_button" msgid="4910041382610777599">"Annuler la configuration"</string>
     <string name="fully_managed_device_reset_and_return_button" msgid="6451125722998550681">"Réinitialiser et retourner l\'appareil"</string>
-    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_header" msgid="7938653381656306039">"Impossible de configurer l\'appareil"</string>
-    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_subheader" msgid="5158035482490079567">"Impossible d\'enregistrer l\'appareil en mode entièrement géré. Rétablissez sa configuration d\'usine et contactez l\'administrateur informatique."</string>
-    <string name="fully_managed_device_reset_button" msgid="5957116315144904542">"Rétablir la configuration d\'usine"</string>
     <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"Les applis pros sont conservées dans votre profil pro et gérées par votre administrateur"</string>
     <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"Les applis perso sont distinctes des applis pro et non visibles par celles-ci"</string>
     <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"Votre administrateur informatique peut contrôler cet appareil et bloquer certaines applis"</string>
