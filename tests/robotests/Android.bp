@@ -24,9 +24,15 @@ android_robolectric_test {
         "androidx.test.rules",
         "androidx.core_core",
         "testng", // used only for assertThrows
+        "android_onboarding.contracts.testing",
+        "hilt_android_testing",
     ],
 
-    static_libs: ["managedprovisioning_protoslite"],
+    static_libs: [
+        "managedprovisioning_protoslite",
+        "flag-junit",
+        "platform-test-annotations",
+    ],
 
     instrumentation_for: "ManagedProvisioning",
 

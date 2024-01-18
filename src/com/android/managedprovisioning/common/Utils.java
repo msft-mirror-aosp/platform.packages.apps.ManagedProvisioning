@@ -26,8 +26,6 @@ import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 
 import static java.util.Objects.requireNonNull;
 
-import static java.util.Objects.requireNonNull;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StringRes;
@@ -844,7 +842,7 @@ public class Utils {
             .setText(label)
             .setListener(listener)
             .setButtonType(buttonType)
-            .setTheme(R.style.SudGlifButton_Primary)
+            .setTheme(com.google.android.setupdesign.R.style.SudGlifButton_Primary)
             .build();
         mixin.setPrimaryButton(primaryButton);
         return primaryButton;
@@ -867,7 +865,7 @@ public class Utils {
                 .setText(buttonLabel)
                 .setListener(listener)
                 .setButtonType(buttonType)
-                .setTheme(R.style.SudGlifButton_Secondary)
+                .setTheme(com.google.android.setupdesign.R.style.SudGlifButton_Secondary)
                 .build();
         mixin.setSecondaryButton(secondaryButton);
         return secondaryButton;
