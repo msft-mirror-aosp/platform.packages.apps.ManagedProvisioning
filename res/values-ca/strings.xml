@@ -29,7 +29,7 @@
     <string name="next" msgid="1004321437324424398">"Següent"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"S\'està configurant el perfil de treball…"</string>
     <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"El teu administrador de TI pot supervisar i gestionar la configuració, l\'accés corporatiu, les aplicacions, els permisos, les dades i l\'activitat de xarxa associats a aquest perfil, a més de l\'historial de trucades i l\'historial de cerques de contactes. Contacta amb l\'administrador de TI per obtenir més informació i consultar les polítiques de privadesa de la teva organització."</string>
-    <string name="admin_has_ability_to_monitor_device" msgid="7786186939607332934">"L\'administrador de TI pot supervisar i gestionar la configuració, l\'accés corporatiu, les aplicacions, els permisos i les dades associades a <xliff:g id="DEVICE_NAME">%1$s</xliff:g>, inclosa l\'activitat de xarxa, així com la ubicació, l\'historial de trucades i l\'historial de cerques de contactes al dispositiu.<xliff:g id="LINE_BREAK">
+    <string name="admin_has_ability_to_monitor_device" msgid="7786186939607332934">"L\'administrador de TI pot supervisar i gestionar la configuració, l\'accés corporatiu, les aplicacions, els permisos i les dades associades a <xliff:g id="DEVICE_NAME">%1$s</xliff:g>, inclosa l\'activitat de xarxa, així com la ubicació, l\'historial de trucades i l\'historial de cerques de contactes del dispositiu.<xliff:g id="LINE_BREAK">
 
 </xliff:g>Contacta amb l\'administrador de TI per obtenir més informació i consultar les polítiques de privadesa de la teva organització."</string>
     <string name="theft_protection_disabled_warning" msgid="3708092473574738478">"Per utilitzar les funcions de protecció antirobatori has de fer servir un bloqueig de pantalla protegit per contrasenya al dispositiu."</string>
@@ -161,7 +161,7 @@
     <string name="account_management_disclaimer_subheader" msgid="8991450067243733878">"El teu administrador de TI utilitza la gestió mòbil per aplicar les polítiques de seguretat"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"S\'està preparant per a la configuració de treball…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"Configurem el teu perfil de treball"</string>
-    <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Les aplicacions de treball es desen al teu perfil de treball"</string>
+    <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"Les aplicacions de treball es desaran al teu perfil de treball"</string>
     <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"Posa en pausa les aplicacions de treball quan hagis acabat la jornada"</string>
     <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"L\'administrador de TI pot veure les dades del teu perfil de treball"</string>
     <string name="work_profile_provisioning_progress_label" msgid="2627905308998389193">"S\'està configurant el perfil de treball…"</string>
@@ -180,9 +180,6 @@
     <string name="fully_managed_device_provisioning_return_device_subheader" msgid="6194410367910957686">"Torna a la pantalla anterior o bé restableix aquest dispositiu i retorna\'l al teu administrador de TI."</string>
     <string name="fully_managed_device_cancel_setup_button" msgid="4910041382610777599">"Cancel·la la configuració"</string>
     <string name="fully_managed_device_reset_and_return_button" msgid="6451125722998550681">"Restableix i retorna el dispositiu"</string>
-    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_header" msgid="7938653381656306039">"No es pot configurar el dispositiu"</string>
-    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_subheader" msgid="5158035482490079567">"Aquest dispositiu no es pot inscriure en el mode de dispositiu completament gestionat. Restableix les dades de fàbrica del dispositiu i contacta amb el teu administrador de TI."</string>
-    <string name="fully_managed_device_reset_button" msgid="5957116315144904542">"Restableix les dades de fàbrica"</string>
     <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"L\'administrador de TI gestiona les apps de treball, que es desen al perfil de treball."</string>
     <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"Les aplicacions personals estan separades de les del treball, i també amagades"</string>
     <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"L\'administrador de TI pot controlar el dispositiu i bloquejar determinades aplicacions"</string>
