@@ -191,6 +191,7 @@ public class Utils {
      * and return it.
      */
     @NonNull
+    @VisibleForTesting
     public ComponentName findDeviceAdmin(String dpcPackageName, ComponentName dpcComponentName,
             Context context, int userId) throws IllegalProvisioningArgumentException {
         if (dpcComponentName != null) {
@@ -357,9 +358,12 @@ public class Utils {
      * <p>Note that we currently only support one managed profile per device.
      */
     // TODO: Add unit tests
+    @Nullable
     public UserHandle getManagedProfile(Context context) {
         DevicePolicyManager devicePolicyManager =
-                context.getSystemService(DevicePolicyManager.class);
+                requireNonNull(
+                        /* obj= */ context.getSystemService(DevicePolicyManager.class),
+                        /* message= */ "Unable to obtain DevicePolicyManager");
         int currentUserId = UserHandle.myUserId();
         List<UserHandle> managedProfiles =
                 devicePolicyManager.getPolicyManagedProfiles(UserHandle.of(currentUserId));
@@ -838,7 +842,7 @@ public class Utils {
             .setText(label)
             .setListener(listener)
             .setButtonType(buttonType)
-            .setTheme(R.style.SudGlifButton_Primary)
+            .setTheme(com.google.android.setupdesign.R.style.SudGlifButton_Primary)
             .build();
         mixin.setPrimaryButton(primaryButton);
         return primaryButton;
@@ -861,7 +865,7 @@ public class Utils {
                 .setText(buttonLabel)
                 .setListener(listener)
                 .setButtonType(buttonType)
-                .setTheme(R.style.SudGlifButton_Secondary)
+                .setTheme(com.google.android.setupdesign.R.style.SudGlifButton_Secondary)
                 .build();
         mixin.setSecondaryButton(secondaryButton);
         return secondaryButton;
