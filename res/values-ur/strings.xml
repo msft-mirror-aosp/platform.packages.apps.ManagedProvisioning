@@ -160,7 +160,7 @@
     <string name="account_management_disclaimer_header" msgid="8013083414694316564">"آپ کا اکاؤنٹ نظم کردہ ہے"</string>
     <string name="account_management_disclaimer_subheader" msgid="8991450067243733878">"‏آپ کا IT منتظم سیکیورٹی پالیسیوں کو نافذ کرنے کیلئے موبائل کے نظم و نسق کا استعمال کرتا ہے"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"آلہ برائے دفتر کے سیٹ اپ کے لیے تیاری ہو رہی ہے…"</string>
-    <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"آئیے آپ کا دفتری پروفائل ترتیب دیں"</string>
+    <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"آئیے آپ کی دفتری پروفائل سیٹ اپ کریں"</string>
     <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"دفتری ایپس کو آپ کے دفتری پروفائل میں رکھا جاتا ہے"</string>
     <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"دن کا کام مکمل کر لینے کے بعد دفتری ایپس کو موقوف کریں"</string>
     <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"‏آپ کا IT منتظم آپ کی دفتری پروفائل میں موجود ڈیٹا دیکھ سکتا ہے"</string>
@@ -180,6 +180,9 @@
     <string name="fully_managed_device_provisioning_return_device_subheader" msgid="6194410367910957686">"‏پچھلی اسکرین پر واپس جائیں یا اس آلہ کو دوبارہ ترتیب دیں اور اسے اپنے IT منتظم کو واپس کریں۔"</string>
     <string name="fully_managed_device_cancel_setup_button" msgid="4910041382610777599">"سیٹ اپ منسوخ کریں"</string>
     <string name="fully_managed_device_reset_and_return_button" msgid="6451125722998550681">"ری سیٹ اور آلہ واپس کریں"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_header" msgid="7938653381656306039">"آلہ سیٹ اپ نہیں کیا جا سکتا"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_subheader" msgid="5158035482490079567">"‏اس آلے کا مکمل طور پر نظم شدہ وضع میں اندراج نہیں ہو سکتا۔ اپنے آلے کو فیکٹری ری سیٹ کریں اور اپنے IT منتظم سے رابطہ کریں۔"</string>
+    <string name="fully_managed_device_reset_button" msgid="5957116315144904542">"فیکٹری ری سیٹ کریں"</string>
     <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"‏دفتری ایپس آپکی دفتری پروفائل میں IT منتظم کے زیر انتظام ہوتی ہیں"</string>
     <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"ذاتی ایپس دفتری ایپس سے پوشیدہ اور علیحدہ ہوتی ہیں"</string>
     <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"‏آپکا IT منتظم یہ آلہ کنٹرول اور کچھ ایپس مسدود کرسکتا ہے"</string>
