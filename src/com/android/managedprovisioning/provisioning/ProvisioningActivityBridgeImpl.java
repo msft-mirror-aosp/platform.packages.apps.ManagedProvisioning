@@ -16,9 +16,12 @@
 
 package com.android.managedprovisioning.provisioning;
 
+import static android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE;
+
 import static com.google.android.setupdesign.util.ThemeHelper.shouldApplyMaterialYouStyle;
 
 import android.app.Activity;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -42,6 +45,7 @@ import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.setupdesign.GlifLayout;
 import com.google.android.setupdesign.util.ContentStyler;
 import com.google.android.setupdesign.util.DescriptionStyler;
+import com.google.android.setupdesign.util.DeviceHelper;
 import com.google.auto.value.AutoValue;
 
 import java.util.function.Supplier;
@@ -51,6 +55,7 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
 
     private TransitionAnimationHelper mTransitionAnimationHelper;
     private ViewGroup mButtonFooterContainer;
+    private Context mContext;
 
     abstract Utils getUtils();
     abstract ProvisioningParams getParams();
@@ -65,40 +70,49 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
 
     @Override
     public void initiateUi(Activity activity) {
-        boolean isPoProvisioning = getUtils().isProfileOwnerAction(getParams().provisioningAction);
-        int titleResId =
-                isPoProvisioning ? R.string.setup_profile_progress : R.string.setup_device_progress;
-        int layoutResId = getShouldSkipEducationScreens()
-                ? R.layout.empty_loading_layout
-                : R.layout.provisioning_progress;
+        Context context = activity.getApplicationContext();
+        CharSequence deviceName = DeviceHelper.getDeviceName(context);
 
-        getInitializeLayoutParamsConsumer().initializeLayoutParams(
-                layoutResId, /* headerResId */ null);
-        activity.setTitle(titleResId);
+        boolean isPoProvisioning = getUtils().isProfileOwnerAction(getParams().provisioningAction);
+        String title =
+                isPoProvisioning
+                        ? activity.getString(R.string.setup_profile_progress)
+                        : activity.getString(R.string.setup_device_progress, deviceName);
+        int layoutResId =
+                getShouldSkipEducationScreens()
+                        ? R.layout.empty_loading_layout
+                        : R.layout.provisioning_progress;
+
+        getInitializeLayoutParamsConsumer()
+                .initializeLayoutParams(layoutResId, /* headerResId */ null);
+        activity.setTitle(title);
 
         GlifLayout layout = activity.findViewById(R.id.setup_wizard_layout);
-        setupEducationViews(
-                layout, activity, getShouldSkipEducationScreens(), getProgressLabelResId());
+        setupEducationViews(layout, activity, getShouldSkipEducationScreens(),
+                getProgressLabelResId());
         if (getUtils().isFinancedDeviceAction(getParams().provisioningAction)) {
             // make the icon invisible
-            layout.findViewById(R.id.sud_layout_icon).setVisibility(View.INVISIBLE);
+            layout.findViewById(com.google.android.setupdesign.R.id.sud_layout_icon)
+                    .setVisibility(View.INVISIBLE);
         }
 
         Utils.addNextButton(layout, v -> getBridgeCallbacks().onNextButtonClicked());
-        //TODO(b/181323689): Add tests to ProvisioningActivityTest that the button is not
+        // TODO(b/181323689): Add tests to ProvisioningActivityTest that the button is not
         // shown for non-DO provisioning flows.
         if (getUtils().isDeviceOwnerAction(getParams().provisioningAction)) {
             Utils.addAbortAndResetButton(layout, v -> getBridgeCallbacks().onAbortButtonClicked());
         }
-        ViewGroup root = activity.findViewById(R.id.sud_layout_template_content);
+        ViewGroup root = activity.findViewById(
+                com.google.android.setupdesign.R.id.sud_layout_template_content);
         mButtonFooterContainer = getButtonFooterContainer(root);
+        mButtonFooterContainer.setAccessibilityLiveRegion(ACCESSIBILITY_LIVE_REGION_POLITE);
 
-        getUtils().onViewMeasured(
-                mButtonFooterContainer,
-                view -> onContainerMeasured(
-                        view,
-                        activity,
-                        getBridgeCallbacks()::isProvisioningFinalized));
+        getUtils()
+                .onViewMeasured(
+                        mButtonFooterContainer,
+                        view ->
+                                onContainerMeasured(view, activity,
+                                        getBridgeCallbacks()::isProvisioningFinalized));
     }
 
     private void onContainerMeasured(
@@ -161,10 +175,10 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
     }
 
     private void setupTransitionAnimationHelper(
-            GlifLayout layout,
-            TransitionAnimationCallback callback) {
-        TextView header = layout.findViewById(R.id.suc_layout_title);
-        TextView description = layout.findViewById(R.id.sud_layout_subtitle);
+            GlifLayout layout, TransitionAnimationCallback callback) {
+        TextView header = layout.findViewById(com.google.android.setupdesign.R.id.suc_layout_title);
+        TextView description =
+                layout.findViewById(com.google.android.setupdesign.R.id.sud_layout_subtitle);
         ViewGroup item1 = layout.findViewById(R.id.item1);
         ViewGroup item2 = layout.findViewById(R.id.item2);
         LottieAnimationView drawable = layout.findViewById(R.id.animation);
@@ -173,18 +187,21 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
         Space space2 = layout.findViewById(R.id.space2);
         AnimationComponents animationComponents =
                 new AnimationComponents(
-                        header, description, item1, item2, drawable, drawableContainer,
-                        space1, space2);
+                        header, description, item1, item2, drawable, drawableContainer, space1,
+                        space2);
 
-        ProvisioningModeWrapperProvider provider = new ProvisioningModeWrapperProvider(getParams());
-        ProvisioningModeWrapper provisioningModeWrapper = provider
-                .getProvisioningModeWrapper(getProvisioningMode());
-        mTransitionAnimationHelper = new TransitionAnimationHelper(
-                animationComponents,
-                callback,
-                getStateManager(),
-                new StylerHelper(),
-                provisioningModeWrapper);
+        ProvisioningModeWrapperProvider provider =
+                new ProvisioningModeWrapperProvider(getParams());
+        ProvisioningModeWrapper provisioningModeWrapper =
+                provider.getProvisioningModeWrapper(getProvisioningMode(),
+                        DeviceHelper.getDeviceName(layout.getContext()));
+        mTransitionAnimationHelper =
+                new TransitionAnimationHelper(
+                        animationComponents,
+                        callback,
+                        getStateManager(),
+                        new StylerHelper(),
+                        provisioningModeWrapper);
     }
 
     private void setupEducationViews(
@@ -194,7 +211,8 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
             @StringRes int progressLabelResId) {
         addProvisioningProgressLabel(activity);
         if (shouldSkipEducationScreens) {
-            TextView header = layout.findViewById(R.id.suc_layout_title);
+            TextView header =
+                    layout.findViewById(com.google.android.setupdesign.R.id.suc_layout_title);
             header.setText(progressLabelResId);
             getProvisioningProgressLabelContainer(activity).setVisibility(View.GONE);
         } else {
@@ -203,12 +221,14 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
     }
 
     private void addProvisioningProgressLabel(Activity activity) {
-        ViewGroup parent = activity.findViewById(R.id.sud_layout_template_content);
+        ViewGroup parent = activity.findViewById(
+                com.google.android.setupdesign.R.id.sud_layout_template_content);
         activity.getLayoutInflater().inflate(R.layout.label_provisioning_progress, parent, true);
     }
 
     private ViewGroup getProvisioningProgressLabelContainer(Activity activity) {
-        ViewGroup parent = activity.findViewById(R.id.sud_layout_template_content);
+        ViewGroup parent = activity.findViewById(
+                com.google.android.setupdesign.R.id.sud_layout_template_content);
         return parent.findViewById(R.id.provisioning_progress_container);
     }
 
@@ -229,7 +249,8 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
     }
 
     private TextView getRelevantProgressLabel(Activity activity) {
-        ViewGroup parent = (ViewGroup) activity.findViewById(R.id.suc_layout_footer).getParent();
+        ViewGroup parent = (ViewGroup) activity.findViewById(
+                com.google.android.setupdesign.R.id.suc_layout_footer).getParent();
         TextView provisioningProgressLabel = parent.findViewById(R.id.provisioning_progress);
         if (provisioningProgressLabel != null) {
             return provisioningProgressLabel;

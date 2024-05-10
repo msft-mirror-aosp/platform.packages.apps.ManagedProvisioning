@@ -27,7 +27,6 @@ import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.Intents.times;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
@@ -36,10 +35,10 @@ import static com.android.managedprovisioning.model.ProvisioningParams.EXTRA_PRO
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.RemoteException;
-import android.support.test.uiautomator.UiDevice;
 
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.SmallTest;
+import androidx.test.uiautomator.UiDevice;
 
 import com.android.managedprovisioning.R;
 import com.android.managedprovisioning.TestUtils;
@@ -152,7 +151,6 @@ public class LandingActivityTest {
         Intent intent = new Intent();
         intent.putExtra(EXTRA_PROVISIONING_PARAMS, params);
         mActivityRule.launchActivity(intent);
-        onView(withId(R.id.setup_wizard_layout));
     }
 
     private ProvisioningParams generateProvisioningParamsWithRequestedProvisioningModes(
@@ -168,7 +166,7 @@ public class LandingActivityTest {
         // see {@link AdminIntegratedFlowPrepareActivityTest}
         return createDefaultProvisioningParamsBuilder()
                 .setWifiInfo(new WifiInfo.Builder()
-                        .setSsid("ssid")
+                        .setSsid("\"ssid\"")
                         .build())
                 .build();
     }

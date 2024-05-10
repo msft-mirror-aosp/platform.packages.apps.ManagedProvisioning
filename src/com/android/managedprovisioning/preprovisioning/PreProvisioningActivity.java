@@ -72,6 +72,7 @@ import com.android.managedprovisioning.common.DefaultFeatureFlagChecker;
 import com.android.managedprovisioning.common.DefaultIntentResolverChecker;
 import com.android.managedprovisioning.common.DefaultPackageInstallChecker;
 import com.android.managedprovisioning.common.DeviceManagementRoleHolderUpdaterHelper;
+import com.android.managedprovisioning.common.Flags;
 import com.android.managedprovisioning.common.GetProvisioningModeUtils;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.ProvisionLogger;
@@ -85,14 +86,26 @@ import com.android.managedprovisioning.common.ThemeHelper;
 import com.android.managedprovisioning.common.ThemeHelper.DefaultNightModeChecker;
 import com.android.managedprovisioning.common.ThemeHelper.DefaultSetupWizardBridge;
 import com.android.managedprovisioning.common.Utils;
+import com.android.managedprovisioning.contracts.DownloadRoleHolderArguments;
+import com.android.managedprovisioning.contracts.DownloadRoleHolderContract;
 import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.preprovisioning.PreProvisioningActivityController.UiParams;
 import com.android.managedprovisioning.provisioning.AdminIntegratedFlowPrepareActivity;
 import com.android.managedprovisioning.provisioning.ProvisioningActivity;
+import com.android.managedprovisioning.util.LazyStringResource;
 
+import com.google.android.setupcompat.logging.ScreenKey;
+import com.google.android.setupcompat.logging.SetupMetric;
+import com.google.android.setupcompat.logging.SetupMetricsLogger;
 import com.google.android.setupcompat.util.WizardManagerHelper;
+import com.google.android.setupdesign.transition.TransitionHelper;
 
-public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
+import dagger.hilt.android.AndroidEntryPoint;
+
+import javax.inject.Inject;
+
+@AndroidEntryPoint(SetupGlifLayoutActivity.class)
+public class PreProvisioningActivity extends Hilt_PreProvisioningActivity implements
         SimpleDialog.SimpleDialogListener, PreProvisioningActivityController.Ui {
 
     private static final int ENCRYPT_DEVICE_REQUEST_CODE = 1;
@@ -117,9 +130,11 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     private static final String BACK_PRESSED_DIALOG_CLOSE_ACTIVITY =
             "PreProvBackPressedDialogCloseActivity";
     private static final String LAUNCHER_INVALID_DIALOG = "PreProvCurrentLauncherInvalidDialog";
+    private static final String SETUP_METRIC_PREPROVISIONING_SCREEN_NAME =
+            "ShowPreProvisioningScreen";
 
     private PreProvisioningActivityController mController;
-    private ControllerProvider mControllerProvider;
+    private final ControllerProvider mControllerProvider;
     private final AccessibilityContextMenuMaker mContextMenuMaker;
     private PreProvisioningActivityBridge mBridge;
     private boolean mShouldForwardTransition;
@@ -127,18 +142,26 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     private final RoleHolderProvider mRoleHolderProvider;
 
     private static final String ERROR_DIALOG_RESET = "ErrorDialogReset";
+    private static final int SETUP_METRIC_DEFAULT_ERROR_CODE = -1;
     private ProvisioningAnalyticsTracker mAnalyticsTracker;
     private boolean mAlreadyInitialized;
+    protected ScreenKey mScreenKey;
+    protected String setupMetricScreenName;
+
+    @Inject
+    protected Flags mFlags;
+    @Inject
+    protected DownloadRoleHolderContract mDownloadRoleHolderContract;
 
     public PreProvisioningActivity() {
         this(activity ->
-                new PreProvisioningActivityController(activity, activity),
+                        new PreProvisioningActivityController(activity, activity),
                 null,
                 new Utils(),
                 new SettingsFacade(),
                 new ThemeHelper(
-                    new DefaultNightModeChecker(),
-                    new DefaultSetupWizardBridge()),
+                        new DefaultNightModeChecker(),
+                        new DefaultSetupWizardBridge()),
                 RoleHolderProvider.DEFAULT,
                 RoleHolderUpdaterProvider.DEFAULT);
     }
@@ -169,6 +192,9 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
         }
 
         super.onCreate(savedInstanceState);
+        setupMetricScreenName = SETUP_METRIC_PREPROVISIONING_SCREEN_NAME;
+        mScreenKey = ScreenKey.of(setupMetricScreenName, this);
+
         if (savedInstanceState == null) {
             mAlreadyInitialized = false;
         }
@@ -197,8 +223,11 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     @Override
     protected void onResume() {
         super.onResume();
+        SetupMetricsLogger.logMetrics(this, mScreenKey,
+                SetupMetric.ofImpression(setupMetricScreenName));
         if (mShouldForwardTransition) {
-            overridePendingTransition(R.anim.sud_slide_next_in, R.anim.sud_slide_next_out);
+            TransitionHelper.applyForwardTransition(
+                    this, TransitionHelper.TRANSITION_FADE_THROUGH);
             mShouldForwardTransition = false;
         }
     }
@@ -209,7 +238,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                 mUtils,
                 PreProvisioningActivity.this::initializeLayoutParams,
                 createBridgeCallbacks(),
-                getThemeHelper());
+                getThemeHelper(),
+                setupMetricScreenName);
     }
 
     protected final PreProvisioningActivityBridgeCallbacks createBridgeCallbacks() {
@@ -291,6 +321,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                     ProvisionLogger.loge(
                             "Provisioning was aborted in the preparation stage, "
                                     + "requestCode = " + requestCode);
+                    SetupMetricsLogger.logMetrics(this, mScreenKey,
+                            SetupMetric.ofError(setupMetricScreenName, resultCode));
                     if (isDpcInstalled()
                             && mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
                         showFactoryResetDialog(R.string.cant_set_up_device,
@@ -306,11 +338,13 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
             case GET_PROVISIONING_MODE_REQUEST_CODE:
                 mShouldForwardTransition = true;
                 if (resultCode == RESULT_OK) {
-                    if(data != null && mController.updateProvisioningParamsFromIntent(data)) {
+                    if (data != null && mController.updateProvisioningParamsFromIntent(data)) {
                         mController.showUserConsentScreen();
                     } else {
                         ProvisionLogger.loge(
                                 "Invalid data object returned from GET_PROVISIONING_MODE.");
+                        SetupMetricsLogger.logMetrics(this, mScreenKey,
+                                SetupMetric.ofError(setupMetricScreenName, resultCode));
                         if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
                             showFactoryResetDialog(R.string.cant_set_up_device,
                                     R.string.contact_your_admin_for_help);
@@ -324,6 +358,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                 } else {
                     ProvisionLogger.loge("Invalid result code from GET_PROVISIONING_MODE. Expected "
                             + RESULT_OK + " but got " + resultCode + ".");
+                    SetupMetricsLogger.logMetrics(this, mScreenKey,
+                            SetupMetric.ofError(setupMetricScreenName, resultCode));
                     if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
                         showFactoryResetDialog(R.string.cant_set_up_device,
                                 R.string.contact_your_admin_for_help);
@@ -381,22 +417,30 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                         mAnalyticsTracker.logPlatformRoleHolderUpdateFailed();
                         ProvisionLogger.loge("Provisioning could not be started following "
                                 + "platform-side role holder download.");
+                        SetupMetricsLogger.logMetrics(this, mScreenKey,
+                                SetupMetric.ofError(setupMetricScreenName, resultCode));
                         showRoleHolderDownloadFailedDialog(new Intent());
                     }
                 } else if (data != null && data.hasExtra(EXTRA_ERROR_MESSAGE_RES_ID)) {
                     mAnalyticsTracker.logPlatformRoleHolderUpdateFailed();
                     ProvisionLogger.loge("Role holder download failed and offline provisioning is "
                             + "not allowed.");
+                    SetupMetricsLogger.logMetrics(this, mScreenKey,
+                            SetupMetric.ofError(setupMetricScreenName, resultCode));
                     showRoleHolderDownloadFailedDialog(data);
                 } else {
                     mAnalyticsTracker.logPlatformRoleHolderUpdateFailed();
                     ProvisionLogger.loge("Role holder download failed and offline provisioning is "
                             + "not allowed.");
+                    SetupMetricsLogger.logMetrics(this, mScreenKey,
+                            SetupMetric.ofError(setupMetricScreenName, resultCode));
                     showRoleHolderDownloadFailedDialog(new Intent());
                 }
                 break;
             default:
                 ProvisionLogger.logw("Unknown result code :" + resultCode);
+                SetupMetricsLogger.logMetrics(this, mScreenKey,
+                        SetupMetric.ofError(setupMetricScreenName, resultCode));
                 break;
         }
     }
@@ -405,6 +449,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
         if (!(data.getParcelableExtra(DevicePolicyManager.EXTRA_ROLE_HOLDER_STATE)
                 instanceof PersistableBundle)) {
             ProvisionLogger.loge("Failed to process role holder state result.");
+            SetupMetricsLogger.logMetrics(this, mScreenKey,
+                    SetupMetric.ofError(setupMetricScreenName, SETUP_METRIC_DEFAULT_ERROR_CODE));
             if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
                 showFactoryResetDialog(R.string.cant_set_up_device,
                         R.string.contact_your_admin_for_help);
@@ -423,7 +469,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
         if (TextUtils.isEmpty(
                 mRoleHolderUpdaterProvider.getPackageName(this))) {
             ProvisionLogger.logw("Role holder requested update, but there is no role "
-                            + "holder updater present. Restarting the role holder.");
+                    + "holder updater present. Restarting the role holder.");
             boolean isProvisioningStarted = mController.startAppropriateProvisioning(
                     getIntent(),
                     createRoleHolderAdditionalExtras(resultCode),
@@ -434,6 +480,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                         + "role holder-requested role holder update and no updater "
                         + "present. Result is " + resultCode + " and allow offline "
                         + "provisioning is " + mController.getParams().allowOffline);
+                SetupMetricsLogger.logMetrics(this, mScreenKey,
+                        SetupMetric.ofError(setupMetricScreenName, resultCode));
             }
             return true;
         }
@@ -468,15 +516,26 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                     createRoleHolderAdditionalExtras(resultCode),
                     getCallingPackage());
             if (!isProvisioningStarted) {
-                mAnalyticsTracker.logRoleHolderUpdaterUpdateFailed();
-                failRoleHolderUpdate();
-                ProvisionLogger.loge("Failed to start provisioning after a "
-                        + "platform-requested role holder update. Result is " + resultCode
-                        + " and allow offline provisioning is "
-                        + mController.getParams().allowOffline);
+                if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+                    ProvisionLogger.logi("Result is " + resultCode
+                            + " and applied fallback strategy.");
+                    mController.performPlatformProvidedProvisioning();
+                } else {
+                    mAnalyticsTracker.logRoleHolderUpdaterUpdateFailed();
+                    failRoleHolderUpdate();
+                    ProvisionLogger.loge("Failed to start provisioning after a "
+                            + "platform-requested role holder update. Result is " + resultCode
+                            + " and allow offline provisioning is "
+                            + mController.getParams().allowOffline);
+                    SetupMetricsLogger.logMetrics(this, mScreenKey,
+                            SetupMetric.ofError(setupMetricScreenName, resultCode));
+                }
             }
-        } else if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)
-                || mController.getParams().allowOffline) {
+        } else if (mController.getParams().allowOffline) {
+            ProvisionLogger.logi("Result is " + resultCode + ". Allowed offline provisioning.");
+            mController.performPlatformProvidedProvisioning();
+        } else if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+            ProvisionLogger.logi("Result is " + resultCode + " and applied fallback strategy.");
             mController.performPlatformProvidedProvisioning();
         } else {
             mAnalyticsTracker.logRoleHolderUpdaterUpdateFailed();
@@ -484,6 +543,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
             ProvisionLogger.loge("Failed to perform a platform-requested role holder "
                     + "update. Result is " + resultCode + " and allow offline provisioning"
                     + " is " + mController.getParams().allowOffline);
+            SetupMetricsLogger.logMetrics(this, mScreenKey,
+                    SetupMetric.ofError(setupMetricScreenName, resultCode));
         }
     }
 
@@ -505,20 +566,33 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                     createRoleHolderAdditionalExtras(resultCode),
                     getCallingPackage());
             if (!isProvisioningStarted) {
-                failRoleHolderUpdate();
-                ProvisionLogger.loge("Failed to start provisioning after a "
-                        + "role holder-requested role holder update. Result is "
-                        + resultCode + " and allow offline provisioning is "
-                        + mController.getParams().allowOffline);
+                if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+                    ProvisionLogger.logi("Result is " + resultCode
+                            + " and applied fallback strategy.");
+                    mController.performPlatformProvidedProvisioning();
+                } else {
+                    failRoleHolderUpdate();
+                    ProvisionLogger.loge("Failed to start provisioning after a "
+                            + "role holder-requested role holder update. Result is "
+                            + resultCode + " and allow offline provisioning is "
+                            + mController.getParams().allowOffline);
+                    SetupMetricsLogger.logMetrics(this, mScreenKey,
+                            SetupMetric.ofError(setupMetricScreenName, resultCode));
+                }
             }
-        } else if (mController.getParams().allowOffline
-                || isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+        } else if (mController.getParams().allowOffline) {
+            ProvisionLogger.logi("Result is " + resultCode + ". Allowed offline provisioning.");
+            mController.performPlatformProvidedProvisioning();
+        } else if (isRoleHolderUpdaterRequestingPlatformDrivenProvisioning(resultData)) {
+            ProvisionLogger.logi("Result is " + resultCode + " and applied fallback strategy.");
             mController.performPlatformProvidedProvisioning();
         } else {
             failRoleHolderUpdate();
             ProvisionLogger.loge("Failed to perform a role holder-requested role holder "
                     + "update. Result is " + resultCode + " and allow offline provisioning"
                     + " is " + mController.getParams().allowOffline);
+            SetupMetricsLogger.logMetrics(this, mScreenKey,
+                    SetupMetric.ofError(setupMetricScreenName, resultCode));
         }
     }
 
@@ -555,6 +629,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
 
     private void failRoleHolderUpdate() {
         ProvisionLogger.loge("Update failed and offline provisioning is not allowed.");
+        SetupMetricsLogger.logMetrics(this, mScreenKey,
+                SetupMetric.ofError(setupMetricScreenName, SETUP_METRIC_DEFAULT_ERROR_CODE));
         if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
             showFactoryResetDialog(R.string.cant_set_up_device,
                     R.string.contact_your_admin_for_help);
@@ -603,15 +679,27 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     }
 
     @Override
-    public void showErrorAndClose(Integer titleId, int messageId, String logText) {
+    public void showErrorAndClose(Integer titleId, int messageId, String logMessage) {
+        showErrorAndClose(LazyStringResource.of(titleId), LazyStringResource.of(messageId),
+                logMessage);
+    }
+
+    @Override
+    public void showErrorAndClose(
+            LazyStringResource title, LazyStringResource message, String logMessage) {
+        SimpleDialog.Builder dialogBuilder =
+                new SimpleDialog.Builder().setTitle(title).setMessage(message);
+        setShowErrorAndCloseParams(dialogBuilder, logMessage);
+    }
+
+    private void setShowErrorAndCloseParams(SimpleDialog.Builder dialogBuilder, String logText) {
         ProvisionLogger.loge(logText);
 
-        SimpleDialog.Builder dialogBuilder = new SimpleDialog.Builder()
-                .setTitle(titleId)
-                .setMessage(messageId)
-                .setCancelable(false)
-                .setPositiveButtonMessage(R.string.device_owner_error_ok);
-        showDialog(dialogBuilder, ERROR_AND_CLOSE_DIALOG);
+        SimpleDialog.Builder builder =
+                dialogBuilder
+                        .setCancelable(false)
+                        .setPositiveButtonMessage(R.string.device_owner_error_ok);
+        showDialog(builder, ERROR_AND_CLOSE_DIALOG);
     }
 
     @Override
@@ -726,7 +814,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                         isRoleHolderRequestedUpdate));
         mAnalyticsTracker.logRoleHolderUpdaterUpdateStart();
         getTransitionHelper().startActivityForResultWithTransition(
-                 this,
+                this,
                 intent,
                 isRoleHolderRequestedUpdate
                         ? START_ROLE_HOLDER_REQUESTED_UPDATE_REQUEST_CODE
@@ -746,22 +834,30 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
 
     @Override
     public void onParamsValidated(ProvisioningParams params) {
-        if (params.keepScreenOn) {
-            ManagedProvisioningBaseApplication application =
-                    (ManagedProvisioningBaseApplication) getApplication();
-            application.markKeepScreenOn();
-            application.maybeKeepScreenOn(this);
-        }
+        ManagedProvisioningBaseApplication application =
+                (ManagedProvisioningBaseApplication) getApplication();
+        application.keepScreenOn(this);
     }
 
     @Override
     public void startPlatformDrivenRoleHolderDownload() {
         mAnalyticsTracker.logPlatformRoleHolderUpdateStart();
-        Intent intent = new Intent(this,
-                getActivityForScreen(ManagedProvisioningScreens.DOWNLOAD_ROLE_HOLDER));
-        WizardManagerHelper.copyWizardManagerExtras(getIntent(), intent);
-        intent.putExtra(ProvisioningParams.EXTRA_PROVISIONING_PARAMS,
-                mController.getParams());
+
+        Intent intent;
+        if (mFlags.isCosmicRayEnabled()) {
+            intent = mDownloadRoleHolderContract.createIntent(
+                    this,
+                    new DownloadRoleHolderArguments(
+                            mDownloadRoleHolderContract.getSuwArgumentsSerializer().read(
+                                    getIntent()),
+                            requireNonNull(mController.getParams())));
+        } else {
+            intent = new Intent(this,
+                    getActivityForScreen(ManagedProvisioningScreens.DOWNLOAD_ROLE_HOLDER));
+            WizardManagerHelper.copyWizardManagerExtras(getIntent(), intent);
+            intent.putExtra(ProvisioningParams.EXTRA_PROVISIONING_PARAMS,
+                    mController.getParams());
+        }
         getTransitionHelper().startActivityForResultWithTransition(
                 this, intent, DOWNLOAD_DEVICE_MANAGEMENT_ROLE_HOLDER_FROM_PLATFORM_REQUEST_CODE);
     }
@@ -776,6 +872,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     /**
      * Starts {@link ProvisioningActivity}.
      */
+    @Override
     public void startProvisioning(ProvisioningParams params) {
         Intent intent = new Intent(this,
                 getActivityForScreen(ManagedProvisioningScreens.PROVISIONING));
@@ -787,6 +884,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
 
     // TODO: The below group of methods do not belong in the activity.
     // Move them to the controller instead.
+
     /**
      * Starts either the admin-integrated or the legacy flow, depending on the device state and
      * DPC capabilities.
@@ -803,6 +901,8 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
             ProvisionLogger.loge("The admin app does not have handlers for both "
                     + "ACTION_GET_PROVISIONING_MODE and ACTION_ADMIN_POLICY_COMPLIANCE "
                     + "intent actions.");
+            SetupMetricsLogger.logMetrics(this, mScreenKey,
+                    SetupMetric.ofError(setupMetricScreenName, SETUP_METRIC_DEFAULT_ERROR_CODE));
             if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
                 showFactoryResetDialog(R.string.cant_set_up_device,
                         R.string.contact_your_admin_for_help);
@@ -878,7 +978,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     @Override
     public void onBackPressed() {
         if (mUtils.isOrganizationOwnedAllowed(mController.getParams())) {
-            showDialog(mUtils.createCancelProvisioningResetDialogBuilder(),
+            showDialog(mUtils.createCancelProvisioningResetDialogBuilder(getApplicationContext()),
                     BACK_PRESSED_DIALOG_RESET);
         } else {
             showDialog(mUtils.createCancelProvisioningDialogBuilder(),
