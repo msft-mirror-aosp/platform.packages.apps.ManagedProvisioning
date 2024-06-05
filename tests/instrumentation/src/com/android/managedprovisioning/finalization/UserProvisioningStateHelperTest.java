@@ -16,6 +16,7 @@
 
 package com.android.managedprovisioning.finalization;
 
+import static android.app.admin.DeviceAdminInfo.HEADLESS_DEVICE_OWNER_MODE_AFFILIATED;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_PROFILE_COMPLETE;
@@ -35,7 +36,8 @@ import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.os.UserHandle;
 import android.test.AndroidTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.Utils;
@@ -162,6 +164,9 @@ public class UserProvisioningStateHelperTest extends AndroidTestCase {
     @SmallTest
     public void testFinalized_DeviceOwner_HeadlessSystemUser() {
         setHeadlessSystemUserMode();
+        when(mDevicePolicyManager.getHeadlessDeviceOwnerMode())
+                .thenReturn(HEADLESS_DEVICE_OWNER_MODE_AFFILIATED);
+
         // GIVEN that we've provisioned a device owner with skip user setup false
         final ProvisioningParams params = createProvisioningParams(ACTION_PROVISION_MANAGED_DEVICE);
 
