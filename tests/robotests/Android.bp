@@ -2,6 +2,7 @@
 // ManagedProvisioning Robolectric test target.              #
 //############################################################
 package {
+    default_team: "trendy_team_enterprise",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -24,9 +25,15 @@ android_robolectric_test {
         "androidx.test.rules",
         "androidx.core_core",
         "testng", // used only for assertThrows
+        "android_onboarding.contracts.testing",
+        "hilt_android_testing",
     ],
 
-    static_libs: ["managedprovisioning_protoslite"],
+    static_libs: [
+        "managedprovisioning_protoslite",
+        "flag-junit",
+        "platform-test-annotations",
+    ],
 
     instrumentation_for: "ManagedProvisioning",
 

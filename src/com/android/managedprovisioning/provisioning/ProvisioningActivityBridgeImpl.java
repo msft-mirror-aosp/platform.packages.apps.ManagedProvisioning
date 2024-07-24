@@ -22,6 +22,7 @@ import static com.google.android.setupdesign.util.ThemeHelper.shouldApplyMateria
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.Layout;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -92,7 +93,8 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
                 getProgressLabelResId());
         if (getUtils().isFinancedDeviceAction(getParams().provisioningAction)) {
             // make the icon invisible
-            layout.findViewById(R.id.sud_layout_icon).setVisibility(View.INVISIBLE);
+            layout.findViewById(com.google.android.setupdesign.R.id.sud_layout_icon)
+                    .setVisibility(View.INVISIBLE);
         }
 
         Utils.addNextButton(layout, v -> getBridgeCallbacks().onNextButtonClicked());
@@ -101,7 +103,8 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
         if (getUtils().isDeviceOwnerAction(getParams().provisioningAction)) {
             Utils.addAbortAndResetButton(layout, v -> getBridgeCallbacks().onAbortButtonClicked());
         }
-        ViewGroup root = activity.findViewById(R.id.sud_layout_template_content);
+        ViewGroup root = activity.findViewById(
+                com.google.android.setupdesign.R.id.sud_layout_template_content);
         mButtonFooterContainer = getButtonFooterContainer(root);
         mButtonFooterContainer.setAccessibilityLiveRegion(ACCESSIBILITY_LIVE_REGION_POLITE);
 
@@ -174,8 +177,11 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
 
     private void setupTransitionAnimationHelper(
             GlifLayout layout, TransitionAnimationCallback callback) {
-        TextView header = layout.findViewById(R.id.suc_layout_title);
-        TextView description = layout.findViewById(R.id.sud_layout_subtitle);
+        TextView header = layout.findViewById(com.google.android.setupdesign.R.id.suc_layout_title);
+        TextView description =
+                layout.findViewById(com.google.android.setupdesign.R.id.sud_layout_subtitle);
+        // No hyphenation split word in header
+        header.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL);
         ViewGroup item1 = layout.findViewById(R.id.item1);
         ViewGroup item2 = layout.findViewById(R.id.item2);
         LottieAnimationView drawable = layout.findViewById(R.id.animation);
@@ -208,7 +214,8 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
             @StringRes int progressLabelResId) {
         addProvisioningProgressLabel(activity);
         if (shouldSkipEducationScreens) {
-            TextView header = layout.findViewById(R.id.suc_layout_title);
+            TextView header =
+                    layout.findViewById(com.google.android.setupdesign.R.id.suc_layout_title);
             header.setText(progressLabelResId);
             getProvisioningProgressLabelContainer(activity).setVisibility(View.GONE);
         } else {
@@ -217,12 +224,14 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
     }
 
     private void addProvisioningProgressLabel(Activity activity) {
-        ViewGroup parent = activity.findViewById(R.id.sud_layout_template_content);
+        ViewGroup parent = activity.findViewById(
+                com.google.android.setupdesign.R.id.sud_layout_template_content);
         activity.getLayoutInflater().inflate(R.layout.label_provisioning_progress, parent, true);
     }
 
     private ViewGroup getProvisioningProgressLabelContainer(Activity activity) {
-        ViewGroup parent = activity.findViewById(R.id.sud_layout_template_content);
+        ViewGroup parent = activity.findViewById(
+                com.google.android.setupdesign.R.id.sud_layout_template_content);
         return parent.findViewById(R.id.provisioning_progress_container);
     }
 
@@ -243,7 +252,8 @@ abstract class ProvisioningActivityBridgeImpl implements ProvisioningActivityBri
     }
 
     private TextView getRelevantProgressLabel(Activity activity) {
-        ViewGroup parent = (ViewGroup) activity.findViewById(R.id.suc_layout_footer).getParent();
+        ViewGroup parent = (ViewGroup) activity.findViewById(
+                com.google.android.setupdesign.R.id.suc_layout_footer).getParent();
         TextView provisioningProgressLabel = parent.findViewById(R.id.provisioning_progress);
         if (provisioningProgressLabel != null) {
             return provisioningProgressLabel;

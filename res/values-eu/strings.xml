@@ -85,7 +85,7 @@
     <string name="device_has_reset_protection_contact_admin" msgid="5922267426079555686">"Jatorrizko datuak berrezartzearen aurkako babesa aktibatuta dauka <xliff:g id="DEVICE_NAME">%1$s</xliff:g> gailuak. Laguntza lortzeko, jarri IKT saileko administratzailearekin harremanetan."</string>
     <string name="frp_clear_progress_title" msgid="8628074089458234965">"Ezabatzen"</string>
     <string name="frp_clear_progress_text" msgid="1740164332830598827">"Itxaron, mesedez…"</string>
-    <string name="error_hash_mismatch" msgid="1145488923243178454">"Ezin izan da erabili gailua administratzeko aplikazioa, errore bat gertatu delako batuketa egitean. Laguntza lortzeko, jarri IKT saileko administratzailearekin harremanetan."</string>
+    <string name="error_hash_mismatch" msgid="1145488923243178454">"Ezin izan da erabili gailua administratzeko aplikazioa, errore bat gertatu delako egiaztapen-batuketa egitean. Laguntza lortzeko, jarri IKT saileko administratzailearekin harremanetan."</string>
     <string name="error_download_failed" msgid="3274283629837019452">"Ezin izan da deskargatu administratzeko aplikazioa"</string>
     <string name="error_package_invalid" msgid="555402554502033988">"Ezin da erabili gailua administratzeko aplikazioa. Osagaiak falta zaizkio edo hondatuta dago. Laguntza lortzeko, jarri IKT saileko administratzailearekin harremanetan."</string>
     <string name="error_installation_failed" msgid="2282903750318407285">"Ezin izan da instalatu administratzeko aplikazioa"</string>
@@ -93,7 +93,7 @@
     <string name="profile_owner_cancel_cancel" msgid="4408725524311574891">"Ez"</string>
     <string name="profile_owner_cancel_ok" msgid="5951679183850766029">"Bai"</string>
     <string name="profile_owner_cancelling" msgid="5679573829145112822">"Bertan behera uzten…"</string>
-    <string name="work_profile_setup_later_title" msgid="9069148190226279892">"Profilaren konfigurazio-prozesua gelditu?"</string>
+    <string name="work_profile_setup_later_title" msgid="9069148190226279892">"Profila konfiguratzeko prozesua gelditu?"</string>
     <string name="work_profile_setup_later_message" msgid="122069011117225292">"Geroago ere konfigura dezakezu laneko profila erakundeak gailua kudeatzeko duen aplikazioan"</string>
     <string name="continue_button" msgid="7177918589510964446">"Egin aurrera"</string>
     <string name="work_profile_setup_stop" msgid="6772128629992514750">"Gelditu"</string>
@@ -180,9 +180,12 @@
     <string name="fully_managed_device_provisioning_return_device_subheader" msgid="6194410367910957686">"Itzuli aurreko pantailara, edo berrezarri gailua eta itzul iezaiozu IKT saileko administratzaileari."</string>
     <string name="fully_managed_device_cancel_setup_button" msgid="4910041382610777599">"Utzi konfiguratzeari"</string>
     <string name="fully_managed_device_reset_and_return_button" msgid="6451125722998550681">"Berrezarri eta itzuli gailua"</string>
-    <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"Laneko aplikazioak laneko profilean egongo dira (IKT saileko administratzaileak kudeatuta)"</string>
-    <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"Aplikazio pertsonalak bananduta daude eta ez daude lanekoen artean ikusgai"</string>
-    <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"IKT saileko administratzaileak gailu hau kontrola dezake, eta zenbait aplikazio blokeatu"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_header" msgid="7938653381656306039">"Ezin da konfiguratu gailua"</string>
+    <string name="fully_managed_device_unsupported_DPC_in_headless_mode_subheader" msgid="5158035482490079567">"Ezin da erregistratu gailua guztiz kudeatutako moduan. Berrezarri gailuaren jatorrizko datuak eta jarri IKT saileko administratzailearekin harremanetan."</string>
+    <string name="fully_managed_device_reset_button" msgid="5957116315144904542">"Berrezarri jatorrizko datuak"</string>
+    <string name="cope_provisioning_step_1_header" msgid="1945759718804756423">"Laneko aplik. laneko profilean daude (IKT administr. kudeatuta)"</string>
+    <string name="cope_provisioning_step_2_header" msgid="2388399739294883042">"Aplik. perts. bananduta. Ez daude lanekoen artean ikusgai."</string>
+    <string name="cope_provisioning_step_3_header" msgid="7161795433847296201">"Admin. gailua kontrola dezake, eta zenbait aplik. blokeatu"</string>
     <string name="cope_provisioning_summary" msgid="4993405755138454918">"Laneko aplikazioak laneko profilean gordetzen dira, eta IKT saileko administratzaileak kudeatzen ditu. Aplikazio pertsonalak bereizita daude eta ez daude laneko aplikazioen artean ikusgai. IKT saileko administratzaileak <xliff:g id="DEVICE_NAME">%1$s</xliff:g> gailua kontrola dezake, eta aplikazio jakin batzuk blokeatu."</string>
     <string name="just_a_sec" msgid="6244676028626237220">"Itxaron unetxo batean…"</string>
     <string name="fully_managed_device_provisioning_privacy_title" msgid="4017627906103556021">"Pribatutasun-abisua"</string>
@@ -192,7 +195,7 @@
     <string name="financed_make_payments_subheader_description" msgid="7391276584735956742">"<xliff:g id="CREDITOR_NAME_0">%1$s</xliff:g> erakundeak <xliff:g id="CREDITOR_NAME_1">%2$s</xliff:g> aplikazioa instala dezake <xliff:g id="DEVICE_NAME">%3$s</xliff:g> gailuarekin erlazionatutako ordainketak egin ahal izan ditzazun."</string>
     <string name="financed_restrict_device_subheader_title" msgid="4248650736543742083">"Murriztapenak ezar daitezke <xliff:g id="DEVICE_NAME">%1$s</xliff:g> gailuan"</string>
     <string name="financed_restrict_device_subheader_description" msgid="1539908048861880628">"<xliff:g id="CREDITOR_NAME">%1$s</xliff:g> erakundeak <xliff:g id="DEVICE_NAME">%2$s</xliff:g> gailurako sarbidea muga dezake ordainketarik egiten ez baduzu."</string>
-    <string name="error_role_holder_hash_mismatch" msgid="5098975629103567172">"Ezin da konfiguratu <xliff:g id="DEVICE_NAME">%1$s</xliff:g> gailua. Jarri IKT saileko administratzailearekin harremanetan eta eman \"Egiaztapeneko baturak ez du balio\" erreferentzia gisa."</string>
+    <string name="error_role_holder_hash_mismatch" msgid="5098975629103567172">"Ezin da konfiguratu <xliff:g id="DEVICE_NAME">%1$s</xliff:g> gailua. Jarri IKT saileko administratzailearekin harremanetan eta eman \"Egiaztapen-batuketak ez du balio\" erreferentzia gisa."</string>
     <string name="error_role_holder_download_install_failed" msgid="8151968372180693228">"Saiatu berriro geroago edo eskatu laguntza IKT saileko administratzaileari"</string>
     <string name="error_role_holder_package_invalid" msgid="8159929740916126242">"Ezin da konfiguratu <xliff:g id="DEVICE_NAME">%1$s</xliff:g> gailua. Jarri IKT saileko administratzailearekin harremanetan eta eman \"Osagaiak falta dira edo hondatuta daude\" erreferentzia gisa."</string>
     <string name="setting_up" msgid="1478847967385506664">"Konfiguratzen…"</string>

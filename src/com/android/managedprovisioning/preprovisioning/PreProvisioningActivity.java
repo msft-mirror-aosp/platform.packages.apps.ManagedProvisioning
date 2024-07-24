@@ -29,7 +29,6 @@ import static android.app.admin.DevicePolicyManager.ROLE_HOLDER_UPDATE_FAILURE_S
 import static android.app.admin.DevicePolicyManager.ROLE_HOLDER_UPDATE_FAILURE_STRATEGY_FALLBACK_TO_PLATFORM_PROVISIONING;
 import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
-
 import static com.android.managedprovisioning.ManagedProvisioningScreens.RETRY_LAUNCH;
 import static com.android.managedprovisioning.common.ErrorDialogUtils.EXTRA_DIALOG_TITLE_ID;
 import static com.android.managedprovisioning.common.ErrorDialogUtils.EXTRA_ERROR_MESSAGE_RES_ID;
@@ -39,9 +38,7 @@ import static com.android.managedprovisioning.model.ProvisioningParams.FLOW_TYPE
 import static com.android.managedprovisioning.preprovisioning.PreProvisioningViewModel.STATE_PREPROVISIONING_INITIALIZING;
 import static com.android.managedprovisioning.preprovisioning.PreProvisioningViewModel.STATE_SHOWING_USER_CONSENT;
 import static com.android.managedprovisioning.provisioning.Constants.PROVISIONING_SERVICE_INTENT;
-
 import static com.google.android.setupcompat.util.WizardManagerHelper.EXTRA_IS_SETUP_FLOW;
-
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
@@ -72,6 +69,7 @@ import com.android.managedprovisioning.common.DefaultFeatureFlagChecker;
 import com.android.managedprovisioning.common.DefaultIntentResolverChecker;
 import com.android.managedprovisioning.common.DefaultPackageInstallChecker;
 import com.android.managedprovisioning.common.DeviceManagementRoleHolderUpdaterHelper;
+import com.android.managedprovisioning.common.Flags;
 import com.android.managedprovisioning.common.GetProvisioningModeUtils;
 import com.android.managedprovisioning.common.ManagedProvisioningSharedPreferences;
 import com.android.managedprovisioning.common.ProvisionLogger;
@@ -85,19 +83,25 @@ import com.android.managedprovisioning.common.ThemeHelper;
 import com.android.managedprovisioning.common.ThemeHelper.DefaultNightModeChecker;
 import com.android.managedprovisioning.common.ThemeHelper.DefaultSetupWizardBridge;
 import com.android.managedprovisioning.common.Utils;
+import com.android.managedprovisioning.contracts.DownloadRoleHolderArguments;
+import com.android.managedprovisioning.contracts.DownloadRoleHolderContract;
 import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.preprovisioning.PreProvisioningActivityController.UiParams;
 import com.android.managedprovisioning.provisioning.AdminIntegratedFlowPrepareActivity;
 import com.android.managedprovisioning.provisioning.ProvisioningActivity;
 import com.android.managedprovisioning.util.LazyStringResource;
-
 import com.google.android.setupcompat.logging.ScreenKey;
 import com.google.android.setupcompat.logging.SetupMetric;
 import com.google.android.setupcompat.logging.SetupMetricsLogger;
 import com.google.android.setupcompat.util.WizardManagerHelper;
 import com.google.android.setupdesign.transition.TransitionHelper;
 
-public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint(SetupGlifLayoutActivity.class)
+public class PreProvisioningActivity extends Hilt_PreProvisioningActivity implements
         SimpleDialog.SimpleDialogListener, PreProvisioningActivityController.Ui {
 
     private static final int ENCRYPT_DEVICE_REQUEST_CODE = 1;
@@ -126,7 +130,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
             "ShowPreProvisioningScreen";
 
     private PreProvisioningActivityController mController;
-    private ControllerProvider mControllerProvider;
+    private final ControllerProvider mControllerProvider;
     private final AccessibilityContextMenuMaker mContextMenuMaker;
     private PreProvisioningActivityBridge mBridge;
     private boolean mShouldForwardTransition;
@@ -140,15 +144,20 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     protected ScreenKey mScreenKey;
     protected String setupMetricScreenName;
 
+    @Inject
+    protected Flags mFlags;
+    @Inject
+    protected DownloadRoleHolderContract mDownloadRoleHolderContract;
+
     public PreProvisioningActivity() {
         this(activity ->
-                new PreProvisioningActivityController(activity, activity),
+                        new PreProvisioningActivityController(activity, activity),
                 null,
                 new Utils(),
                 new SettingsFacade(),
                 new ThemeHelper(
-                    new DefaultNightModeChecker(),
-                    new DefaultSetupWizardBridge()),
+                        new DefaultNightModeChecker(),
+                        new DefaultSetupWizardBridge()),
                 RoleHolderProvider.DEFAULT,
                 RoleHolderUpdaterProvider.DEFAULT);
     }
@@ -325,7 +334,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
             case GET_PROVISIONING_MODE_REQUEST_CODE:
                 mShouldForwardTransition = true;
                 if (resultCode == RESULT_OK) {
-                    if(data != null && mController.updateProvisioningParamsFromIntent(data)) {
+                    if (data != null && mController.updateProvisioningParamsFromIntent(data)) {
                         mController.showUserConsentScreen();
                     } else {
                         ProvisionLogger.loge(
@@ -456,7 +465,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
         if (TextUtils.isEmpty(
                 mRoleHolderUpdaterProvider.getPackageName(this))) {
             ProvisionLogger.logw("Role holder requested update, but there is no role "
-                            + "holder updater present. Restarting the role holder.");
+                    + "holder updater present. Restarting the role holder.");
             boolean isProvisioningStarted = mController.startAppropriateProvisioning(
                     getIntent(),
                     createRoleHolderAdditionalExtras(resultCode),
@@ -511,9 +520,9 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                     mAnalyticsTracker.logRoleHolderUpdaterUpdateFailed();
                     failRoleHolderUpdate();
                     ProvisionLogger.loge("Failed to start provisioning after a "
-                        + "platform-requested role holder update. Result is " + resultCode
-                        + " and allow offline provisioning is "
-                        + mController.getParams().allowOffline);
+                            + "platform-requested role holder update. Result is " + resultCode
+                            + " and allow offline provisioning is "
+                            + mController.getParams().allowOffline);
                     SetupMetricsLogger.logMetrics(this, mScreenKey,
                             SetupMetric.ofError(setupMetricScreenName, resultCode));
                 }
@@ -801,7 +810,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
                         isRoleHolderRequestedUpdate));
         mAnalyticsTracker.logRoleHolderUpdaterUpdateStart();
         getTransitionHelper().startActivityForResultWithTransition(
-                 this,
+                this,
                 intent,
                 isRoleHolderRequestedUpdate
                         ? START_ROLE_HOLDER_REQUESTED_UPDATE_REQUEST_CODE
@@ -829,11 +838,22 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
     @Override
     public void startPlatformDrivenRoleHolderDownload() {
         mAnalyticsTracker.logPlatformRoleHolderUpdateStart();
-        Intent intent = new Intent(this,
-                getActivityForScreen(ManagedProvisioningScreens.DOWNLOAD_ROLE_HOLDER));
-        WizardManagerHelper.copyWizardManagerExtras(getIntent(), intent);
-        intent.putExtra(ProvisioningParams.EXTRA_PROVISIONING_PARAMS,
-                mController.getParams());
+
+        Intent intent;
+        if (mFlags.isCosmicRayEnabled()) {
+            intent = mDownloadRoleHolderContract.createIntent(
+                    this,
+                    DownloadRoleHolderArguments.of(
+                            mDownloadRoleHolderContract.getSuwArgumentsSerializer().read(
+                                    getIntent()),
+                            requireNonNull(mController.getParams())));
+        } else {
+            intent = new Intent(this,
+                    getActivityForScreen(ManagedProvisioningScreens.DOWNLOAD_ROLE_HOLDER));
+            WizardManagerHelper.copyWizardManagerExtras(getIntent(), intent);
+            intent.putExtra(ProvisioningParams.EXTRA_PROVISIONING_PARAMS,
+                    mController.getParams());
+        }
         getTransitionHelper().startActivityForResultWithTransition(
                 this, intent, DOWNLOAD_DEVICE_MANAGEMENT_ROLE_HOLDER_FROM_PLATFORM_REQUEST_CODE);
     }
@@ -860,6 +880,7 @@ public class PreProvisioningActivity extends SetupGlifLayoutActivity implements
 
     // TODO: The below group of methods do not belong in the activity.
     // Move them to the controller instead.
+
     /**
      * Starts either the admin-integrated or the legacy flow, depending on the device state and
      * DPC capabilities.
