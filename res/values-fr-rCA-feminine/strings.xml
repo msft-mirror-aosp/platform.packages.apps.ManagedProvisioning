@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
 /**
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2014 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
--->
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/provisioning_progress_container"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <TextView
-        android:id="@+id/provisioning_progress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-</FrameLayout>
+ -->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="cancel_setup_and_factory_reset_dialog_msg" msgid="808442439937994485">"Si vous annulez cette configuration, votre appareil sera réinitialisé à ses paramètres par défaut et vous serez redirigée vers le premier écran."</string>
+</resources>
