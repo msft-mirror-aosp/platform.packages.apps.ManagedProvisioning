@@ -105,11 +105,11 @@
     <string name="device_owner_info" msgid="3716661456037934467">"ಈ ಸಾಧನವನ್ನು <xliff:g id="YOUR_ORGANIZATION">%1$s</xliff:g> ಮೂಲಕ ನಿರ್ವಹಣೆ, ಮೇಲ್ವಿಚಾರಣೆ ಮತ್ತು ಸಂರಕ್ಷಣೆ ಮಾಡಲಾಗುತ್ತದೆ. ನಿಯಮಗಳು ಅನ್ವಯವಾಗುತ್ತವೆ. <xliff:g id="VIEW_TERMS">%2$s</xliff:g>"</string>
     <string name="device_owner_info_with_terms_headers" msgid="1254243288669282977">"ಈ ಸಾಧನವನ್ನು <xliff:g id="YOUR_ORGANIZATION">%1$s</xliff:g> ಮೂಲಕ ನಿರ್ವಹಣೆ, ಮೇಲ್ವಿಚಾರಣೆ ಮತ್ತು ಸಂರಕ್ಷಣೆ ಮಾಡಲಾಗುತ್ತದೆ. <xliff:g id="TERMS_HEADERS">%2$s</xliff:g> ನ ನಿಯಮಗಳು ಅನ್ವಯವಾಗುತ್ತವೆ. <xliff:g id="VIEW_TERMS">%3$s</xliff:g>"</string>
     <string name="link_isnt_secure_and_cant_be_opened_until_device_setup_finished" msgid="1604497932637832657">"ಈ ಲಿಂಕ್ ಸುರಕ್ಷಿತವಾಗಿಲ್ಲ ಮತ್ತು ಸಾಧನದ ಸೆಟಪ್ ಪೂರ್ತಿಯಾಗುವವರೆಗೆ ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ: <xliff:g id="LINK_RAW_TEST">%1$s</xliff:g>"</string>
-    <string name="contact_device_provider" msgid="2843488903902493030">"ಇನ್ನಷ್ಟು ತಿಳಿಯಲು, ನಿಮ್ಮ <xliff:g id="IT_ADMIN">%1$s</xliff:g> ಅವರನ್ನು ಸಂಪರ್ಕಿಸಿ."</string>
+    <string name="contact_device_provider" msgid="2843488903902493030">"ಇನ್ನಷ್ಟು ತಿಳಿಯಲು, ನಿಮ್ಮ <xliff:g id="IT_ADMIN">%1$s</xliff:g> ಸಂಪರ್ಕಿಸಿ."</string>
     <string name="if_questions_contact_admin" msgid="3509427015901582047">"ನಿಮಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳಿದ್ದರೆ, ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ"</string>
     <string name="setup_isnt_finished_contact_admin" msgid="8849644190723875952">"ಸೆಟಪ್ ಪೂರ್ಣಗೊಂಡಿಲ್ಲ. ಸಹಾಯಕ್ಕಾಗಿ, ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ."</string>
     <string name="for_help_contact_admin" msgid="5922538077702487859">"ಸಹಾಯಕ್ಕಾಗಿ, ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ"</string>
-    <string name="organization_admin" msgid="5975914478148511290">"IT ನಿರ್ವಾಹಕರು"</string>
+    <string name="organization_admin" msgid="5975914478148511290">"IT ನಿರ್ವಾಹಕರನ್ನು"</string>
     <string name="your_org_app_used" msgid="5336414768293540831">"ಈ ಕೆಳಗಿನ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸಿಕೊಂಡು ಈ ಸಾಧನವನ್ನು <xliff:g id="YOUR_ORGANIZATION">%1$s</xliff:g> ನಿರ್ವಹಿಸುತ್ತದೆ ಮತ್ತು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡುತ್ತದೆ:"</string>
     <string name="your_organization_beginning" msgid="5952561489910967255">"ನಿಮ್ಮ ಸಂಘಟನೆ"</string>
     <string name="your_organization_middle" msgid="8288538158061644733">"ನಿಮ್ಮ ಸಂಸ್ಥೆ"</string>
@@ -157,7 +157,7 @@
     <string name="setup_provisioning_header_description" msgid="2567041263563823566">"ನಿರ್ವಹಣೆ ಅಪ್ಲಿಕೇಶನ್ ಹೊಂದಿಸಲಾಗುತ್ತಿದೆ"</string>
     <string name="brand_screen_header" msgid="8865808542690116648">"ಈ ಸಾಧನವು ನಿಮ್ಮ ಸಂಸ್ಥೆಗೆ ಸೇರಿರುತ್ತದೆ"</string>
     <string name="brand_screen_subheader" msgid="7664792208784456436">"ಈ ಫೋನ್ ಅನ್ನು ನಿರ್ವಹಿಸಲು ಮತ್ತು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಲು ಕೆಳಗಿನ ಆ್ಯಪ್‌ ಅನ್ನು ಬಳಸಲಾಗುತ್ತದೆ"</string>
-    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"ನಿಮ್ಮ ಖಾತೆಯು ನಿರ್ವಹಿಸಿದ ಖಾತೆಯಾಗಿದೆ"</string>
+    <string name="account_management_disclaimer_header" msgid="8013083414694316564">"ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಹೊಸ ಸಾಧನದಲ್ಲಿ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ"</string>
     <string name="account_management_disclaimer_subheader" msgid="8991450067243733878">"ಭದ್ರತಾ ನೀತಿಗಳನ್ನು ಜಾರಿಗೊಳಿಸಲು ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರು ಮೊಬೈಲ್ ನಿರ್ವಹಣೆಯನ್ನು ಬಳಸುತ್ತಾರೆ"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"ಕೆಲಸದ ಸಾಧನ ಸೆಟಪ್ ಮಾಡಲು ಸಿದ್ಧವಾಗುತ್ತಿದೆ…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"ನಿಮ್ಮ ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಸೆಟಪ್ ಮಾಡೋಣ"</string>
