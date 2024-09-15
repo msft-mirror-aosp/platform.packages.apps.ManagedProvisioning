@@ -39,4 +39,5 @@ dependencies {
 
     api(libs.javax.inject)
     api(libs.androidx.annotation)
+    api(project(":android_onboarding.common.annotations"))
 }

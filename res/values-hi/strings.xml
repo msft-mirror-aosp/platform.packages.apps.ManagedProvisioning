@@ -161,7 +161,7 @@
     <string name="account_management_disclaimer_subheader" msgid="8991450067243733878">"आपका आईटी एडमिन, सुरक्षा नीतियों को लागू करने के लिए मोबाइल मैनेजमेंट का इस्तेमाल करता है"</string>
     <string name="downloading_administrator_header" msgid="8660294318893902915">"वर्क डिवाइस, सेटअप के लिए तैयार हो रहा है…"</string>
     <string name="work_profile_provisioning_accept_header_post_suw" msgid="1353127953275291089">"चलिए, आपकी वर्क प्रोफ़ाइल सेट अप करते हैं"</string>
-    <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"ऑफ़िस के काम से जुड़े ऐप्लिकेशन, आपकी वर्क प्रोफ़ाइल में रखे जाते हैं"</string>
+    <string name="work_profile_provisioning_step_1_header" msgid="7914961694921466366">"वर्क ऐप्लिकेशन, आपकी वर्क प्रोफ़ाइल में रखे जाते हैं"</string>
     <string name="work_profile_provisioning_step_2_header" msgid="6001172190404670248">"ऑफ़िस का दिनभर का काम खत्म हो जाने के बाद, इससे जुड़े ऐप्लिकेशन बंद करें"</string>
     <string name="work_profile_provisioning_step_3_header" msgid="4316106639726774330">"आपके आईटी एडमिन को आपकी वर्क प्रोफ़ाइल में सेव डेटा दिखता है"</string>
     <string name="work_profile_provisioning_progress_label" msgid="2627905308998389193">"वर्क प्रोफ़ाइल सेट की जा रही है…"</string>
@@ -171,7 +171,7 @@
     <string name="fully_managed_device_provisioning_step_2_header" msgid="142633978260399682">"इस <xliff:g id="DEVICE_NAME">%1$s</xliff:g> को निजी के तौर पर सेट नहीं किया गया है"</string>
     <string name="fully_managed_device_provisioning_step_2_subheader" msgid="3981784440341141618">"आपका आईटी एडमिन, इस <xliff:g id="DEVICE_NAME">%1$s</xliff:g> पर आपकी गतिविधि और डेटा देख सकता है."</string>
     <string name="fully_managed_device_provisioning_permissions_header" msgid="2852101532084770993">"आपकी गतिविधि और डेटा"</string>
-    <string name="fully_managed_device_provisioning_permissions_secondary_header" msgid="4419374850927705136">"ऐप्लिकेशन की अनुमतियां"</string>
+    <string name="fully_managed_device_provisioning_permissions_secondary_header" msgid="4419374850927705136">"ऐप्लिकेशन के लिए अनुमतियां"</string>
     <string name="fully_managed_device_provisioning_permissions_secondary_subheader" msgid="1973320148595109400">"आपका आईटी एडमिन, इस <xliff:g id="DEVICE_NAME">%1$s</xliff:g> में मौजूद ऐप्लिकेशन को दी जाने वाली अनुमतियां कंट्रोल कर सकता है. इसमें, माइक्रोफ़ोन, कैमरा, और जगह की जानकारी के लिए अनुमतियां शामिल हैं."</string>
     <string name="fully_managed_device_provisioning_progress_label" msgid="3925516135130021966">"आपका डिवाइस सेट किया जा रहा है…"</string>
     <string name="fully_managed_device_provisioning_summary" msgid="2532673962822596806">"अपने वर्क ऐप्लिकेशन को आसानी से ऐक्सेस करने के लिए, इस <xliff:g id="DEVICE_NAME_0">%1$s</xliff:g> का इस्तेमाल करें. इस <xliff:g id="DEVICE_NAME_1">%1$s</xliff:g> को निजी के तौर पर सेट नहीं किया गया है. इसलिए, आपका आईटी एडमिन आपकी गतिविधि और डेटा देख सकता है."</string>
