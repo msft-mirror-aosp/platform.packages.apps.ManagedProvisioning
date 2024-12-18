@@ -16,6 +16,7 @@
 
 package com.android.managedprovisioning.finalization;
 
+import static android.app.admin.DeviceAdminInfo.HEADLESS_DEVICE_OWNER_MODE_AFFILIATED;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_PROFILE_COMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_PROFILE_FINALIZED;
@@ -177,16 +178,23 @@ public class UserProvisioningStateHelper {
 
     private void setUserProvisioningState(int state, int userId) {
         ProvisionLogger.logi("Setting userProvisioningState for user " + userId + " to: " + state);
-        mDevicePolicyManager.setUserProvisioningState(state, userId);
+        try {
+            mDevicePolicyManager.setUserProvisioningState(state, userId);
+        } catch (IllegalStateException e) {
+            ProvisionLogger.loge("Exception caught while changing provisioning state", e);
+        }
     }
 
     private void maybeSetHeadlessSystemUserProvisioningState(ProvisioningParams params, int newState) {
         if (params.provisioningAction.equals(ACTION_PROVISION_MANAGED_PROFILE)) {
             return; // No special headless logic for managed profiles
         }
-        if (mUtils.isHeadlessSystemUserMode() && mMyUserId != UserHandle.USER_SYSTEM) {
-            // Headless system user's DO has to be set on system user and therefore system
-            // user has to be marked the same as the calling user.
+        if (mUtils.isHeadlessSystemUserMode()
+                && mDevicePolicyManager.getHeadlessDeviceOwnerMode()
+                == HEADLESS_DEVICE_OWNER_MODE_AFFILIATED
+                && mMyUserId != UserHandle.USER_SYSTEM) {
+            // For affiliated DO, headless system user's DO has to be set on system user and
+            // therefore system user has to be marked the same as the calling user.
             setUserProvisioningState(newState, UserHandle.USER_SYSTEM);
         }
     }

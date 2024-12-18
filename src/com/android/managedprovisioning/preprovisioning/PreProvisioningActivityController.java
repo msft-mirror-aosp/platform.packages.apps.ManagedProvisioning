@@ -106,6 +106,7 @@ import com.android.managedprovisioning.common.RoleHolderUpdaterProvider;
 import com.android.managedprovisioning.common.SettingsFacade;
 import com.android.managedprovisioning.common.StoreUtils;
 import com.android.managedprovisioning.common.Utils;
+import com.android.managedprovisioning.flags.Flags;
 import com.android.managedprovisioning.model.DisclaimersParam;
 import com.android.managedprovisioning.model.ProvisioningParams;
 import com.android.managedprovisioning.model.ProvisioningParams.FlowType;
@@ -121,6 +122,7 @@ import com.google.android.setupdesign.util.DeviceHelper;
 import java.util.IllformedLocaleException;
 import java.util.List;
 import java.util.function.BiFunction;
+
 
 /**
  * Controller which contains business logic related to provisioning preparation.
@@ -163,7 +165,7 @@ public class PreProvisioningActivityController {
                                 (ManagedProvisioningBaseApplication) activity.getApplication(),
                                 new DefaultConfig(),
                                 new Utils()))
-                                        .get(PreProvisioningViewModel.class),
+                        .get(PreProvisioningViewModel.class),
                 DisclaimersParserImpl::new,
                 new DeviceManagementRoleHolderHelper(
                         RoleHolderProvider.DEFAULT.getPackageName(activity),
@@ -179,6 +181,7 @@ public class PreProvisioningActivityController {
                         new DefaultIntentResolverChecker(activity.getPackageManager()),
                         new DefaultFeatureFlagChecker(activity.getContentResolver())));
     }
+
     @VisibleForTesting
     PreProvisioningActivityController(
             @NonNull Context context,
@@ -237,7 +240,7 @@ public class PreProvisioningActivityController {
         // In T allowOffline is used here to force platform provisioning.
         if (getParams().allowOffline) {
             ProvisionLogger.logw("allowOffline set, provisioning via platform.");
-            performPlatformProvidedProvisioning();
+            performPlatformProvidedProvisioning(managedProvisioningIntent, callingPackage);
             return true;
         }
 
@@ -256,7 +259,7 @@ public class PreProvisioningActivityController {
                     mUi.startRoleHolderProvisioning(roleHolderProvisioningIntent);
                 } else {
                     ProvisionLogger.logw("Falling back to provisioning via platform.");
-                    performPlatformProvidedProvisioning();
+                    performPlatformProvidedProvisioning(managedProvisioningIntent, callingPackage);
                 }
             });
             return true;
@@ -264,7 +267,7 @@ public class PreProvisioningActivityController {
                 || !mRoleHolderUpdaterHelper.isRoleHolderUpdaterDefined()
                 || !isRoleHolderProvisioningAllowed) {
             ProvisionLogger.logw("Provisioning via platform.");
-            performPlatformProvidedProvisioning();
+            performPlatformProvidedProvisioning(managedProvisioningIntent, callingPackage);
             return true;
         }
         ProvisionLogger.logw("Role holder is configured, can't provision via role holder and "
@@ -277,7 +280,6 @@ public class PreProvisioningActivityController {
      * the role holder.
      *
      * @see DevicePolicyManager#EXTRA_ROLE_HOLDER_STATE
-     * @param roleHolderState
      */
     public void startRoleHolderUpdater(
             boolean isRoleHolderRequestedUpdate, @Nullable PersistableBundle roleHolderState) {
@@ -315,6 +317,7 @@ public class PreProvisioningActivityController {
 
         /**
          * Request the user to encrypt the device.
+         *
          * @param params the {@link ProvisioningParams} object related to the ongoing provisioning
          */
         void requestEncryption(ProvisioningParams params);
@@ -326,6 +329,7 @@ public class PreProvisioningActivityController {
 
         /**
          * Start provisioning.
+         *
          * @param params the {@link ProvisioningParams} object related to the ongoing provisioning
          */
         void startProvisioning(ProvisioningParams params);
@@ -342,10 +346,12 @@ public class PreProvisioningActivityController {
 
         void showFactoryResetDialog(Integer titleId, int messageId);
 
+        void showFactoryResetDialog(LazyStringResource titleId, LazyStringResource messageId);
+
         void initiateUi(UiParams uiParams);
 
         /**
-         *  Abort provisioning and close app
+         * Abort provisioning and close app
          */
         void abortProvisioning();
 
@@ -384,7 +390,8 @@ public class PreProvisioningActivityController {
 
     /**
      * Initiates Profile owner and device owner provisioning.
-     * @param intent Intent that started provisioning.
+     *
+     * @param intent         Intent that started provisioning.
      * @param callingPackage Package that started provisioning.
      */
     public void initiateProvisioning(Intent intent, String callingPackage) {
@@ -399,31 +406,20 @@ public class PreProvisioningActivityController {
         }
 
         ProvisioningParams params = mViewModel.getParams();
-        if (!checkFactoryResetProtection(params, callingPackage)) {
-            return;
-        }
-
-        if (!verifyActionAndCaller(intent, callingPackage)) {
-            return;
-        }
 
         mProvisioningAnalyticsTracker.logProvisioningExtras(mContext, intent);
         mProvisioningAnalyticsTracker.logEntryPoint(mContext, intent, mSettingsFacade);
 
-        // Check whether provisioning is allowed for the current action. This check needs to happen
-        // before any actions that might affect the state of the device.
-        // Note that checkDevicePolicyPreconditions takes care of calling
-        // showProvisioningErrorAndClose. So we only need to show the factory reset dialog (if
-        // applicable) and return.
-        if (!checkDevicePolicyPreconditions()) {
-            return;
-        }
-
-        if (!isIntentActionValid(intent.getAction())) {
-            ProvisionLogger.loge(
-                    ACTION_PROVISION_MANAGED_DEVICE + " is no longer a supported intent action.");
-            mUi.abortProvisioning();
-            return;
+        // Pre provisioning checks will be performed by the roleholder or platform at a later point
+        // in the flow if the flag returns true
+        if (!Flags.badStateV3EarlyRhDownloadEnabled()) {
+            if (!passesPreProvisioningChecks(intent, callingPackage)) {
+                ProvisionLogger.loge(
+                        "Pre-provisioning checks have failed, cancelling provisioning");
+                return;
+            }
+        } else {
+            ProvisionLogger.logd("Skipping pre-provisioning checks until roleholder download");
         }
 
         if (isDeviceOwnerProvisioning()) {
@@ -487,9 +483,50 @@ public class PreProvisioningActivityController {
         ProvisionLogger.logi("Finish logging provisioning extras");
     }
 
-    void performPlatformProvidedProvisioning() {
+    boolean passesPreProvisioningChecks(Intent managedProvisioningIntent, String callingPackage) {
+        ProvisioningParams params = mViewModel.getParams();
+
+        if (!checkFactoryResetProtection(params, callingPackage)) {
+            return false;
+        }
+
+        if (!verifyActionAndCaller(managedProvisioningIntent, callingPackage)) {
+            return false;
+        }
+        // Check whether provisioning is allowed for the current action. This check needs to happen
+        // before any actions that might affect the state of the device.
+        // Note that checkDevicePolicyPreconditions takes care of calling
+        // showProvisioningErrorAndClose. So we only need to show the factory reset dialog (if
+        // applicable) and return.
+        if (!checkDevicePolicyPreconditions()) {
+            return false;
+        }
+
+        if (!isIntentActionValid(managedProvisioningIntent.getAction())) {
+            ProvisionLogger.loge(
+                    ACTION_PROVISION_MANAGED_DEVICE
+                            + " is no longer a supported intent action.");
+            mUi.abortProvisioning();
+            return false;
+        }
+
+        return true;
+    }
+
+    void performPlatformProvidedProvisioning(Intent managedProvisioningIntent,
+            String callingPackage) {
+
+        if (Flags.badStateV3EarlyRhDownloadEnabled()
+                && !passesPreProvisioningChecks(managedProvisioningIntent, callingPackage)) {
+            ProvisionLogger.loge("Pre-provisioning checks have failed, cancelling provisioning");
+            return;
+        }
+
         ProvisionLogger.logw("Provisioning via platform-provided provisioning");
         ProvisioningParams params = mViewModel.getParams();
+        if (mSharedPreferences.isProvisioningFlowDelegatedToRoleHolder()) {
+            mSharedPreferences.setIsProvisioningFlowDelegatedToRoleHolder(false);
+        }
 
         mViewModel.getTimeLogger().start();
         mViewModel.onPlatformProvisioningInitiated();
@@ -545,7 +582,7 @@ public class PreProvisioningActivityController {
         var networkCapabilities = mUtils.getActiveNetworkCapabilities(mContext);
         if (networkCapabilities != null
                 && (mUtils.isNetworkConnectedToInternetViaWiFi(networkCapabilities)
-                        || mUtils.isNetworkConnectedToInternetViaEthernet(networkCapabilities))) {
+                || mUtils.isNetworkConnectedToInternetViaEthernet(networkCapabilities))) {
             return false;
         }
         // we intentionally disregard whether mobile is connected for QR and NFC
@@ -639,8 +676,7 @@ public class PreProvisioningActivityController {
         if (provisioningAction.equals(ACTION_PROVISION_MANAGED_PROFILE)) {
             maybeUpdateKeepAccountMigrated(builder, resultIntent);
             maybeUpdateLeaveAllSystemAppsEnabled(builder, resultIntent);
-        }
-        else if (provisioningAction.equals(ACTION_PROVISION_MANAGED_DEVICE)){
+        } else if (provisioningAction.equals(ACTION_PROVISION_MANAGED_DEVICE)) {
             maybeUpdateDeviceOwnerPermissionGrantOptOut(builder, resultIntent);
             maybeUpdateLocale(builder, resultIntent);
             maybeUpdateLocalTime(builder, resultIntent);
@@ -695,8 +731,8 @@ public class PreProvisioningActivityController {
         if (resultIntent.hasExtra(EXTRA_PROVISIONING_DISCLAIMERS)) {
             try {
                 DisclaimersParam disclaimersParam = mDisclaimerParserProvider.apply(
-                        mContext,
-                        mSharedPreferences.getProvisioningId())
+                                mContext,
+                                mSharedPreferences.getProvisioningId())
                         .parse(resultIntent.getParcelableArrayExtra(
                                 EXTRA_PROVISIONING_DISCLAIMERS));
                 builder.setDisclaimersParam(disclaimersParam);
@@ -899,7 +935,8 @@ public class PreProvisioningActivityController {
     }
 
     /** @return False if condition preventing further provisioning */
-    @VisibleForTesting protected boolean checkDevicePolicyPreconditions() {
+    @VisibleForTesting
+    protected boolean checkDevicePolicyPreconditions() {
         ProvisioningParams params = mViewModel.getParams();
         int provisioningPreCondition = mDevicePolicyManager.checkProvisioningPrecondition(
                 params.provisioningAction,
@@ -929,7 +966,8 @@ public class PreProvisioningActivityController {
     }
 
     /** @return False if condition preventing further provisioning */
-    @VisibleForTesting protected boolean verifyActionAndCaller(Intent intent,
+    @VisibleForTesting
+    protected boolean verifyActionAndCaller(Intent intent,
             String callingPackage) {
         if (verifyActionAndCallerInner(intent, callingPackage)) {
             return true;
@@ -972,6 +1010,7 @@ public class PreProvisioningActivityController {
 
     /**
      * Verify that the caller is trying to set itself as owner.
+     *
      * @return false if the caller is trying to set a different package as owner.
      */
     private boolean verifyCaller(@NonNull String callingPackage) {
