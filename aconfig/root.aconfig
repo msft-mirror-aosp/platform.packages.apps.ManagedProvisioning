@@ -19,9 +19,29 @@ flag {
 }
 
 flag {
+  name: "underline_policy_link"
+  namespace: "enterprise"
+  description: "Underline the policy link in the View Terms page"
+  bug: "365473481"
+}
+
+flag {
   name: "check_frp_active"
   namespace: "enterprise"
   description: "Fix persistent data block check for provisioning"
   bug: "365473481"
 }
 
+flag {
+  name: "terms_view_accessibility_enabled"
+  namespace: "enterprise"
+  description: "Enable Expand/Collapse accesbility announcement for terms view"
+  bug: "386329540"
+}
+
+flag {
+  name: "stop_disruptive_announcement_education"
+  namespace: "enterprise"
+  description: "Stop TalkBack disruptive announcement for the header of the work profile education screens"
+  bug: "386334889"
+}
