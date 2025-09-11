@@ -210,8 +210,7 @@ public class AddWifiNetworkTask extends AbstractProvisioningTask
         }
         String connectedSSID = mWifiManager.getConnectionInfo().getSSID();
         if (!mProvisioningParams.wifiInfo.ssid.equals(connectedSSID)) {
-            ProvisionLogger.logd("Wanted to connect SSID " + mProvisioningParams.wifiInfo.ssid
-                    + ", but it is now connected to " + connectedSSID);
+            ProvisionLogger.logd("Connected to the wrong SSID");
             return false;
         }
         return true;
