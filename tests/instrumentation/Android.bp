@@ -44,7 +44,7 @@ android_library {
         "androidx.test.uiautomator_uiautomator", // used for unlocking the device
         "TestApp",
         "ctstestrunner-axt",
-        "Harrier",
+        "bedstead",
         "flag-junit",
         "platform-test-annotations",
         "ManagedProvisioningLib",
