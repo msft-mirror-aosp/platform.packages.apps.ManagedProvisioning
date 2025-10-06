@@ -64,7 +64,7 @@ android_library {
         "android_onboarding.contracts.provisioning",
         "android_onboarding.contracts.annotations",
         "android_onboarding.contracts.setupwizard",
-        "android_onboarding.flags_hilt",
+        "android_onboarding.flags.flags_hilt",
         "jsr330",
     ],
 

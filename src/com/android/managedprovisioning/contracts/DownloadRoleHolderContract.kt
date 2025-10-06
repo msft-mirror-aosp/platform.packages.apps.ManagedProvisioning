@@ -11,10 +11,11 @@ import com.android.managedprovisioning.model.ProvisioningParams
 import com.android.onboarding.common.MANAGED_PROVISIONING
 import com.android.onboarding.contracts.NodeAwareIntentScope
 import com.android.onboarding.contracts.NodeAwareIntentSerializer
-import com.android.onboarding.contracts.NodeId
-import com.android.onboarding.contracts.OnboardingNodeId
+import com.android.onboarding.nodes.NodeId
+import com.android.onboarding.nodes.OnboardingNodeId
 import com.android.onboarding.contracts.VoidOnboardingActivityApiContract
 import com.android.onboarding.contracts.annotations.OnboardingNode
+import com.android.onboarding.contracts.annotations.ForegroundOnboardingNode
 import com.android.onboarding.contracts.provisioning.EXTRAS
 import com.android.onboarding.contracts.require
 import com.android.onboarding.contracts.setupwizard.SuwArguments
@@ -75,9 +76,12 @@ interface DownloadRoleHolderArguments : WithProvisioningParams, WithSuwArguments
 }
 
 @OnboardingNode(
-        component = MANAGED_PROVISIONING,
-        name = "DownloadRoleHolder",
-        uiType = OnboardingNode.UiType.LOADING)
+    component = MANAGED_PROVISIONING,
+    name = "DownloadRoleHolder",
+    foreground = ForegroundOnboardingNode(
+        uiType = ForegroundOnboardingNode.UiType.LOADING,
+    )
+)
 class DownloadRoleHolderContract
 @Inject
 constructor(

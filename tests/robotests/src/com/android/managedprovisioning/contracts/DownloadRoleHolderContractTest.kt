@@ -1,8 +1,8 @@
 package com.android.managedprovisioning.contracts
 
 import android.os.Build
-import com.android.onboarding.contracts.NodeId
-import com.android.onboarding.contracts.OnboardingNodeId
+import com.android.onboarding.nodes.NodeId
+import com.android.onboarding.nodes.OnboardingNodeId
 import com.android.onboarding.contracts.testing.NodeAwareIntentSerializerTest
 import com.android.onboarding.contracts.testing.TEST_NODE_ID
 import dagger.hilt.android.testing.BindValue

@@ -1,9 +1,9 @@
 package com.android.managedprovisioning.common
 
 import android.app.Activity
-import com.android.onboarding.contracts.NodeId
-import com.android.onboarding.contracts.OnboardingNodeId
-import com.android.onboarding.contracts.nodeId
+import com.android.onboarding.nodes.NodeId
+import com.android.onboarding.nodes.OnboardingNodeId
+import com.android.onboarding.nodes.nodeId
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
