@@ -7,8 +7,8 @@ import com.android.managedprovisioning.model.ProvisioningParams
 import com.android.managedprovisioning.model.WifiInfo
 import com.android.onboarding.contracts.NodeAwareIntentScope
 import com.android.onboarding.contracts.NodeAwareIntentSerializer
-import com.android.onboarding.contracts.NodeId
-import com.android.onboarding.contracts.OnboardingNodeId
+import com.android.onboarding.nodes.NodeId
+import com.android.onboarding.nodes.OnboardingNodeId
 import com.android.onboarding.contracts.provisioning.EXTRAS
 import javax.inject.Inject
 
