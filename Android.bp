@@ -38,6 +38,7 @@ aconfig_declarations {
 java_aconfig_library {
     name: "aconfig_managed_provisioning_flags_lib",
     aconfig_declarations: "aconfig_managed_provisioning_flags",
+    preserve_legacy_impl_interface: true,
 }
 
 android_library {
