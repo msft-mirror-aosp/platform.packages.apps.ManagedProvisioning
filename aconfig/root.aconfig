@@ -35,7 +35,7 @@ flag {
 flag {
   name: "terms_view_accessibility_enabled"
   namespace: "enterprise"
-  description: "Enable Expand/Collapse accesbility announcement for terms view"
+  description: "Enable Expand/Collapse accessibility announcement for terms view"
   bug: "386329540"
 }
 
@@ -49,6 +49,14 @@ flag {
 flag {
   name: "enable_passing_suw_extras_to_service"
   namespace: "enterprise"
-  description: "Enables passingass suw extras from the activity to the service which launches the dpc."
+  description: "Enables passing suw extras from the activity to the service which launches the dpc."
   bug: "73431128"
 }
+
+flag {
+  name: "enable_onboarding_task_service"
+  namespace: "enterprise"
+  description: "Enables the ManagedProvisioningOnboardingTaskService for custom OEM consent contracts."
+  bug: "454861649"
+}
+

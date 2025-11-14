@@ -65,6 +65,10 @@ android_library {
         "android_onboarding.contracts.annotations",
         "android_onboarding.contracts.setupwizard",
         "android_onboarding.flags.flags_hilt",
+        "android_onboarding.tasks.security",
+        "android_onboarding.common.refs",
+        "android_onboarding.utils.LazyBuilder",
+        "android_onboarding.tasks.server",
         "jsr330",
     ],
 
@@ -81,6 +85,9 @@ android_library {
     optimize: {
         proguard_flags_files: ["proguard.flags"],
     },
+    flags_packages: [
+        "aconfig_managed_provisioning_flags",
+    ],
 }
 
 android_app {
