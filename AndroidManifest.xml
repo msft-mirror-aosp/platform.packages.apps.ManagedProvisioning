@@ -346,5 +346,15 @@
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
+
+        <service
+            android:name=".onboarding.ManagedProvisioningOnboardingTaskService"
+            android:featureFlag="com.android.managedprovisioning.flags.enable_onboarding_task_service"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.onboarding.task.RUN_ONBOARDING_TASK" />
+                <category android:name="managedprovisioning" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>
