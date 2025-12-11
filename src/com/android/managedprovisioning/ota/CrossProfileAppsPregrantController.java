@@ -23,7 +23,6 @@ import static android.provider.Settings.Global.getString;
 import android.Manifest;
 import android.app.AppOpsManager;
 import android.app.admin.DevicePolicyManager;
-import android.app.admin.flags.Flags;
 import android.content.Context;
 import android.content.pm.CrossProfileApps;
 import android.content.pm.PackageManager;
@@ -103,19 +102,14 @@ public class CrossProfileAppsPregrantController {
                         AppOpsManager.MODE_ALLOWED);
             }
         }
-        if (Flags.backupConnectedAppsSettings()) {
-            mUserAllowedCrossProfilePackages.stream()
-                    .filter(packageName -> !appOpIsChangedFromDefault(op, packageName))
-                    .filter(mCrossProfileApps::canConfigureInteractAcrossProfiles)
-                    .forEach(packageName -> mCrossProfileApps.setInteractAcrossProfilesAppOp(
-                            packageName, AppOpsManager.MODE_ALLOWED));
-        }
+        mUserAllowedCrossProfilePackages.stream()
+                .filter(packageName -> !appOpIsChangedFromDefault(op, packageName))
+                .filter(mCrossProfileApps::canConfigureInteractAcrossProfiles)
+                .forEach(packageName -> mCrossProfileApps.setInteractAcrossProfilesAppOp(
+                        packageName, AppOpsManager.MODE_ALLOWED));
     }
 
     private Set<String> getConfigurablePackageSetFromSetting(String settingsKey) {
-        if (!Flags.backupConnectedAppsSettings()) {
-            return Collections.emptySet();
-        }
         return Optional.ofNullable(getString(mContext.getContentResolver(), settingsKey))
                 .map(settingString -> Arrays.stream(settingString.split(","))
                         .collect(Collectors.toSet()))
