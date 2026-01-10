@@ -88,7 +88,7 @@
     <string name="error_hash_mismatch" msgid="1145488923243178454">"ಚೆಕ್‌ಸಮ್ ದೋಷ ಎದುರಾಗಿರುವ ಕಾರಣ ನಿರ್ವಾಹಕ ಆ್ಯಪ್ ಬಳಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ಸಹಾಯಕ್ಕಾಗಿ, ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ."</string>
     <string name="error_download_failed" msgid="3274283629837019452">"ನಿರ್ವಹಣೆ ಆ್ಯಪ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ"</string>
     <string name="error_package_invalid" msgid="555402554502033988">"ನಿರ್ವಾಹಕ ಆ್ಯಪ್ ಬಳಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಇದರ ಘಟಕಗಳು ಕಾಣೆಯಾಗಿವೆ ಅಥವಾ ದೋಷಪೂರಿತವಾಗಿವೆ. ಸಹಾಯಕ್ಕಾಗಿ, ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ."</string>
-    <string name="error_installation_failed" msgid="2282903750318407285">"ನಿರ್ವಹಣೆ ಆ್ಯಪ್‌ ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ"</string>
+    <string name="error_installation_failed" msgid="2282903750318407285">"ನಿರ್ವಾಹಕ ಆ್ಯಪ್‌ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ"</string>
     <string name="profile_owner_cancel_message" msgid="6868736915633023477">"ಹೊಂದಿಸುವುದನ್ನು ನಿಲ್ಲಿಸುವುದೇ?"</string>
     <string name="profile_owner_cancel_cancel" msgid="4408725524311574891">"ಇಲ್ಲ"</string>
     <string name="profile_owner_cancel_ok" msgid="5951679183850766029">"ಹೌದು"</string>
@@ -176,8 +176,8 @@
     <string name="fully_managed_device_provisioning_permissions_secondary_header" msgid="4419374850927705136">"ಆ್ಯಪ್ ಅನುಮತಿಗಳು"</string>
     <string name="fully_managed_device_provisioning_permissions_secondary_subheader" msgid="1973320148595109400">"ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರು ಈ <xliff:g id="DEVICE_NAME">%1$s</xliff:g> ನಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗಳಿಗಾಗಿ, ಮೈಕ್ರೋಫೋನ್, ಕ್ಯಾಮರಾ ಮತ್ತು ಸ್ಥಳದಂತಹ ಅನುಮತಿಗಳನ್ನು ಸೆಟ್ ಮಾಡಬಹುದು."</string>
     <string name="fully_managed_device_provisioning_progress_label" msgid="3925516135130021966">"ನಿಮ್ಮ ಸಾಧನವನ್ನು ಹೊಂದಿಸಲಾಗುತ್ತಿದೆ…"</string>
-    <string name="fully_managed_device_provisioning_summary" msgid="2532673962822596806">"ನಿಮ್ಮ ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳನ್ನು ಸುಲಭವಾಗಿ ಪ್ರವೇಶಿಸಲು ಈ <xliff:g id="DEVICE_NAME_0">%1$s</xliff:g> ಅನ್ನು ಬಳಸಿ. ಈ <xliff:g id="DEVICE_NAME_1">%1$s</xliff:g> ಖಾಸಗಿ ಸಾಧನವಲ್ಲ, ಹಾಗಾಗಿ ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರಿಗೆ ನಿಮ್ಮ ಡೇಟಾ ಮತ್ತು ಚಟುವಟಿಕೆಯನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧ್ಯವಾಗಬಹುದು."</string>
-    <string name="fully_managed_device_with_permission_control_provisioning_summary" msgid="3487964472228264628">"ನಿಮ್ಮ ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳನ್ನು ಸುಲಭವಾಗಿ ಪ್ರವೇಶಿಸಲು ಈ <xliff:g id="DEVICE_NAME_0">%1$s</xliff:g> ಅನ್ನು ಬಳಸಿ. ಈ <xliff:g id="DEVICE_NAME_1">%1$s</xliff:g> ಖಾಸಗಿ ಸಾಧನವಲ್ಲ, ಹಾಗಾಗಿ ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರಿಗೆ ನಿಮ್ಮ ಚಟುವಟಿಕೆ ಮತ್ತು ಡೇಟಾವನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧ್ಯವಾಗಬಹುದು. ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರು ಈ ಸಾಧನದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗಳಿಗಾಗಿ, ಮೈಕ್ರೋಫೋನ್, ಕ್ಯಾಮರಾ ಮತ್ತು ಸ್ಥಳದಂತಹ ಅನುಮತಿಗಳನ್ನು ಸಹ ಸೆಟ್ ಮಾಡಬಹುದು."</string>
+    <string name="fully_managed_device_provisioning_summary" msgid="2532673962822596806">"ನಿಮ್ಮ ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳನ್ನು ಸುಲಭವಾಗಿ ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಈ <xliff:g id="DEVICE_NAME_0">%1$s</xliff:g> ಅನ್ನು ಬಳಸಿ. ಈ <xliff:g id="DEVICE_NAME_1">%1$s</xliff:g> ಖಾಸಗಿ ಸಾಧನವಲ್ಲ, ಹಾಗಾಗಿ ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರಿಗೆ ನಿಮ್ಮ ಡೇಟಾ ಮತ್ತು ಚಟುವಟಿಕೆಯನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧ್ಯವಾಗಬಹುದು."</string>
+    <string name="fully_managed_device_with_permission_control_provisioning_summary" msgid="3487964472228264628">"ನಿಮ್ಮ ಕೆಲಸಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಆ್ಯಪ್‌ಗಳನ್ನು ಸುಲಭವಾಗಿ ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಈ <xliff:g id="DEVICE_NAME_0">%1$s</xliff:g> ಅನ್ನು ಬಳಸಿ. ಈ <xliff:g id="DEVICE_NAME_1">%1$s</xliff:g> ಖಾಸಗಿ ಸಾಧನವಲ್ಲ, ಹಾಗಾಗಿ ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರಿಗೆ ನಿಮ್ಮ ಚಟುವಟಿಕೆ ಮತ್ತು ಡೇಟಾವನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧ್ಯವಾಗಬಹುದು. ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರು ಈ ಸಾಧನದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗಳಿಗಾಗಿ, ಮೈಕ್ರೋಫೋನ್, ಕ್ಯಾಮರಾ ಮತ್ತು ಸ್ಥಳದಂತಹ ಅನುಮತಿಗಳನ್ನು ಸಹ ಸೆಟ್ ಮಾಡಬಹುದು."</string>
     <string name="fully_managed_device_provisioning_return_device_title" msgid="8500829014794276683">"ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರಿಗೆ ಈ ಸಾಧನವನ್ನು ಹಿಂತಿರುಗಿಸಿ"</string>
     <string name="fully_managed_device_provisioning_return_device_subheader" msgid="6194410367910957686">"ಹಿಂದಿನ ಸ್ಕ್ರೀನ್‌ಗೆ ಹಿಂತಿರುಗಿ ಅಥವಾ ಈ ಸಾಧನವನ್ನು ಮರುಹೊಂದಿಸಿ ಮತ್ತು ಅದನ್ನು ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರಿಗೆ ಹಿಂತಿರುಗಿಸಿ."</string>
     <string name="fully_managed_device_cancel_setup_button" msgid="4910041382610777599">"ಸೆಟಪ್ ರದ್ದುಗೊಳಿಸಿ"</string>
