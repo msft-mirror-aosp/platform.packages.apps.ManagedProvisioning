@@ -76,7 +76,7 @@
     <string name="reset" msgid="6467204151306265796">"Restableix"</string>
     <string name="cant_set_up_profile" msgid="4341825293970158436">"No es pot configurar el perfil"</string>
     <string name="cant_set_up_device" msgid="4120090138983350714">"No es pot configurar el dispositiu"</string>
-    <string name="something_went_wrong" msgid="3593223774041784329">"S\'ha produït un error"</string>
+    <string name="something_went_wrong" msgid="3593223774041784329">"Hi ha hagut un error"</string>
     <string name="couldnt_set_up_device" msgid="5137950404283642302">"No s\'ha pogut configurar el dispositiu. Contacta amb l\'administrador de TI per obtenir ajuda."</string>
     <string name="contact_your_admin_for_help" msgid="2009904021552323731">"Contacta amb l\'administrador de TI per obtenir ajuda"</string>
     <string name="reset_device" msgid="265029891515486543">"Restableix aquest dispositiu <xliff:g id="DEVICE_NAME">%1$s</xliff:g> i prova de tornar a configurar-lo"</string>
