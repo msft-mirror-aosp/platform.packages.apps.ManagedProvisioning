@@ -65,7 +65,6 @@ android_library {
         "android_onboarding.contracts.provisioning",
         "android_onboarding.contracts.annotations",
         "android_onboarding.contracts.setupwizard",
-        "android_onboarding.flags.flags_hilt",
         "android_onboarding.tasks.security",
         "android_onboarding.common.refs",
         "android_onboarding.utils.LazyBuilder",
