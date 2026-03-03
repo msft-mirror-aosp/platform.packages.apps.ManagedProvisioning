@@ -28,12 +28,12 @@
     <string name="the_following_is_your_mdm_for_device" msgid="6717973404364414816">"O seguinte app gerenciará seu dispositivo:"</string>
     <string name="next" msgid="1004321437324424398">"Próximo"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"Configurando perfil de trabalho…"</string>
-    <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"O administrador de TI pode monitorar e gerenciar configurações, acesso corporativo, apps, permissões, dados e atividade de rede associada a este perfil, assim como seus históricos de chamadas e de pesquisa de contatos. Entre em contato com o administrador de TI para receber mais informações e saber mais sobre as Políticas de Privacidade da organização."</string>
+    <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"A equipe de TI pode monitorar e gerenciar configurações, acesso corporativo, apps, permissões, dados e atividade de rede associada a este perfil, assim como seus históricos de chamadas e de pesquisa de contatos. Entre em contato com a equipe de TI para receber mais informações e saber mais sobre as Políticas de Privacidade da organização."</string>
     <string name="admin_has_ability_to_monitor_device" msgid="7786186939607332934">"Seu administrador de TI pode monitorar e gerenciar configurações, acesso corporativo, apps, permissões e dados associados a este dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g>, incluindo sua atividade de rede, bem como o local do dispositivo, histórico de ligações e histórico de pesquisa de contatos.<xliff:g id="LINE_BREAK">
 
 </xliff:g>Converse com o administrador de TI para saber mais e receber informações sobre as políticas de privacidade da sua organização."</string>
     <string name="theft_protection_disabled_warning" msgid="3708092473574738478">"Para usar os recursos de proteção contra roubo, é necessário um bloqueio de tela protegido por senha no dispositivo."</string>
-    <string name="contact_your_admin_for_more_info" msgid="9209568156969966347">"Entre em contato com o administrador de TI para receber mais informações, incluindo sobre as políticas de privacidade da organização."</string>
+    <string name="contact_your_admin_for_more_info" msgid="9209568156969966347">"Entre em contato com a equipe de TI para receber mais informações, incluindo sobre as políticas de privacidade da organização."</string>
     <string name="learn_more_link" msgid="3012495805919550043">"Saiba mais"</string>
     <string name="cancel_setup" msgid="2949928239276274745">"Cancelar"</string>
     <string name="ok_setup" msgid="4593707675416137504">"OK"</string>
@@ -59,7 +59,7 @@
     <string name="managed_provisioning_error_text" msgid="7063621174570680890">"Não foi possível configurar seu perfil de trabalho. Entre em contato com o departamento de TI ou tente novamente mais tarde."</string>
     <string name="cant_add_work_profile" msgid="9217268909964154934">"Não é possível adicionar um perfil de trabalho"</string>
     <string name="cant_replace_or_remove_work_profile" msgid="7861054306792698290">"Não foi possível substituir ou remover o perfil de trabalho"</string>
-    <string name="work_profile_cant_be_added_contact_admin" msgid="4866281518235832928">"Não é possível adicionar um perfil de trabalho ao dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g>. Se você tiver dúvidas, entre em contato com o administrador de TI."</string>
+    <string name="work_profile_cant_be_added_contact_admin" msgid="4866281518235832928">"Não é possível adicionar um perfil de trabalho ao dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g>. Se você tiver dúvidas, entre em contato com a equipe de TI."</string>
     <string name="change_device_launcher" msgid="4523563368433637980">"Alterar tela de início do dispositivo"</string>
     <string name="launcher_app_cant_be_used_by_work_profile" msgid="3524366082000739743">"Não é possível usar este app da tela de início em seu perfil de trabalho"</string>
     <string name="cancel_provisioning" msgid="3408069559452653724">"Cancelar"</string>
@@ -67,7 +67,7 @@
     <string name="user_setup_incomplete" msgid="6494920045526591079">"Configuração de usuário incompleta"</string>
     <string name="default_owned_device_username" msgid="3915120202811807955">"Usuário de dispositivo de trabalho"</string>
     <string name="setup_work_device" msgid="6003988351437862369">"Configurando dispositivo de trabalho…"</string>
-    <string name="device_doesnt_allow_encryption_contact_admin" msgid="410347019947997299">"Este dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g> não é compatível com criptografia, que é necessária para a configuração. Entre em contato com o administrador de TI para receber ajuda."</string>
+    <string name="device_doesnt_allow_encryption_contact_admin" msgid="410347019947997299">"Este dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g> não é compatível com criptografia, que é necessária para a configuração. Entre em contato com a equipe de TI para receber ajuda."</string>
     <string name="stop_setup_reset_device_question" msgid="2323844935990001069">"Interromper a configuração e redefinir o dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g>?"</string>
     <string name="this_will_reset_take_back_first_screen" msgid="5881727570968119259">"Essa ação vai redefinir o dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g> e levar você de volta à primeira tela"</string>
     <string name="device_owner_cancel_message" msgid="2529288571742712065">"Interromper a configuração e limpar os dados do seu dispositivo?"</string>
@@ -77,17 +77,17 @@
     <string name="cant_set_up_profile" msgid="4341825293970158436">"Não é possível configurar o perfil"</string>
     <string name="cant_set_up_device" msgid="4120090138983350714">"Não é possível configurar o dispositivo"</string>
     <string name="something_went_wrong" msgid="3593223774041784329">"Algo deu errado"</string>
-    <string name="couldnt_set_up_device" msgid="5137950404283642302">"Não foi possível configurar o dispositivo. Entre em contato com o administrador de TI para receber ajuda."</string>
+    <string name="couldnt_set_up_device" msgid="5137950404283642302">"Não foi possível configurar o dispositivo. Entre em contato com a equipe de TI para receber ajuda."</string>
     <string name="contact_your_admin_for_help" msgid="2009904021552323731">"Entre em contato com seu administrador de TI se precisar de ajuda"</string>
     <string name="reset_device" msgid="265029891515486543">"Redefina o <xliff:g id="DEVICE_NAME">%1$s</xliff:g> e tente configurar outra vez"</string>
     <string name="device_already_set_up" msgid="2916285974248611835">"O dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g> já está configurado"</string>
     <string name="error_wifi" msgid="1850288843966836571">"Não foi possível conectar ao Wi-Fi"</string>
-    <string name="device_has_reset_protection_contact_admin" msgid="5922267426079555686">"Seu dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g> está com a proteção contra redefinição ativada. Entre em contato com o administrador de TI para receber ajuda."</string>
+    <string name="device_has_reset_protection_contact_admin" msgid="5922267426079555686">"Seu dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g> está com a proteção contra redefinição ativada. Entre em contato com a equipe de TI para receber ajuda."</string>
     <string name="frp_clear_progress_title" msgid="8628074089458234965">"Apagando"</string>
     <string name="frp_clear_progress_text" msgid="1740164332830598827">"Aguarde..."</string>
     <string name="error_hash_mismatch" msgid="1145488923243178454">"Não foi possível usar o aplicativo para o administrador devido a um erro de soma de verificação. Entre em contato com seu administrador de TI para receber ajuda."</string>
     <string name="error_download_failed" msgid="3274283629837019452">"Não foi possível fazer o download do app de administração"</string>
-    <string name="error_package_invalid" msgid="555402554502033988">"Não é possível usar o aplicativo para o administrador, porque estão faltando alguns componentes ou o app foi corrompido. Entre em contato com o administrador de TI para receber ajuda."</string>
+    <string name="error_package_invalid" msgid="555402554502033988">"Não é possível usar o aplicativo para a equipe, porque estão faltando alguns componentes ou o app foi corrompido. Entre em contato com a equipe de TI para receber ajuda."</string>
     <string name="error_installation_failed" msgid="2282903750318407285">"Não foi possível instalar o app de administração"</string>
     <string name="profile_owner_cancel_message" msgid="6868736915633023477">"Interromper configuração?"</string>
     <string name="profile_owner_cancel_cancel" msgid="4408725524311574891">"Não"</string>
@@ -106,9 +106,9 @@
     <string name="device_owner_info_with_terms_headers" msgid="1254243288669282977">"Este dispositivo será gerenciado, monitorado e protegido por <xliff:g id="YOUR_ORGANIZATION">%1$s</xliff:g>. Os termos de <xliff:g id="TERMS_HEADERS">%2$s</xliff:g> são aplicáveis. <xliff:g id="VIEW_TERMS">%3$s</xliff:g>"</string>
     <string name="link_isnt_secure_and_cant_be_opened_until_device_setup_finished" msgid="1604497932637832657">"Este link não é seguro e só pode ser aberto após o término da configuração do dispositivo: <xliff:g id="LINK_RAW_TEST">%1$s</xliff:g>"</string>
     <string name="contact_device_provider" msgid="2843488903902493030">"Para saber mais, entre em contato com seu <xliff:g id="IT_ADMIN">%1$s</xliff:g>."</string>
-    <string name="if_questions_contact_admin" msgid="3509427015901582047">"Se tiver alguma dúvida, entre em contato com o administrador de TI"</string>
-    <string name="setup_isnt_finished_contact_admin" msgid="8849644190723875952">"A configuração não foi concluída. Entre em contato com o administrador de TI para receber ajuda."</string>
-    <string name="for_help_contact_admin" msgid="5922538077702487859">"Entre em contato com o administrador de TI para receber ajuda"</string>
+    <string name="if_questions_contact_admin" msgid="3509427015901582047">"Se tiver alguma dúvida, entre em contato com a equipe de TI"</string>
+    <string name="setup_isnt_finished_contact_admin" msgid="8849644190723875952">"A configuração não foi concluída. Entre em contato com a equipe de TI para receber ajuda."</string>
+    <string name="for_help_contact_admin" msgid="5922538077702487859">"Entre em contato com a equipe de TI para receber ajuda"</string>
     <string name="organization_admin" msgid="5975914478148511290">"Administrador de TI"</string>
     <string name="your_org_app_used" msgid="5336414768293540831">"<xliff:g id="YOUR_ORGANIZATION">%1$s</xliff:g> vai gerenciar e monitorar este dispositivo por meio do seguinte app:"</string>
     <string name="your_organization_beginning" msgid="5952561489910967255">"Sua empresa"</string>
@@ -197,8 +197,8 @@
     <string name="financed_make_payments_subheader_description" msgid="7391276584735956742">"O credor <xliff:g id="CREDITOR_NAME_0">%1$s</xliff:g> pode instalar o app <xliff:g id="CREDITOR_NAME_1">%2$s</xliff:g> para que você pague por este dispositivo <xliff:g id="DEVICE_NAME">%3$s</xliff:g>."</string>
     <string name="financed_restrict_device_subheader_title" msgid="4248650736543742083">"Este dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g> pode ser restrito"</string>
     <string name="financed_restrict_device_subheader_description" msgid="1539908048861880628">"O credor <xliff:g id="CREDITOR_NAME">%1$s</xliff:g> poderá restringir o acesso a este dispositivo <xliff:g id="DEVICE_NAME">%2$s</xliff:g> quando você não fizer os pagamentos."</string>
-    <string name="error_role_holder_hash_mismatch" msgid="5098975629103567172">"Não foi possível configurar o dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g>. Entre em contato com o administrador de TI e cite o motivo \"Soma de verificação inválida\"."</string>
+    <string name="error_role_holder_hash_mismatch" msgid="5098975629103567172">"Não foi possível configurar o dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g>. Entre em contato com a equipe de TI e cite o motivo \"Soma de verificação inválida\"."</string>
     <string name="error_role_holder_download_install_failed" msgid="8151968372180693228">"Tente novamente mais tarde ou peça ajuda ao seu administrador de TI"</string>
-    <string name="error_role_holder_package_invalid" msgid="8159929740916126242">"Não foi possível configurar o dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g>. Entre em contato com o administrador de TI e cite o motivo \"Componentes ausentes ou corrompidos\"."</string>
+    <string name="error_role_holder_package_invalid" msgid="8159929740916126242">"Não foi possível configurar o dispositivo <xliff:g id="DEVICE_NAME">%1$s</xliff:g>. Entre em contato com a equipe de TI e cite o motivo \"Componentes ausentes ou corrompidos\"."</string>
     <string name="setting_up" msgid="1478847967385506664">"Configurando…"</string>
 </resources>
