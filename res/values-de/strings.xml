@@ -131,7 +131,7 @@
     <string name="setup_device" msgid="1679201701102889156">"Hier kannst du dein Gerät (<xliff:g id="DEVICE_NAME">%1$s</xliff:g>) einrichten"</string>
     <string name="setup_device_encryption" msgid="2628196093806001835">"Hier kannst du dein Gerät (<xliff:g id="DEVICE_NAME">%1$s</xliff:g>) einrichten. Verschlüsselung"</string>
     <string name="setup_device_progress" msgid="8792474713196537598">"Hier kannst du dein Gerät (<xliff:g id="DEVICE_NAME">%1$s</xliff:g>) einrichten. Fortschritt wird angezeigt"</string>
-    <string name="learn_more_label" msgid="2723716758654655009">"Schaltfläche \"Weitere Informationen\""</string>
+    <string name="learn_more_label" msgid="2723716758654655009">"Button „Weitere Informationen“"</string>
     <string name="mdm_icon_label" msgid="3399134595549660561">"Symbol \"<xliff:g id="ICON_LABEL">%1$s</xliff:g>\""</string>
     <string name="section_heading" msgid="3924666803774291908">"Überschrift des Abschnitts <xliff:g id="SECTION_HEADING">%1$s</xliff:g>."</string>
     <string name="section_content" msgid="8875502515704374394">"Inhalt des Abschnitts <xliff:g id="SECTION_HEADING">%1$s</xliff:g>: <xliff:g id="SECTION_CONTENT">%2$s</xliff:g>"</string>
