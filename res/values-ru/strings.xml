@@ -29,11 +29,11 @@
     <string name="next" msgid="1004321437324424398">"Далее"</string>
     <string name="setting_up_workspace" msgid="7862472373642601041">"Настройка рабочего профиля…"</string>
     <string name="admin_has_ability_to_monitor_profile" msgid="1018585795537086728">"Администратор может просматривать и контролировать настройки, приложения, разрешения и параметры доступа к корпоративным ресурсам в этом профиле, а также связанные с ним данные, например журнал звонков, историю поиска контактов и информацию о действиях в сети. Чтобы узнать больше и ознакомиться с политикой конфиденциальности компании, обратитесь к администратору."</string>
-    <string name="admin_has_ability_to_monitor_device" msgid="7786186939607332934">"Администратор может управлять настройками, приложениями, разрешениями и параметрами доступа к корпоративным ресурсам, а также данными, связанными с этим устройством <xliff:g id="DEVICE_NAME">%1$s</xliff:g>, включая информацию о ваших действиях в сети, сведения о местоположении, журнал звонков и историю поиска контактов.<xliff:g id="LINE_BREAK">
+    <string name="admin_has_ability_to_monitor_device" msgid="7786186939607332934">"У вашего ИТ-администратора есть возможность отслеживать и контролировать настройки, корпоративный доступ, приложения, разрешения и данные, связанные с этим устройством <xliff:g id="DEVICE_NAME">%1$s</xliff:g>, включая сетевую активность, а также местоположение устройства, журнал звонков и историю поиска контактов.<xliff:g id="LINE_BREAK">
 
-</xliff:g>Чтобы узнать больше и ознакомиться с политикой конфиденциальности вашей компании, обратитесь к системному администратору."</string>
+</xliff:g>За дополнительной информацией, включая правила защиты конфиденциальности в вашей организации, обращайтесь к IT-администратору."</string>
     <string name="theft_protection_disabled_warning" msgid="3708092473574738478">"Чтобы воспользоваться функциями защиты от кражи, сначала установите пароль для разблокировки устройства."</string>
-    <string name="contact_your_admin_for_more_info" msgid="9209568156969966347">"Чтобы узнать больше и ознакомиться с политикой конфиденциальности компании, обратитесь к системному администратору."</string>
+    <string name="contact_your_admin_for_more_info" msgid="9209568156969966347">"За дополнительной информацией, включая правила защиты конфиденциальности в вашей организации, обращайтесь к IT-администратору."</string>
     <string name="learn_more_link" msgid="3012495805919550043">"Подробнее…"</string>
     <string name="cancel_setup" msgid="2949928239276274745">"Отмена"</string>
     <string name="ok_setup" msgid="4593707675416137504">"ОК"</string>
@@ -170,7 +170,7 @@
     <string name="work_profile_provisioning_summary" msgid="3436190271657388747">"Все приложения, необходимые для работы, находятся в рабочем профиле. После работы эти приложения можно приостановить. Данные в вашем рабочем профиле видны системному администратору."</string>
     <string name="fully_managed_device_provisioning_accept_header" msgid="2944032660440403130">"Настройте рабочее устройство"</string>
     <string name="fully_managed_device_provisioning_step_1_header" msgid="6396274703116708592">"Держите рабочие приложения под рукой"</string>
-    <string name="fully_managed_device_provisioning_step_2_header" msgid="142633978260399682">"Это устройство <xliff:g id="DEVICE_NAME">%1$s</xliff:g> не является личным"</string>
+    <string name="fully_managed_device_provisioning_step_2_header" msgid="142633978260399682">"Это не личное устройство <xliff:g id="DEVICE_NAME">%1$s</xliff:g>"</string>
     <string name="fully_managed_device_provisioning_step_2_subheader" msgid="3981784440341141618">"У системного администратора есть доступ к вашим данным и истории действий на этом устройстве <xliff:g id="DEVICE_NAME">%1$s</xliff:g>."</string>
     <string name="fully_managed_device_provisioning_permissions_header" msgid="2852101532084770993">"Ваши действия и данные"</string>
     <string name="fully_managed_device_provisioning_permissions_secondary_header" msgid="4419374850927705136">"Разрешения для приложений"</string>
