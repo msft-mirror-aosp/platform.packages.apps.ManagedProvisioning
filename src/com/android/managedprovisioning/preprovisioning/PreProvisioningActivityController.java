@@ -1200,7 +1200,7 @@ public class PreProvisioningActivityController {
                 break;
             case STATUS_CANNOT_ADD_MANAGED_PROFILE:
                 String errorMessage;
-                if (!userInfo.canHaveProfile()) {
+                if (!userInfo.canHaveProfile(UserManager.USER_TYPE_PROFILE_MANAGED)) {
                     errorMessage = "Exiting managed profile provisioning, calling user cannot "
                             + "have managed profiles";
                 } else if (!canAddManagedProfile()) {
