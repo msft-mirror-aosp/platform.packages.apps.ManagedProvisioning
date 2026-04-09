@@ -27,6 +27,7 @@ import android.content.pm.IPackageManager;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.managedprovisioning.common.IllegalProvisioningArgumentException;
+import com.android.managedprovisioning.common.ProvisionLogger;
 import com.android.managedprovisioning.common.Utils;
 import com.android.managedprovisioning.model.ProvisioningParams;
 
@@ -134,6 +135,14 @@ public class NonRequiredAppsLogic {
     public void maybeTakeSystemAppsSnapshot(int userId) {
         if (shouldDeleteSystemApps(userId)) {
             mSnapshot.takeNewSnapshot(userId);
+        } else if (mSnapshot.hasSnapshot(userId) && mSnapshot.getSnapshot(userId).isEmpty()) {
+            ProvisionLogger.loge("Taking new snapshot because the existing snapshot is empty.");
+            // We take a new snapshot if the existing snapshot is empty.
+            // If the snapshot was empty due to a previous transient error, taking
+            // a new one here "heals" the device state for future OTAs. If the system still
+            // returns an empty list, SystemAppsSnapshot.takeNewSnapshot safely ignores it
+            // and skips writing.
+            mSnapshot.takeNewSnapshot(userId);
         }
     }
 
@@ -152,6 +161,11 @@ public class NonRequiredAppsLogic {
             }
         } else {
             if (mSnapshot.hasSnapshot(userId)) {
+                if (mSnapshot.getSnapshot(userId).isEmpty()) {
+                    ProvisionLogger.loge(
+                            "System apps snapshot is empty. Not removing system apps.");
+                    return Case.OTA_LEAVE_APPS;
+                }
                 return Case.OTA_REMOVE_APPS;
             } else {
                 return Case.OTA_LEAVE_APPS;

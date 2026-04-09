@@ -93,7 +93,17 @@ public class SystemAppsSnapshot {
     public void takeNewSnapshot(int userId) {
         final File systemAppsFile = getSystemAppsFile(mContext, userId);
         systemAppsFile.getParentFile().mkdirs(); // Creating the folder if it does not exist
-        writeSystemApps(mUtils.getCurrentSystemApps(mIPackageManager, userId), systemAppsFile);
+        Set<String> currentSystemApps = mUtils.getCurrentSystemApps(mIPackageManager, userId);
+        if (currentSystemApps.isEmpty()) {
+            if (hasSnapshot(userId)) {
+                ProvisionLogger.loge("System apps empty, not overwriting snapshot.");
+                return;
+            }
+            // Write the initial empty snapshot. Otherwise, hasSnapshot() remains false,
+            // preventing the OTA "healing" logic from taking a fresh snapshot in the future.
+            ProvisionLogger.loge("Initial system apps empty, writing empty snapshot.");
+        }
+        writeSystemApps(currentSystemApps, systemAppsFile);
     }
 
     private void writeSystemApps(Set<String> packageNames, File systemAppsFile) {
