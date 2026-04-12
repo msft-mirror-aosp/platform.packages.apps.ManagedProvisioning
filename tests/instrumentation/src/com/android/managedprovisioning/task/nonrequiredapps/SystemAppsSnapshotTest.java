@@ -108,6 +108,36 @@ public class SystemAppsSnapshotTest {
                 TEST_PACKAGE_NAME_1, TEST_PACKAGE_NAME_2);
     }
 
+    @Test
+    public void testEmptySnapshotWrittenOnInitialCreation() throws Exception {
+        // GIVEN no installed system apps
+        setCurrentSystemApps();
+
+        // WHEN taking a snapshot
+        mSystemAppsSnapshot.takeNewSnapshot(TEST_USER_ID);
+
+        // THEN hasSnapshot should return true
+        assertTrue(mSystemAppsSnapshot.hasSnapshot(TEST_USER_ID));
+        // AND the snapshot should be empty
+        assertTrue(mSystemAppsSnapshot.getSnapshot(TEST_USER_ID).isEmpty());
+    }
+
+    @Test
+    public void testEmptySnapshotDoesNotOverwriteExisting() throws Exception {
+        // GIVEN a number of installed system apps and a snapshot is taken
+        setCurrentSystemApps(TEST_PACKAGE_NAME_1, TEST_PACKAGE_NAME_2);
+        mSystemAppsSnapshot.takeNewSnapshot(TEST_USER_ID);
+        assertTrue(mSystemAppsSnapshot.hasSnapshot(TEST_USER_ID));
+
+        // WHEN the current system apps become empty and we try to take a new snapshot
+        setCurrentSystemApps();
+        mSystemAppsSnapshot.takeNewSnapshot(TEST_USER_ID);
+
+        // THEN the existing snapshot should not be overwritten
+        assertSetEquals(mSystemAppsSnapshot.getSnapshot(TEST_USER_ID),
+                TEST_PACKAGE_NAME_1, TEST_PACKAGE_NAME_2);
+    }
+
     private void setCurrentSystemApps(String... packages) throws Exception {
         when(mUtils.getCurrentSystemApps(mockIPackageManager, TEST_USER_ID))
                 .thenReturn(new HashSet<>(Arrays.asList(packages)));

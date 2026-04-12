@@ -142,6 +142,19 @@ public class NonRequiredAppsLogicTest {
     }
 
     @Test
+    public void testGetSystemAppsToRemove_OtaLeave_EmptySnapshot() throws Exception {
+        // GIVEN that an OTA occurs and a snapshot exists but is empty
+        mParamsBuilder.setLeaveAllSystemAppsEnabled(false);
+        final NonRequiredAppsLogic logic = createLogic(false);
+        initializeApps();
+        when(mSnapshot.hasSnapshot(TEST_USER_ID)).thenReturn(true);
+        when(mSnapshot.getSnapshot(TEST_USER_ID)).thenReturn(Collections.emptySet());
+
+        // THEN getSystemAppsToRemove should be empty
+        assertTrue(logic.getSystemAppsToRemove(TEST_USER_ID).isEmpty());
+    }
+
+    @Test
     public void testGetSystemAppsToRemove_OtaDelete() throws Exception {
         // GIVEN that an OTA occurs and that system apps should be deleted (indicated by the fact
         // that a snapshot currently exists)
@@ -195,6 +208,21 @@ public class NonRequiredAppsLogicTest {
 
         // THEN no snapshot should be taken
         verify(mSnapshot, never()).takeNewSnapshot(anyInt());
+    }
+
+    @Test
+    public void testMaybeTakeSnapshot_OtaLeave_EmptySnapshot() {
+        // GIVEN that an OTA occurs and a snapshot exists but is empty
+        mParamsBuilder.setLeaveAllSystemAppsEnabled(false);
+        final NonRequiredAppsLogic logic = createLogic(false);
+        when(mSnapshot.hasSnapshot(TEST_USER_ID)).thenReturn(true);
+        when(mSnapshot.getSnapshot(TEST_USER_ID)).thenReturn(Collections.emptySet());
+
+        // WHEN calling maybeTakeSystemAppsSnapshot
+        logic.maybeTakeSystemAppsSnapshot(TEST_USER_ID);
+
+        // THEN a snapshot should be taken
+        verify(mSnapshot).takeNewSnapshot(TEST_USER_ID);
     }
 
     @Test
